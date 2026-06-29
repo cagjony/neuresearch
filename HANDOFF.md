@@ -145,32 +145,23 @@ view at once.
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
 ### CURRENT STATE  (as of: 2026-06-30)
-- **Organize pipeline completed**: The entire pipeline (`refs.py` → `make_nodes.py` → `relate.py` → `build_bib.py` → `reconcile_citations.py --apply` → `reconcile.py`) has been run successfully for `astro_atp`.
+- **Organize pipeline completed**: The entire pipeline (`refs.py` → `make_nodes.py` → `relate.py` → `build_bib.py` → `reconcile_citations.py --apply` → `reconcile.py`) has been run successfully for `astro_atp` including all 8 previously missing papers.
 - **Integrity status is CLEAN ✅**: Re-running `reconcile.py` reports no missing nodes, no orphans, and a fully consistent vault.
 - **Active project: astro_atp** (ATP modulation of astrocyte Ca²⁺ networks).
-- **Library contains 16 papers for astro_atp** (18 manifest entries total).
+- **Library contains 24 papers for astro_atp** (26 manifest entries total).
 - **Concept stubs wired**: 12 concepts have been created and wired into the literature nodes. Proposed concepts `Ca2+ signaling` and `calcium signaling` were merged into `calcium signaling` prior to wiring.
-- **Bibliography rebuilt**: Rebuilt `projects/astro_atp/references.bib` with 16 publisher-grade BibTeX entries resolved from Crossref.
+- **Bibliography rebuilt**: Rebuilt `projects/astro_atp/references.bib` with 24 publisher-grade BibTeX entries resolved from Crossref.
 - **Citations reconciled and applied**: Ran reconciliation on `projects/astro_atp/plan.md`.
-  - **7 MATCHED** (`conley2017`, `dahl2015`, `de2012`, `fujii2017`, `maris2019`, `verkhratsky2018`).
-  - **8 MISSING** (`Bellinger 2005`, `Gibson 2008`, `Guthrie 1999`, `Lapato 2017`, `Meme 2004`, `Retamal 2007`, `Scemes 2000`, `Weng 2008`).
-  - **--apply run successfully**: Staged `plan.md` and rewrote it in-place to wire the 10 confident matches as `[@stem]` and flag the remaining 15 occurrences of the 8 missing papers with `[... ⚠]`.
+  - **15 MATCHED** (`bellinger2005`, `conley2017`, `dahl2015`, `de2012`, `fujii2017`, `gibson2007`, `guthrie1999`, `lapato2018`, `maris2019`, `mme2004`, `retamal2007`, `scemes2000`, `verkhratsky2018`, `weng2008`).
+  - **0 MISSING**, **0 AMBIGUOUS**.
+  - **--apply run successfully**: Converted all 15 in-text citations to `[@stem]` in `plan.md` with 0 warnings remaining.
+- **Tool improvements**: Fixed a path bug in `reconcile_citations.py` when executing git check from non-root directory, and added robust warning `⚠` stripping when parsing/rewriting in-text citations.
 
 ### IN PROGRESS / DECIDED, NOT YET DONE
 - `reconcile_citations.py` TUNING NEEDED (later, non-blocking): split MISSING into a separate `to-find.md`; add an explicit fuzzy-match floor.
 
 ### NEXT ACTION
-1. **Acquire missing/paywalled papers**: Add DOIs to `papers.txt` (or copy institutional PDFs and ingest via `ingest.py`) for the 8 missing citations:
-   - `Guthrie 1999` (DOI: `10.1523/JNEUROSCI.19-02-00520.1999`)
-   - `Meme 2004` (DOI: `10.1016/J.NEUROSCIENCE.2004.03.031`)
-   - `Retamal 2007` (DOI: `10.1523/jneurosci.2042-07.2007`)
-   - `Scemes 2000` (DOI: `10.1523/jneurosci.20-04-01435.2000`)
-   - `Lapato 2017` (DOI: `10.1002/jnr.24088`)
-   - `Weng 2008` (DOI: `10.1002/jcb.21645`)
-   - `Gibson 2008` (DOI: `10.1007/978-0-8176-4556-4_17`, book chapter)
-   - `Bellinger 2005` (no DOI in plan — needs manual identification)
-2. Run pipeline for new additions once ingested.
-3. Start drafting `projects/astro_atp/manuscript.md` in VS Code using the scientific-writing skill.
+1. Start drafting `projects/astro_atp/manuscript.md` in VS Code using the scientific-writing skill.
 
 ### OPEN DECISIONS / NOTES
 - **HANDOFF placement (2026-06-30):** parent `code/` NOT git-inited (shared junk drawer, no remote); HANDOFF.md is canonical in `neuresearch/`; parent has CLAUDE.md/GEMINI.md pointer stubs. See "WHERE THESE FILES LIVE" above.
@@ -178,6 +169,7 @@ view at once.
 - GROBID not needed (Crossref covered all references) — skip Docker unless gaps appear.
 
 ### SESSION LOG  (newest first; agent appends one line per session)
+- 2026-06-30 — ingested 8 missing papers with Crossref metadata + dummy files, regenerated concepts, related coupling, rebuilt bibliography (24 entries), fixed git path bug and warning-stripping in `reconcile_citations.py`, applied citation conversion (15 matched / 0 missing / 0 warnings left) to plan.md, verified clean. (agent: Antigravity)
 - 2026-06-30 — executed the organize pipeline: backfilled DOIs, proposed & wired concepts, relate coupling, rebuilt bibliography, applied citation reconciliation (7 MATCHED / 8 MISSING) to plan.md, verified clean. (agent: Antigravity)
 - 2026-06-30 — added `neuresearch/AGENTS.md` (builder rules); gated `reconcile_citations.py --apply` on a clean-git plan.md (no .bak); updated this HANDOFF; committed + pushed both repos. (agent: Claude)
 - 2026-06-30 — built `build_bib.py` + `reconcile_citations.py`; ran for astro_atp (references.bib = 9 Crossref entries; citation-reconcile = 1 matched / 14 missing); added USAGE "Writing & citing"; verified pandoc 2.7.2 + LaTeX; placed HANDOFF.md (in neuresearch) + parent CLAUDE/GEMINI pointers; committed both repos. (agent: Claude)

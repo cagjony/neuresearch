@@ -171,7 +171,7 @@ def parse_reflist(ref_text: str) -> list[dict]:
 
 def looks_like_citation_group(content: str) -> bool:
     """True if a [...] group holds citation tokens (author-year or DOI), not math/ranges."""
-    parts = [p.strip() for p in content.split(";")]
+    parts = [p.rstrip(" ⚠").strip() for p in content.split(";")]
     return any(AUTHOR_YEAR_RE.match(p) or DOI_RE.search(p) for p in parts)
 
 
@@ -183,7 +183,7 @@ def parse_intext(body: str) -> dict[tuple[str, str], int]:
         if not looks_like_citation_group(content):
             continue
         for part in content.split(";"):
-            am = AUTHOR_YEAR_RE.match(part.strip())
+            am = AUTHOR_YEAR_RE.match(part.rstrip(" ⚠").strip())
             if am:
                 key = (norm_surname(am.group(1)), am.group(2))
                 if key[0] and key[1]:
@@ -339,7 +339,8 @@ def apply_to_plan(plan_text: str, cits: list[Citation]) -> tuple[str, int, int]:
         new_parts = []
         for part in content.split(";"):
             token = part.strip()
-            am = AUTHOR_YEAR_RE.match(token)
+            token_clean = token.rstrip(" ⚠").strip()
+            am = AUTHOR_YEAR_RE.match(token_clean)
             if not am:
                 new_parts.append(token)
                 continue
@@ -349,7 +350,7 @@ def apply_to_plan(plan_text: str, cits: list[Citation]) -> tuple[str, int, int]:
                 new_parts.append(f"@{c.stem}")
                 n_conv += 1
             else:
-                new_parts.append(f"{token} ⚠")
+                new_parts.append(f"{token_clean} ⚠")
                 n_flag += 1
         return "[" + "; ".join(new_parts) + "]"
 
@@ -374,12 +375,12 @@ def plan_is_committed(plan: Path) -> tuple[bool, str]:
     if inside.returncode != 0 or inside.stdout.strip() != "true":
         return False, f"{plan} is not inside a git work tree"
     tracked = subprocess.run(
-        ["git", "-C", str(repo), "ls-files", "--error-unmatch", str(plan)],
+        ["git", "-C", str(repo), "ls-files", "--error-unmatch", plan.name],
         capture_output=True, text=True)
     if tracked.returncode != 0:
         return False, f"{plan} is not tracked by git"
     status = subprocess.run(
-        ["git", "-C", str(repo), "status", "--porcelain", "--", str(plan)],
+        ["git", "-C", str(repo), "status", "--porcelain", "--", plan.name],
         capture_output=True, text=True)
     if status.stdout.strip():
         return False, f"{plan} has uncommitted changes"
