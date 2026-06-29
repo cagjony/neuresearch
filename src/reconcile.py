@@ -10,8 +10,11 @@ What it does:
   - reads  _library/manifest.json        (what SHOULD exist)
   - scans  _library/*.xml | *.tei.xml    (what IS on disk)
   - scans  lit/*.md                       (which papers have a node)
-  - scans  projects/*/papers/             (symlinks into _library)
   - classifies any drift and WRITES THE REPORT to logs/library-status.md
+
+Papers live ONLY in _library/; a project "has" a paper via the manifest
+"projects" field (and a lit/ node), not via on-disk copies — so there are no
+project paper folders to reconcile.
 
 What it never does (by design — you chose "report only"):
   - it does not delete, move, re-download, relink, or edit anything
@@ -29,7 +32,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 import time
 from dataclasses import dataclass, field
@@ -44,19 +46,16 @@ class Findings:
     n_manifest: int = 0
     n_xml_on_disk: int = 0
     n_nodes: int = 0
-    n_projects: int = 0
-    n_symlinks: int = 0
 
     missing_files: list[str] = field(default_factory=list)      # in manifest, not on disk
     orphan_xml: list[str] = field(default_factory=list)         # on disk, not in manifest
     missing_nodes: list[str] = field(default_factory=list)      # have file, no lit/ note
     orphan_nodes: list[str] = field(default_factory=list)       # lit/ note, not in manifest
-    broken_links: list[str] = field(default_factory=list)       # symlink target missing
     pdf_only: list[str] = field(default_factory=list)           # stored as PDF, no XML yet
 
     def is_clean(self) -> bool:
         return not any([self.missing_files, self.orphan_xml, self.missing_nodes,
-                        self.orphan_nodes, self.broken_links])
+                        self.orphan_nodes])
 
 
 # --------------------------------------------------------------------------- #
@@ -73,7 +72,6 @@ def load_manifest(library: Path) -> dict:
 def scan(vault: Path) -> Findings:
     library = vault / "_library"
     lit = vault / "lit"
-    projects = vault / "projects"
 
     f = Findings()
     manifest = load_manifest(library)
@@ -109,21 +107,9 @@ def scan(vault: Path) -> Findings:
         if stem not in entries:
             f.orphan_nodes.append(stem)
 
-    # symlinks in each project's papers/ folder
-    if projects.exists():
-        for proj in sorted(p for p in projects.iterdir() if p.is_dir()):
-            papers = proj / "papers"
-            if not papers.exists():
-                continue
-            f.n_projects += 1
-            for link in papers.iterdir():
-                if not link.is_symlink():
-                    continue
-                f.n_symlinks += 1
-                # resolve relative to the symlink's own directory
-                target = (papers / os.readlink(link))
-                if not target.exists():
-                    f.broken_links.append(f"{proj.name}/papers/{link.name}")
+    # Papers live only in _library/; project membership is recorded in the
+    # manifest "projects" field, not as on-disk copies — so there is nothing
+    # to cross-check under projects/ here.
 
     return f
 
@@ -155,8 +141,6 @@ def render(f: Findings) -> str:
         f"- Manifest entries: **{f.n_manifest}**",
         f"- XML files on disk: **{f.n_xml_on_disk}**",
         f"- Literature nodes (`lit/`): **{f.n_nodes}**",
-        f"- Projects with a `papers/` folder: **{f.n_projects}**",
-        f"- Project symlinks: **{f.n_symlinks}**",
         "",
         "## Integrity",
         "",
@@ -168,8 +152,6 @@ def render(f: Findings) -> str:
                  f.missing_nodes, "none — every paper has a node"),
         _section("Orphan nodes (`lit/` note with no manifest entry)",
                  f.orphan_nodes, "none — every node maps to a tracked paper"),
-        _section("Broken symlinks (project link target missing)",
-                 f.broken_links, "none — all project links resolve"),
     ]
     if f.pdf_only:
         lines.append(_section("PDF-only (awaiting XML conversion — informational)",

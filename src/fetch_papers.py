@@ -3,8 +3,10 @@
 fetch_papers.py
 ===============
 Resolve a list of papers to open-access full-text XML, store each one ONCE in
-the vault's _library, symlink the requested ones into a per-project folder, and
-log every action to the vault's logs/ as Markdown.
+the vault's _library, record which project requested it in the manifest, and
+log every action to the vault's logs/ as Markdown. Papers are never copied into
+project folders; a project "has" a paper via the manifest "projects" field (and,
+later, a lit/ node + citekey). Use export_project.py to materialise copies.
 
     python fetch_papers.py papers.txt --vault /path/to/neubrain --project astro_atp \
         --email you@kuleuven.be [--grobid http://localhost:8070] [--also-md]
@@ -16,8 +18,9 @@ PMCID (PMCxx...), or free-text TITLE.
 LAYOUT (derived from --vault):
     <vault>/_library/         archive: <stem>.xml  +  manifest.json (ledger)
     <vault>/lit/              nodes (created later by Claude, not here)
-    <vault>/projects/<p>/papers/   symlinks into _library
     <vault>/logs/fetch-log.md       append-only history (written here)
+    Project membership lives in the manifest ("projects": [...]), NOT on disk.
+    export_project.py materialises a project's files into a folder on demand.
 
 STEM = CITEKEY CONVENTION
     A paper's archive filename, its future lit/ node filename, and its citekey
@@ -46,7 +49,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import re
 import string
 import sys
@@ -163,22 +165,50 @@ def manifest_lookup(manifest: dict, rec: Record) -> str | None:
     return None
 
 
-def manifest_register(manifest: dict, rec: Record, stem: str, files: list[str], src: str) -> None:
+def manifest_register(manifest: dict, rec: Record, stem: str, files: list[str],
+                      src: str, project: str) -> None:
     for key in (rec.doi, rec.pmid, rec.pmcid):
         if key:
             manifest["by_id"][key] = stem
     manifest["entries"][stem] = {
         "title": rec.title, "doi": rec.doi, "pmid": rec.pmid, "pmcid": rec.pmcid,
         "year": rec.year, "source_of_fulltext": src, "files": files,
+        "projects": [project],
         "fetched_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
     }
+
+
+def record_project(manifest: dict, stem: str, project: str) -> None:
+    """Append a project to an entry's membership list (dedup, order-preserving).
+
+    Papers live ONCE in _library/; a project 'has' a paper by being listed here,
+    not by holding a copy. Idempotent: re-running for the same project is a no-op.
+    """
+    entry = manifest["entries"].get(stem)
+    if entry is None:
+        return
+    projects = entry.setdefault("projects", [])
+    if project not in projects:
+        projects.append(project)
 
 
 # --------------------------------------------------------------------------- #
 # fetchers
 # --------------------------------------------------------------------------- #
-def fetch_epmc_xml(rec: Record, session: requests.Session) -> bytes:
-    r = session.get(f"{EPMC}/{rec.source}/{rec.pmcid}/fullTextXML", timeout=60)
+def fetch_epmc_xml(rec: Record, session: requests.Session) -> bytes | None:
+    """Return JATS bytes, or None if Europe PMC has no retrievable full text (404).
+
+    inEPMC=Y is sometimes optimistic and the fullTextXML endpoint 404s; that is
+    an expected 'not actually available' result, not an error -> caller falls
+    back to Unpaywall. Genuine failures (5xx, network) still raise loudly.
+
+    NOTE: the endpoint is keyed on the bare PMCID with NO source segment
+    (.../rest/<PMCID>/fullTextXML). Inserting rec.source (e.g. MED) makes EPMC
+    404 every article, even open-access ones.
+    """
+    r = session.get(f"{EPMC}/{rec.pmcid}/fullTextXML", timeout=60)
+    if r.status_code == 404:
+        return None
     r.raise_for_status()
     return r.content
 
@@ -228,14 +258,6 @@ def jats_to_md(xml_path: Path, md_path: Path) -> bool:
     return True
 
 
-def symlink_into_project(src: Path, project_papers: Path) -> None:
-    project_papers.mkdir(parents=True, exist_ok=True)
-    link = project_papers / src.name
-    if link.is_symlink() or link.exists():
-        return
-    link.symlink_to(os.path.relpath(src, project_papers))
-
-
 # --------------------------------------------------------------------------- #
 # main
 # --------------------------------------------------------------------------- #
@@ -248,6 +270,9 @@ def main() -> int:
     ap.add_argument("--grobid", default=None, help="GROBID base URL (optional)")
     ap.add_argument("--also-md", action="store_true",
                     help="also render JATS XML -> Markdown (needs pandoc; usually unnecessary)")
+    ap.add_argument("--debug", action="store_true",
+                    help="resolve each line and print what Europe PMC returned, then exit "
+                         "(no fetching, no writes) — for diagnosing XML-vs-PDF routing")
     args = ap.parse_args()
 
     if not args.list.exists():
@@ -257,13 +282,29 @@ def main() -> int:
 
     library = args.vault / "_library"
     library.mkdir(parents=True, exist_ok=True)
-    project_papers = args.vault / "projects" / args.project / "papers"
 
     tokens = [ln.strip() for ln in args.list.read_text().splitlines()
               if ln.strip() and not ln.lstrip().startswith("#")]
 
     session = requests.Session()
     session.headers["User-Agent"] = f"neuresearch/1.0 (mailto:{args.email})"
+
+    # --- diagnostic mode: show resolve() output only, fetch nothing --- #
+    if args.debug:
+        hdr = f"{'pmcid':<12} {'in_epmc':<8} {'is_oa':<6} {'pmid':<9} {'source':<7} doi / line"
+        print(hdr)
+        print("-" * len(hdr))
+        for raw in tokens:
+            time.sleep(POLITE_DELAY)
+            rec = resolve(raw, session)
+            if rec is None:
+                print(f"{'-':<12} {'-':<8} {'-':<6} {'-':<9} {'-':<7} UNRESOLVED: {raw}")
+                continue
+            tail = rec.doi or raw
+            print(f"{rec.pmcid or '-':<12} {str(rec.in_epmc):<8} {str(rec.is_oa):<6} "
+                  f"{rec.pmid or '-':<9} {rec.source or '-':<7} {tail}")
+        return 0
+
     manifest = load_manifest(library)
     log = FetchLog(vault=args.vault)
     n_new = n_linked = n_gap = 0
@@ -275,15 +316,16 @@ def main() -> int:
             log.gap(raw, "unresolved (no Europe PMC match)"); n_gap += 1
             print(f"[MISS]  {raw}"); continue
 
-        # already in library -> ensure symlink, log a relink
+        # already in library -> just record this project's membership, no copy.
+        # Idempotent across XML and PDF: "have it" means the entry's files exist.
         stem = manifest_lookup(manifest, rec)
-        if stem and (library / f"{stem}.xml").exists():
-            xmlp = library / f"{stem}.xml"
-            symlink_into_project(xmlp, project_papers)
-            if args.also_md and (library / f"{stem}.md").exists():
-                symlink_into_project(library / f"{stem}.md", project_papers)
-            log.relink(stem, args.project); n_linked += 1
-            print(f"[HAVE]  {stem}"); continue
+        if stem:
+            entry = manifest["entries"].get(stem, {})
+            files = entry.get("files", [])
+            if files and all((library / fn).exists() for fn in files):
+                record_project(manifest, stem, args.project)
+                log.relink(stem, args.project); n_linked += 1
+                print(f"[HAVE]  {stem}"); continue
 
         stem = assign_stem(rec, manifest)
         xmlp = library / f"{stem}.xml"
@@ -292,35 +334,52 @@ def main() -> int:
         # --- source 1: Europe PMC JATS XML --- #
         if rec.in_epmc and rec.pmcid:
             time.sleep(POLITE_DELAY)
-            xml = fetch_epmc_xml(rec, session)
-            if not validate_jats(xml):
+            xml = fetch_epmc_xml(rec, session)        # None if endpoint 404s
+            if xml is not None and validate_jats(xml):
+                xmlp.write_bytes(xml)
+                src_label = "europepmc-jats"
+            elif xml is not None and not validate_jats(xml):
+                # got a 200 with non-JATS body: unexpected, refuse to write a stub
                 raise RuntimeError(f"{stem}: Europe PMC returned non-JATS for "
                                    f"{rec.pmcid} (refusing to write a stub)")
-            xmlp.write_bytes(xml)
-            src_label = "europepmc-jats"
+            # else: xml is None (404) -> fall through to Unpaywall below
 
         # --- source 2: Unpaywall OA PDF (optional GROBID -> TEI) --- #
-        elif rec.doi:
+        if not src_label and rec.doi:
             time.sleep(POLITE_DELAY)
             pdf_url = unpaywall_pdf_url(rec.doi, args.email, session)
-            if not pdf_url:
-                log.gap(raw, "no legal OA copy (paywalled)"); n_gap += 1
-                print(f"[GAP]   {stem}: paywalled"); continue
-            pdf = library / f"{stem}.pdf"
-            download(pdf_url, pdf, session)
-            if args.grobid:
-                tei = grobid_tei(pdf, args.grobid, session)
-                if not (validate_jats(tei) or b"<TEI" in tei[:200]):
-                    raise RuntimeError(f"{stem}: GROBID returned unexpected content")
-                xmlp = library / f"{stem}.tei.xml"
-                xmlp.write_bytes(tei)
-                src_label = "unpaywall-pdf+grobid-tei"
+            if pdf_url:
+                pdf = library / f"{stem}.pdf"
+                try:
+                    download(pdf_url, pdf, session)
+                except requests.exceptions.RequestException as e:
+                    # 403/401/5xx/timeout/connection error on the OA PDF is an
+                    # expected gap (paywall, anti-bot, dead mirror), not a crash.
+                    if pdf.exists():
+                        pdf.unlink()  # drop any partial/empty file
+                    log.gap(raw, f"OA PDF download failed: {e}"); n_gap += 1
+                    print(f"[GAP]   {stem}: OA PDF download failed: {e}"); continue
+                if args.grobid:
+                    tei = grobid_tei(pdf, args.grobid, session)
+                    if not (validate_jats(tei) or b"<TEI" in tei[:200]):
+                        raise RuntimeError(f"{stem}: GROBID returned unexpected content")
+                    xmlp = library / f"{stem}.tei.xml"
+                    xmlp.write_bytes(tei)
+                    src_label = "unpaywall-pdf+grobid-tei"
+                else:
+                    xmlp = pdf
+                    src_label = "unpaywall-pdf"
+
+        # --- nothing worked -> log a gap, keep going --- #
+        if not src_label:
+            if rec.in_epmc and rec.pmcid:
+                reason = "EPMC full text unavailable (404) and no OA copy via Unpaywall"
+            elif rec.doi:
+                reason = "no legal OA copy (paywalled)"
             else:
-                xmlp = pdf
-                src_label = "unpaywall-pdf"
-        else:
-            log.gap(raw, "no DOI and not in Europe PMC"); n_gap += 1
-            print(f"[GAP]   {raw}: no DOI / not in EPMC"); continue
+                reason = "no DOI and not in Europe PMC"
+            log.gap(raw, reason); n_gap += 1
+            print(f"[GAP]   {stem}: {reason}"); continue
 
         # --- optional Markdown rendering (JATS only) --- #
         files = [xmlp.name]
@@ -328,10 +387,8 @@ def main() -> int:
             mdp = library / f"{stem}.md"
             if jats_to_md(xmlp, mdp):
                 files.append(mdp.name)
-                symlink_into_project(mdp, project_papers)
 
-        manifest_register(manifest, rec, stem, files, src_label)
-        symlink_into_project(xmlp, project_papers)
+        manifest_register(manifest, rec, stem, files, src_label, args.project)
         log.record(stem=stem, source=src_label, title=rec.title, doi=rec.doi)
         n_new += 1
         print(f"[OK]    {stem}  <-  {src_label}")
