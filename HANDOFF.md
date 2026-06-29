@@ -97,11 +97,10 @@ view at once.
   [BUILT ✓ — ran for astro_atp]
 - `reconcile_citations.py` — wire a draft's citations to the library; report to
   `citation-reconcile.md`, missing → `to-find.md`; `--apply` rewrites the draft.
-  [BUILT to earlier spec — currently writes MISSING **inside** citation-reconcile.md
-  (no separate to-find.md), `--apply` rewrites in place with ⚠ flags but writes **no
-  plan.md.bak**, and the fuzzy match has a title-overlap check but no explicit floor.
-  PENDING amendments: split MISSING → to-find.md, back up plan.md.bak before --apply,
-  add an explicit fuzzy floor.]
+  [BUILT — `--apply` is GATED: it refuses unless plan.md is committed & clean in git
+  (git is the backup; `git checkout -- plan.md` is the undo — no .bak kept). TUNING
+  NEEDED (later, not blocking): split MISSING into a separate `to-find.md`, and add
+  an explicit fuzzy-match floor (currently a title-overlap check, no numeric floor).]
 - `new_project.py` — scaffold a new project (plan template, papers.txt, manuscript
   stub) + print next steps. [BUILT]
 - `sync_skills.py` — deploy `neuresearch/skills/` → `~/.claude/skills/`; `--check`
@@ -146,6 +145,11 @@ view at once.
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
 ### CURRENT STATE  (as of: 2026-06-30)
+- **Both repos now have an `AGENTS.md`**: `neubrain/AGENTS.md` (vault rules) and the
+  new `neuresearch/AGENTS.md` (builder rules). The parent pointer text ("see each
+  repo's AGENTS.md") is now accurate.
+- **`reconcile_citations.py --apply` is gated**: refuses unless plan.md is committed
+  & clean in git, so `git checkout -- plan.md` is the one-step undo (no .bak).
 - Active project: **astro_atp** (ATP modulation of astrocyte Ca²⁺ networks).
 - Library: 11 manifest entries — 9 astro_atp papers (all with `cited_dois`,
   Crossref-backfilled) + 2 writing-methodology (`carandini2022`, `mensh2017`).
@@ -169,32 +173,45 @@ view at once.
 - `papers.txt` for astro_atp was updated (new papers added) — **NOT yet re-fetched.**
 
 ### IN PROGRESS / DECIDED, NOT YET DONE
-- `reconcile_citations.py` amendments (see its [status] above): split MISSING →
-  `to-find.md`; write `plan.md.bak` before `--apply`; add an explicit fuzzy floor.
+- `reconcile_citations.py` TUNING NEEDED (later, non-blocking): split MISSING into a
+  separate `to-find.md`; add an explicit fuzzy-match floor. (The `--apply` data-loss
+  risk is already closed via the git-clean gate.)
 - Re-fetch astro_atp `papers.txt` (it changed) → refs → make_nodes → relate, then
   rebuild `references.bib`.
-- (DONE since the seed: `build_bib.py`, `reconcile_citations.py` v1, `new_project.py`,
-  `sync_skills.py`, skill moved into `neuresearch/skills/`.)
+- (DONE since the seed: `build_bib.py`, `reconcile_citations.py` (+ --apply git gate),
+  `new_project.py`, `sync_skills.py`, skill moved into `neuresearch/skills/`,
+  `neuresearch/AGENTS.md`.)
 
 ### NEXT ACTION
-1. Read `projects/astro_atp/citation-reconcile.md`; decide which of the 14 MISSING
-   DOIs to bring in.
-2. Add chosen DOIs to astro_atp `papers.txt`; re-fetch (it changed) → `refs.py
-   --only-empty` → `make_nodes.py propose`/`wire` → `relate.py`.
-3. Re-run `build_bib.py --project astro_atp` after the library grows.
-4. Apply the `reconcile_citations.py` amendments, then run `--apply` to wire the
-   confident matches in `plan.md`.
-5. Start drafting `projects/astro_atp/manuscript.md` with the scientific-writing skill.
+Grow the astro_atp library to cover the plan, then wire the plan:
+1. Add the **14 missing DOIs** from `projects/astro_atp/citation-reconcile.md` to
+   `projects/astro_atp/papers.txt` — **dedup the De Pittà pair to ONE entry** (both
+   "De Pittà 2012" and "Pittà 2012" are DOI `10.3389/fncom.2012.00098`).
+2. `fetch_papers.py --project astro_atp` → `refs.py --only-empty` →
+   `make_nodes.py propose` → (edit `concepts/_proposed.md`) → `make_nodes.py wire`
+   → `relate.py`.
+3. `build_bib.py --project astro_atp` (rebuild references.bib for the grown library).
+4. Re-run `reconcile_citations.py --project astro_atp` **report-only** and watch
+   MATCHED rise (was 1/15) as the fetched papers land in the library.
+5. **Commit plan.md** (the --apply gate requires it clean), then run
+   `reconcile_citations.py --project astro_atp --apply` to wire the confident
+   matches to `[@stem]`.
+6. Start drafting `projects/astro_atp/manuscript.md` with the scientific-writing skill.
 
 ### OPEN DECISIONS / NOTES
 - **HANDOFF placement (2026-06-30):** parent `code/` NOT git-inited (shared junk
   drawer, no remote); HANDOFF.md is canonical in `neuresearch/`; parent has
   CLAUDE.md/GEMINI.md pointer stubs. See "WHERE THESE FILES LIVE" above.
+- **`--apply` data-loss (2026-06-30):** closed cheaply by gating on a clean git
+  plan.md (git is the backup) rather than writing a `.bak`.
 - GROBID not needed (Crossref covered all references) — skip Docker unless gaps appear.
 - Obsidian Git plugin: only on the laptop, later, for holiday writing. Not the server.
 - Drive sync of `_library/pdf/` for figures across machines: deferred until needed.
 
 ### SESSION LOG  (newest first; agent appends one line per session)
+- 2026-06-30 — added `neuresearch/AGENTS.md` (builder rules); gated
+  `reconcile_citations.py --apply` on a clean-git plan.md (no .bak); updated this
+  HANDOFF; committed + pushed both repos. (agent: Claude)
 - 2026-06-30 — built `build_bib.py` + `reconcile_citations.py`; ran for astro_atp
   (references.bib = 9 Crossref entries; citation-reconcile = 1 matched / 14 missing);
   added USAGE "Writing & citing"; verified pandoc 2.7.2 + LaTeX; placed HANDOFF.md

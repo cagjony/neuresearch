@@ -29,6 +29,9 @@ REPORT-ONLY by default -> projects/<project>/citation-reconcile.md:
 With --apply: rewrite plan.md in place, converting ONLY confident matches to
 [@stem]; missing/ambiguous citations are left as written but flagged with a ⚠ so
 nothing is silently mis-cited. (Read the report first; run --apply after.)
+--apply REFUSES unless plan.md is committed and clean in git: git IS the backup,
+so `git checkout -- plan.md` is the one-step undo for a rewrite you dislike. No
+separate .bak is kept.
 
 Requires: Python 3.10+ (standard library only).
 """
@@ -37,6 +40,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import subprocess
 import sys
 import unicodedata
 from datetime import datetime
@@ -357,6 +361,31 @@ def apply_to_plan(plan_text: str, cits: list[Citation]) -> tuple[str, int, int]:
 # --------------------------------------------------------------------------- #
 # main
 # --------------------------------------------------------------------------- #
+def plan_is_committed(plan: Path) -> tuple[bool, str]:
+    """True iff plan.md is tracked and clean in git — so `git checkout -- plan.md`
+    can undo an --apply rewrite. Returns (ok, reason-if-not)."""
+    repo = plan.parent
+    try:
+        inside = subprocess.run(
+            ["git", "-C", str(repo), "rev-parse", "--is-inside-work-tree"],
+            capture_output=True, text=True)
+    except FileNotFoundError:
+        return False, "git is not on PATH"
+    if inside.returncode != 0 or inside.stdout.strip() != "true":
+        return False, f"{plan} is not inside a git work tree"
+    tracked = subprocess.run(
+        ["git", "-C", str(repo), "ls-files", "--error-unmatch", str(plan)],
+        capture_output=True, text=True)
+    if tracked.returncode != 0:
+        return False, f"{plan} is not tracked by git"
+    status = subprocess.run(
+        ["git", "-C", str(repo), "status", "--porcelain", "--", str(plan)],
+        capture_output=True, text=True)
+    if status.stdout.strip():
+        return False, f"{plan} has uncommitted changes"
+    return True, ""
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Reconcile a plan's citations against the library.")
     ap.add_argument("--vault", required=True, type=Path, help="neubrain vault root")
@@ -394,6 +423,14 @@ def main() -> int:
     print(f"report -> {report_path}")
 
     if args.apply:
+        ok, why = plan_is_committed(plan)
+        if not ok:
+            print(f"--apply REFUSED: {why}.", file=sys.stderr)
+            print("Commit plan.md first — git is the backup, so `git checkout -- "
+                  f"{plan}` undoes a rewrite you dislike. The report above is "
+                  "already written; re-run --apply once plan.md is clean.",
+                  file=sys.stderr)
+            return 2
         new_text, n_conv, n_flag = apply_to_plan(plan_text, cits)
         if new_text != plan_text:
             plan.write_text(new_text)
