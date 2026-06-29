@@ -145,58 +145,72 @@ view at once.
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
 ### CURRENT STATE  (as of: 2026-06-30)
-- **Both repos now have an `AGENTS.md`**: `neubrain/AGENTS.md` (vault rules) and the
-  new `neuresearch/AGENTS.md` (builder rules). The parent pointer text ("see each
-  repo's AGENTS.md") is now accurate.
+- **Doc spine complete:** `BLUEPRINT.md` now placed in `neuresearch/` → the four-doc
+  spine (BLUEPRINT/AGENTS/USAGE/HANDOFF) is whole; `AGENTS.md`'s forward-reference no
+  longer dangles. Both repos have an `AGENTS.md` (vault rules + builder rules).
 - **`reconcile_citations.py --apply` is gated**: refuses unless plan.md is committed
   & clean in git, so `git checkout -- plan.md` is the one-step undo (no .bak).
 - Active project: **astro_atp** (ATP modulation of astrocyte Ca²⁺ networks).
-- Library: 11 manifest entries — 9 astro_atp papers (all with `cited_dois`,
-  Crossref-backfilled) + 2 writing-methodology (`carandini2022`, `mensh2017`).
-  `reconcile.py` CLEAN.
-- Nodes: 9 `lit/` nodes built; concepts wired; `relate.py` drew 27 coupling edges.
-- Dashboards built (Dataview) — view in Obsidian.
+- **Library grew this session: 9 → 16 astro_atp papers** (18 manifest entries total,
+  + `carandini2022`, `mensh2017`). New OA citizens: **conley2017, dahl2015, de2012,
+  maris2019, verkhratsky2018** (plan refs) + **maly2021, zonca2025** (numbered list).
+- **Root cause found & fixed:** the plan-reference block in `papers.txt` was pasted as
+  full-citation prose (`Author… DOI: https://…`), which the fetcher can't parse — that
+  is why those refs never came in. Rewrote that block to **bare DOIs** (the format the
+  header asks for); De Pittà/Pittà **deduped** to one; **Bellinger 2005** flagged (no
+  DOI anywhere — needs manual identification).
+- **GAP / paywalled plan refs** (not OA — bring in via `ingest.py` with institutional
+  PDFs): `guthrie1999, lapato2018, mme2004, retamal2007, scemes2000, weng2008`. Other
+  GAPs: `scemes2006, newman2001, peng2026`.
+- **MISS / unresolved identifiers:** Gibson 2008 book chapter
+  (`10.1007/978-0-8176-4556-4_17`), Lallouette 2019 book chapter
+  (`10.1007/978-3-030-00817-8_7`), Costa e Silva 2019 thesis (title search). Bellinger
+  2005 (no id). These need manual identification before they can enter.
+- The 7 new astro_atp papers have **EMPTY `cited_dois`** — `refs.py --only-empty` was
+  the NEXT step but was **interrupted at handoff** (not yet run). No `lit/` nodes for
+  them yet. Older 9 still have their nodes + 27 `relate.py` edges; `reconcile.py` was
+  CLEAN before the grow.
 - scientific-writing skill: canonical at `neuresearch/skills/scientific-writing/SKILL.md`,
-  deployed to `~/.claude/skills/`, `sync_skills.py --check` = **in-sync**. (The old
-  "should move into neuresearch" item is DONE.)
-- `plan.md` present in `projects/astro_atp/` — free-text citations + a reference
-  section.
-- **`build_bib.py` ran for astro_atp** → `projects/astro_atp/references.bib`
-  (9 entries, all via Crossref, citekeys = our stems).
-- **`reconcile_citations.py` ran report-only** → `projects/astro_atp/citation-reconcile.md`:
-  **MATCHED 1** (`[Fujii 2017] → [@fujii2017]` via DOI), **MISSING 14** (all with
-  DOIs = fetch candidates), **AMBIGUOUS 0**. `plan.md` untouched (no `--apply` yet).
-- `USAGE.md` gained a **"Writing & citing"** section.
-- Environment: **pandoc 2.7.2** (needs `--filter pandoc-citeproc`; no `--citeproc`
-  until 2.11) + **pdflatex / xelatex / lualatex** all present. Local `md+bib → PDF`
-  verified end-to-end.
-- `papers.txt` for astro_atp was updated (new papers added) — **NOT yet re-fetched.**
+  deployed + `sync_skills.py --check` = **in-sync**.
+- **`build_bib.py` last ran on the OLD library** → `projects/astro_atp/references.bib`
+  (9 Crossref entries). **Stale now — rebuild after refs/nodes.**
+- **`reconcile_citations.py` report (also pre-grow):** MATCHED 1 / MISSING 14 /
+  AMBIGUOUS 0. Re-running now should lift MATCHED to ~6 (Conley, Dahl, de2012, Maris,
+  Verkhratsky joined Fujii); Guthrie/Même/Retamal/Scemes/Weng/Lapato stay MISSING until
+  ingested. `plan.md` untouched (no `--apply` yet).
+- `USAGE.md` has a **"Writing & citing"** section. Env: **pandoc 2.7.2** (use
+  `--filter pandoc-citeproc`; no `--citeproc` until 2.11) + pdflatex/xelatex/lualatex.
+- Vault changes this session (gitignored full-text excluded by design): `manifest.json`,
+  `logs/fetch-log.md`, `projects/astro_atp/papers.txt`.
 
 ### IN PROGRESS / DECIDED, NOT YET DONE
+- **Organize pipeline paused mid-run:** fetch DONE (library 9→16); the chain
+  `refs.py → make_nodes → relate → build_bib → reconcile_citations re-run` is still
+  pending. The very next step is the interrupted `refs.py --only-empty`.
 - `reconcile_citations.py` TUNING NEEDED (later, non-blocking): split MISSING into a
-  separate `to-find.md`; add an explicit fuzzy-match floor. (The `--apply` data-loss
-  risk is already closed via the git-clean gate.)
-- Re-fetch astro_atp `papers.txt` (it changed) → refs → make_nodes → relate, then
-  rebuild `references.bib`.
+  separate `to-find.md`; add an explicit fuzzy-match floor. (`--apply` data-loss is
+  already closed via the git-clean gate.)
 - (DONE since the seed: `build_bib.py`, `reconcile_citations.py` (+ --apply git gate),
-  `new_project.py`, `sync_skills.py`, skill moved into `neuresearch/skills/`,
-  `neuresearch/AGENTS.md`.)
+  `new_project.py`, `sync_skills.py`, skill in `neuresearch/skills/`,
+  `neuresearch/AGENTS.md`, `BLUEPRINT.md`.)
 
 ### NEXT ACTION
-Grow the astro_atp library to cover the plan, then wire the plan:
-1. Add the **14 missing DOIs** from `projects/astro_atp/citation-reconcile.md` to
-   `projects/astro_atp/papers.txt` — **dedup the De Pittà pair to ONE entry** (both
-   "De Pittà 2012" and "Pittà 2012" are DOI `10.3389/fncom.2012.00098`).
-2. `fetch_papers.py --project astro_atp` → `refs.py --only-empty` →
-   `make_nodes.py propose` → (edit `concepts/_proposed.md`) → `make_nodes.py wire`
-   → `relate.py`.
-3. `build_bib.py --project astro_atp` (rebuild references.bib for the grown library).
-4. Re-run `reconcile_citations.py --project astro_atp` **report-only** and watch
-   MATCHED rise (was 1/15) as the fetched papers land in the library.
-5. **Commit plan.md** (the --apply gate requires it clean), then run
-   `reconcile_citations.py --project astro_atp --apply` to wire the confident
-   matches to `[@stem]`.
-6. Start drafting `projects/astro_atp/manuscript.md` with the scientific-writing skill.
+Resume the organize pipeline exactly where it stopped (mind the TWO human gates):
+1. **`refs.py --vault … --project astro_atp --only-empty`** ← the interrupted step;
+   backfills `cited_dois` for the 7 new papers (conley2017, dahl2015, de2012,
+   maly2021, maris2019, verkhratsky2018, zonca2025).
+2. `make_nodes.py propose` → **★ HUMAN GATE: review `concepts/_proposed.md`** before
+   wiring → `make_nodes.py wire`.
+3. `relate.py` (redraw coupling edges over the grown library).
+4. `build_bib.py --project astro_atp` (the references.bib is stale — rebuild it).
+5. `reconcile_citations.py --project astro_atp` **report-only** → **★ HUMAN GATE: read
+   `citation-reconcile.md`**, confirm MATCHED rose (~6 expected).
+6. **Commit plan.md** (the --apply gate requires it clean), then
+   `reconcile_citations.py --project astro_atp --apply` to wire confident `[@stem]`.
+7. Optional acquisition: `ingest.py` the 6 paywalled plan refs via institutional PDFs;
+   manually identify Bellinger 2005 + the Gibson/Lallouette chapters + Costa e Silva
+   thesis so they can enter the library.
+8. Then start drafting `projects/astro_atp/manuscript.md` with the writing skill.
 
 ### OPEN DECISIONS / NOTES
 - **HANDOFF placement (2026-06-30):** parent `code/` NOT git-inited (shared junk
