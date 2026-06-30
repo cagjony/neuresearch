@@ -131,9 +131,10 @@ view at once.
 
 ## HOW TO START A NEW PROJECT
 
-1. `new_project.py --vault /…/neubrain --name <project>` (scaffolds plan.md,
-   papers.txt, manuscript.md).
-2. Paste planyourscience export into `plan.md`; put its references into `papers.txt`.
+1. `new_project.py --vault /…/neubrain --name <project>` (slots plan.md,
+   manuscript.md, references.bib [derived], papers.txt [disposable], archive/).
+2. Paste planyourscience PLAN into `plan.md` and the MANUSCRIPT skeleton into
+   `manuscript.md`; put references into `papers.txt`. Dump new finds into `archive/`.
 3. `fetch_papers.py --project <project>` → `refs.py --only-empty` →
    `make_nodes.py propose` → (edit `concepts/_proposed.md`) → `make_nodes.py wire`
    → `relate.py`.
@@ -156,12 +157,13 @@ view at once.
   - **0 MISSING**, **0 AMBIGUOUS**.
   - **--apply run successfully**: Converted all 15 in-text citations to `[@stem]` in `plan.md` with 0 warnings remaining.
 - **Tool improvements**: Fixed a path bug in `reconcile_citations.py` when executing git check from non-root directory, and added robust warning `⚠` stripping when parsing/rewriting in-text citations.
+- **Structure finalized — building is DONE** (2026-06-30): `new_project.py` now SLOTS rather than generates templates — it creates `plan.md` + `manuscript.md` (placeholder "paste here" headers), `references.bib` (empty, derived note), `papers.txt` (disposable intake header), and a new `archive/` capture zone (`.gitkeep` + `README.md`). `BLUEPRINT.md` already in place and complete (closes the dangling AGENTS.md reference); its architecture diagram now lists `archive/`. `USAGE.md` rewritten with a full "Start a project from scratch" walkthrough + an "archive/ capture zone" section + file-role clarifications (manifest=truth, references.bib=derived, papers.txt=disposable). Verified: `py_compile` OK; test scaffold produced the full structure and refused to clobber (exit 1); test folder deleted.
 
 ### IN PROGRESS / DECIDED, NOT YET DONE
 - `reconcile_citations.py` TUNING NEEDED (later, non-blocking): split MISSING into a separate `to-find.md`; add an explicit fuzzy-match floor.
 
 ### NEXT ACTION
-1. Start drafting `projects/astro_atp/manuscript.md` in VS Code using the scientific-writing skill.
+1. Start drafting `projects/astro_atp/manuscript.md` in VS Code using the scientific-writing skill. (System building is complete — this is now a pure writing project.)
 
 ### OPEN DECISIONS / NOTES
 - **HANDOFF placement (2026-06-30):** parent `code/` NOT git-inited (shared junk drawer, no remote); HANDOFF.md is canonical in `neuresearch/`; parent has CLAUDE.md/GEMINI.md pointer stubs. See "WHERE THESE FILES LIVE" above.
@@ -169,6 +171,7 @@ view at once.
 - GROBID not needed (Crossref covered all references) — skip Docker unless gaps appear.
 
 ### SESSION LOG  (newest first; agent appends one line per session)
+- 2026-06-30 — finalized project structure (building done): `new_project.py` now slots plan/manuscript/references.bib/papers.txt + new `archive/` capture zone instead of generating templates; confirmed `BLUEPRINT.md` present & complete (added `archive/` to its diagram); rewrote `USAGE.md` with a from-scratch walkthrough + archive note + file-role notes; py_compile + test-scaffold verified, test folder deleted. (agent: Claude)
 - 2026-06-30 — ingested 8 missing papers with Crossref metadata + dummy files, regenerated concepts, related coupling, rebuilt bibliography (24 entries), fixed git path bug and warning-stripping in `reconcile_citations.py`, applied citation conversion (15 matched / 0 missing / 0 warnings left) to plan.md, verified clean. (agent: Antigravity)
 - 2026-06-30 — executed the organize pipeline: backfilled DOIs, proposed & wired concepts, relate coupling, rebuilt bibliography, applied citation reconciliation (7 MATCHED / 8 MISSING) to plan.md, verified clean. (agent: Antigravity)
 - 2026-06-30 — added `neuresearch/AGENTS.md` (builder rules); gated `reconcile_citations.py --apply` on a clean-git plan.md (no .bak); updated this HANDOFF; committed + pushed both repos. (agent: Claude)

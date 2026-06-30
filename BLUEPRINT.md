@@ -72,7 +72,8 @@ code/                         ← work from here; both repos in view
 │   ├── _library/             flat: <stem>.xml, <stem>.pdf, manifest.json (truth)
 │   ├── lit/                  paper NODES: <stem>.md (metadata + claim + links)
 │   ├── concepts/             concept notes (human-curated graph glue)
-│   ├── projects/<name>/      plan.md, papers.txt, manuscript.md, references.bib
+│   ├── projects/<name>/      plan.md, manuscript.md, references.bib (derived),
+│   │                         papers.txt (disposable intake), archive/ (capture zone)
 │   ├── logs/                 fetch-log.md, library-status.md (generated)
 │   ├── dashboard.md          Dataview live tables
 │   └── AGENTS.md             vault rules

@@ -23,7 +23,7 @@ layer that gets the right literature in front of that workflow.
 
 ```
 planyourscience plan
-        │   new_project.py  → scaffolds projects/<name>/ (plan.md, papers.txt, manuscript.md)
+        │   new_project.py  → slots projects/<name>/ (plan.md, manuscript.md, references.bib, papers.txt, archive/)
         ▼
   supporting literature
         │   fetch_papers.py → open-access full text into _library/ (manifest = source of truth)
