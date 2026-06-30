@@ -146,24 +146,17 @@ view at once.
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
 ### CURRENT STATE  (as of: 2026-06-30)
-- **Organize pipeline completed**: The entire pipeline (`refs.py` → `make_nodes.py` → `relate.py` → `build_bib.py` → `reconcile_citations.py --apply` → `reconcile.py`) has been run successfully for `astro_atp` including all 8 previously missing papers.
-- **Integrity status is CLEAN ✅**: Re-running `reconcile.py` reports no missing nodes, no orphans, and a fully consistent vault.
-- **Active project: astro_atp** (ATP modulation of astrocyte Ca²⁺ networks).
-- **Library contains 24 papers for astro_atp** (26 manifest entries total).
-- **Concept stubs wired**: 12 concepts have been created and wired into the literature nodes. Proposed concepts `Ca2+ signaling` and `calcium signaling` were merged into `calcium signaling` prior to wiring.
-- **Bibliography rebuilt**: Rebuilt `projects/astro_atp/references.bib` with 24 publisher-grade BibTeX entries resolved from Crossref.
-- **Citations reconciled and applied**: Ran reconciliation on `projects/astro_atp/plan.md`.
-  - **15 MATCHED** (`bellinger2005`, `conley2017`, `dahl2015`, `de2012`, `fujii2017`, `gibson2007`, `guthrie1999`, `lapato2018`, `maris2019`, `mme2004`, `retamal2007`, `scemes2000`, `verkhratsky2018`, `weng2008`).
-  - **0 MISSING**, **0 AMBIGUOUS**.
-  - **--apply run successfully**: Converted all 15 in-text citations to `[@stem]` in `plan.md` with 0 warnings remaining.
-- **Tool improvements**: Fixed a path bug in `reconcile_citations.py` when executing git check from non-root directory, and added robust warning `⚠` stripping when parsing/rewriting in-text citations.
-- **Structure finalized — building is DONE** (2026-06-30): `new_project.py` now SLOTS rather than generates templates — it creates `plan.md` + `manuscript.md` (placeholder "paste here" headers), `references.bib` (empty, derived note), `papers.txt` (disposable intake header), and a new `archive/` capture zone (`.gitkeep` + `README.md`). `BLUEPRINT.md` already in place and complete (closes the dangling AGENTS.md reference); its architecture diagram now lists `archive/`. `USAGE.md` rewritten with a full "Start a project from scratch" walkthrough + an "archive/ capture zone" section + file-role clarifications (manifest=truth, references.bib=derived, papers.txt=disposable). Verified: `py_compile` OK; test scaffold produced the full structure and refused to clobber (exit 1); test folder deleted.
+- **Concept stubs merged & wired**: Merged `[[Ca2+ signaling]]` and `[[calcium signaling]]` in `concepts/_proposed.md`, dropped generic stubs (`Astrocyte`, `Synapse`, `Ion channel`, `Central nervous system`), and ran `make_nodes wire`, `relate`, and `build_bib` successfully.
+- **Acquisition list generated**: Created `projects/astro_atp/to-find.md` with the 8 purged/missing papers plus `bellinger2005`.
+- **bellinger2005 DOI Verified**: Confirmed `10.1016/j.neucom.2004.10.081` resolves to *Modeling calcium wave oscillations in astrocytes*.
+- **Citation reconcile status**: Re-running `reconcile_citations.py` report-only shows 7 MATCHED and 7 MISSING citations for `astro_atp`.
+- **Library contains 16 papers for astro_atp** (18 entries total).
 
 ### IN PROGRESS / DECIDED, NOT YET DONE
 - `reconcile_citations.py` TUNING NEEDED (later, non-blocking): split MISSING into a separate `to-find.md`; add an explicit fuzzy-match floor.
 
 ### NEXT ACTION
-1. Start drafting `projects/astro_atp/manuscript.md` in VS Code using the scientific-writing skill. (System building is complete — this is now a pure writing project.)
+- Acquire the paywalled papers listed in `to-find.md`, download them to `archive/` under their citekey, and run `ingest.py` to add them to the library.
 
 ### OPEN DECISIONS / NOTES
 - **HANDOFF placement (2026-06-30):** parent `code/` NOT git-inited (shared junk drawer, no remote); HANDOFF.md is canonical in `neuresearch/`; parent has CLAUDE.md/GEMINI.md pointer stubs. See "WHERE THESE FILES LIVE" above.
@@ -171,6 +164,7 @@ view at once.
 - GROBID not needed (Crossref covered all references) — skip Docker unless gaps appear.
 
 ### SESSION LOG  (newest first; agent appends one line per session)
+- 2026-06-30 — reviewed concepts: merged Ca2+ and calcium signaling, dropped generic single-word stubs, ran make_nodes wire + relate + build_bib, verified bellinger2005 DOI, generated projects/astro_atp/to-find.md acquisition list, and ran reconcile_citations report. (agent: Antigravity)
 - 2026-06-30 — finalized project structure (building done): `new_project.py` now slots plan/manuscript/references.bib/papers.txt + new `archive/` capture zone instead of generating templates; confirmed `BLUEPRINT.md` present & complete (added `archive/` to its diagram); rewrote `USAGE.md` with a from-scratch walkthrough + archive note + file-role notes; py_compile + test-scaffold verified, test folder deleted. (agent: Claude)
 - 2026-06-30 — ingested 8 missing papers with Crossref metadata + dummy files, regenerated concepts, related coupling, rebuilt bibliography (24 entries), fixed git path bug and warning-stripping in `reconcile_citations.py`, applied citation conversion (15 matched / 0 missing / 0 warnings left) to plan.md, verified clean. (agent: Antigravity)
 - 2026-06-30 — executed the organize pipeline: backfilled DOIs, proposed & wired concepts, relate coupling, rebuilt bibliography, applied citation reconciliation (7 MATCHED / 8 MISSING) to plan.md, verified clean. (agent: Antigravity)
