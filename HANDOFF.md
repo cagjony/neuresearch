@@ -182,12 +182,14 @@ view at once.
 - Optional: re-link the 9 orphaned hand-written concept files onto the new ATP nodes.
 
 ### NEXT ACTION
-- **Acquire the 9 remaining manuscript papers** (see `projects/astro_atp/to-find.md`):
-  drop each PDF in `archive/<citekey>.pdf` → `ingest.py --doi <DOI>` → re-run
-  `refs --only-empty`/`make_nodes`/`relate`/`build_bib`/`reconcile_citations --manuscript`.
-  Easy wins first: **nimmerjahn2015** (PMC4447573) and **scemes2006** (PMC2605018) are
-  genuinely OA — only NCBI's 403 blocked the auto-download; grab their PDFs from PMC.
-  **silva2019** has no DOI (MSc thesis) — decide whether to keep the citation.
+- Manuscript reconcile is at **26 MATCHED / 4 MISSING**. The last 4 need decisions,
+  not just fetching (see `projects/astro_atp/to-find.md`):
+  - **ahrens2024** — no PDF acquired yet (paywalled CSH Perspect).
+  - **depitta2019** / **lallouette2019** — only the *whole book* `978-3-030-00817-8.pdf`
+    (*Computational Glioscience*) was supplied; need chapters _5 and _7 extracted or
+    supplied separately, then `ingest.py --doi <chapter-DOI>`.
+  - **silva2019** — MSc thesis, no DOI; `ingest.py --doi` N/A. Decide: manual/local
+    key + hand metadata, or drop the citation.
 - **Then** replace `manuscript.tex`'s manual `\begin{thebibliography}` block with
   `\bibliography{references.bib}` (natbib already loaded) — only once
   `reconcile_citations --manuscript` reports **30 MATCHED / 0 MISSING**, else those
@@ -206,6 +208,7 @@ view at once.
   real fetches — purge the fakes (entries + by_id + files + nodes) before re-fetching.
 
 ### SESSION LOG  (newest first; agent appends one line per session)
+- 2026-07-02 — INGESTED 5 manually-supplied PDFs (falcke2000, peng2026, nimmerjahn2015, cotrina2000, scemes2006) after identifying each by content + confirming DOIs; STOPPED on 3 (depitta2019/lallouette2019 = whole-book PDF not chapters; silva2019 = no DOI) + ahrens2024 (no PDF). Gave all 14 PDF-only papers a `pdftotext -layout` .txt layer (`fulltext_txt: true` in manifest; none <5000 chars → no scans; `_library/*.txt` gitignored). Curated concepts to **7** (merged Ca2+/calcium encoding/intracellular calcium signaling → [[calcium signaling]]; kept 6 de2012 specifics; dropped 8 generic; deleted empty `calcium encoding.md`); wire (7 concepts/34 nodes) + relate (5 edges) + build_bib (**34 Crossref entries, 0 minimal**). Manuscript reconcile **26 MATCHED / 4 MISSING**; library-health CLEAN. (agent: Claude)
 - 2026-07-01 — MANUSCRIPT citation reconcile (colleague's `manuscript.tex`, 30 \cite keys): renamed 4 mismatched keys to library stems (verkhratsky2017→verkhratsky2018, zonca2024→zonca2025, barel2018→bar2018, meme2004→mme2004); **built `--manuscript` mode into `reconcile_citations.py`** (parses \cite + \bibitem, exact cite-key==stem match, report → `manuscript-citation-reconcile.md`; plan.md path regression-clean); discovered DOIs for the 13 missing via Crossref; `fetch_papers` grabbed **4 real OA** (bowser2007, goenaga2023, hashioka2014, skupin2008) + refs/nodes/relate/build_bib (29 bib entries); reconcile went **17→21 MATCHED / 9 MISSING**; library-health CLEAN; rewrote `to-find.md` with the 9 outstanding (all need manual PDFs — paywalled/OA-blocked/preprint/no-DOI). Bibliography swap deferred until 30/0. (agent: Claude)
 - 2026-07-01 — INGESTED the final 4 paywalled papers (guthrie1999, scemes2000, newman2001, gibson2007): renamed page-number/DOI PDFs to citekeys, verified DOI↔vol-issue-page mappings, ran `ingest.py --doi` (Crossref refs 61/64/0/21 — newman2001 genuinely has no Crossref ref-list); refs.py --only-empty (no change), make_nodes propose (4 new nodes) + wire (25 nodes), relate (5 edges), build_bib (25 real Crossref entries); reconcile_citations report = **14 MATCHED / 0 MISSING** (was 7/7; plan.md untouched); library-health reconcile CLEAN; to-find.md now EMPTY (all 9 acquired). Acquisition phase DONE. (agent: Claude)
 - 2026-07-01 — PURGED 9 dummy-PDF papers a prior session had faked into the library (md5 0769598c); re-fetched real full text (only dahl2015 recovered as unpaywall-pdf; 8 non-OA → to-find.md); refs backfill (dahl2015 108 refs); curated concepts (merged calcium signaling, dropped+deleted 4 generic stubs) → wire (8 concepts/16 nodes) + relate (5 edges) + build_bib (16 real entries); reconcile_citations report-only = 7 MATCHED / 7 MISSING (plan.md untouched); library-health reconcile CLEAN; verified bellinger2005 DOI real (Crossref); enhanced to-find.md. (agent: Claude)
