@@ -97,7 +97,9 @@ view at once.
   [BUILT ✓ — ran for astro_atp]
 - `reconcile_citations.py` — wire a draft's citations to the library; report to
   `citation-reconcile.md`, missing → `to-find.md`; `--apply` rewrites the draft.
-  [BUILT — `--apply` is GATED: it refuses unless plan.md is committed & clean in git
+  **`--manuscript` reconciles `manuscript.tex` (\cite + \bibitem keys) instead of
+  plan.md → `manuscript-citation-reconcile.md` (report-only; exact cite-key == stem
+  is the primary match).** [BUILT — `--apply` is GATED: it refuses unless plan.md is committed & clean in git
   (git is the backup; `git checkout -- plan.md` is the undo — no .bak kept). TUNING
   NEEDED (later, not blocking): split MISSING into a separate `to-find.md`, and add
   an explicit fuzzy-match floor (currently a title-overlap check, no numeric floor).]
@@ -180,9 +182,18 @@ view at once.
 - Optional: re-link the 9 orphaned hand-written concept files onto the new ATP nodes.
 
 ### NEXT ACTION
-- Run `reconcile_citations.py --apply` for `astro_atp` (commit plan.md first — the
-  gate requires it clean) to convert `[Author Year]` → `[@stem]`, then begin drafting
-  `manuscript.md` using the scientific-writing skill. Library acquisition is DONE.
+- **Acquire the 9 remaining manuscript papers** (see `projects/astro_atp/to-find.md`):
+  drop each PDF in `archive/<citekey>.pdf` → `ingest.py --doi <DOI>` → re-run
+  `refs --only-empty`/`make_nodes`/`relate`/`build_bib`/`reconcile_citations --manuscript`.
+  Easy wins first: **nimmerjahn2015** (PMC4447573) and **scemes2006** (PMC2605018) are
+  genuinely OA — only NCBI's 403 blocked the auto-download; grab their PDFs from PMC.
+  **silva2019** has no DOI (MSc thesis) — decide whether to keep the citation.
+- **Then** replace `manuscript.tex`'s manual `\begin{thebibliography}` block with
+  `\bibliography{references.bib}` (natbib already loaded) — only once
+  `reconcile_citations --manuscript` reports **30 MATCHED / 0 MISSING**, else those
+  keys compile as undefined.
+- The colleague manuscript (`manuscript.tex`) is the live draft; line-edit it with
+  the scientific-writing skill once citations fully resolve.
 
 ### OPEN DECISIONS / NOTES
 - **HANDOFF placement (2026-06-30):** parent `code/` NOT git-inited (shared junk drawer, no remote); HANDOFF.md is canonical in `neuresearch/`; parent has CLAUDE.md/GEMINI.md pointer stubs. See "WHERE THESE FILES LIVE" above.
@@ -195,6 +206,7 @@ view at once.
   real fetches — purge the fakes (entries + by_id + files + nodes) before re-fetching.
 
 ### SESSION LOG  (newest first; agent appends one line per session)
+- 2026-07-01 — MANUSCRIPT citation reconcile (colleague's `manuscript.tex`, 30 \cite keys): renamed 4 mismatched keys to library stems (verkhratsky2017→verkhratsky2018, zonca2024→zonca2025, barel2018→bar2018, meme2004→mme2004); **built `--manuscript` mode into `reconcile_citations.py`** (parses \cite + \bibitem, exact cite-key==stem match, report → `manuscript-citation-reconcile.md`; plan.md path regression-clean); discovered DOIs for the 13 missing via Crossref; `fetch_papers` grabbed **4 real OA** (bowser2007, goenaga2023, hashioka2014, skupin2008) + refs/nodes/relate/build_bib (29 bib entries); reconcile went **17→21 MATCHED / 9 MISSING**; library-health CLEAN; rewrote `to-find.md` with the 9 outstanding (all need manual PDFs — paywalled/OA-blocked/preprint/no-DOI). Bibliography swap deferred until 30/0. (agent: Claude)
 - 2026-07-01 — INGESTED the final 4 paywalled papers (guthrie1999, scemes2000, newman2001, gibson2007): renamed page-number/DOI PDFs to citekeys, verified DOI↔vol-issue-page mappings, ran `ingest.py --doi` (Crossref refs 61/64/0/21 — newman2001 genuinely has no Crossref ref-list); refs.py --only-empty (no change), make_nodes propose (4 new nodes) + wire (25 nodes), relate (5 edges), build_bib (25 real Crossref entries); reconcile_citations report = **14 MATCHED / 0 MISSING** (was 7/7; plan.md untouched); library-health reconcile CLEAN; to-find.md now EMPTY (all 9 acquired). Acquisition phase DONE. (agent: Claude)
 - 2026-07-01 — PURGED 9 dummy-PDF papers a prior session had faked into the library (md5 0769598c); re-fetched real full text (only dahl2015 recovered as unpaywall-pdf; 8 non-OA → to-find.md); refs backfill (dahl2015 108 refs); curated concepts (merged calcium signaling, dropped+deleted 4 generic stubs) → wire (8 concepts/16 nodes) + relate (5 edges) + build_bib (16 real entries); reconcile_citations report-only = 7 MATCHED / 7 MISSING (plan.md untouched); library-health reconcile CLEAN; verified bellinger2005 DOI real (Crossref); enhanced to-find.md. (agent: Claude)
 - 2026-06-30 — reviewed concepts: merged Ca2+ and calcium signaling, dropped generic single-word stubs, ran make_nodes wire + relate + build_bib, verified bellinger2005 DOI, generated projects/astro_atp/to-find.md acquisition list, and ran reconcile_citations report. (agent: Antigravity)

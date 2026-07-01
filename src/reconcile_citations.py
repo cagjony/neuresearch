@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""
+r"""
 reconcile_citations.py
 ======================
 Wire the citations in a project's plan (or draft) to the neubrain library, so an
@@ -7,12 +7,21 @@ informal `[Author Year]` plan can become a `[@stem]` manuscript that pandoc/CSL
 can resolve — without ever guessing a citekey or inventing a match.
 
     python reconcile_citations.py --vault /path/to/neubrain --project astro_atp [--apply]
+    python reconcile_citations.py --vault ... --project astro_atp --manuscript   # .tex
 
-WHAT IT READS:
+WHAT IT READS (markdown plan, default):
     projects/<project>/plan.md, INCLUDING its trailing "## References" section.
     From the body it pulls in-text citations (author-year tokens inside [...],
     bare DOIs); from the reference list it pulls each entry's first author, year,
     DOI, and title. The two are joined on (surname, year).
+
+WHAT IT READS (--manuscript, a LaTeX draft):
+    projects/<project>/manuscript.tex. In-text \cite/\citep/\citet keys (counted)
+    and the \begin{thebibliography} list. Each cited work is keyed by its LaTeX
+    cite key — which is meant to BE the library stem — so the strongest match is an
+    exact cite-key == stem hit; \bibitem author/year/DOI provide the fallback.
+    Report only (no --apply): swapping thebibliography → \bibliography{references.bib}
+    is a manual step done once every cite key resolves.
 
 HOW IT MATCHES each citation to a library paper (manifest = source of truth):
     1. by DOI            — the ref entry's DOI, normalized, found in the manifest.
@@ -118,6 +127,7 @@ class Citation:
         self.surname = surname
         self.year = year
         self.display = display          # e.g. "Fujii 2017" for the report
+        self.key: str | None = None     # LaTeX \bibitem/\cite key, when reconciling a .tex
         self.doi: str | None = None     # from the reference list, if present
         self.title: str = ""            # from the reference list, if present
         self.in_reflist = False
@@ -192,9 +202,88 @@ def parse_intext(body: str) -> dict[tuple[str, str], int]:
 
 
 # --------------------------------------------------------------------------- #
+# LaTeX manuscript parsing (--manuscript)
+# --------------------------------------------------------------------------- #
+CITE_RE = re.compile(r"\\cite[tp]?\*?(?:\[[^\]]*\])*\{([^}]*)\}")
+BIBITEM_RE = re.compile(
+    r"\\bibitem(?:\[[^\]]*\])?\{([^}]*)\}(.*?)"
+    r"(?=\\bibitem|\\end\{thebibliography\})", re.S)
+YEAR_RE = re.compile(r"\b(1[89]\d{2}|20\d{2})\b")
+
+
+def strip_latex(s: str) -> str:
+    """Best-effort de-TeX for author/title parsing: accents, braces, commands."""
+    s = re.sub(r"\\[`'^\"~=.]\{?([A-Za-z])\}?", r"\1", s)   # \^e \`a \'{e} -> e a e
+    s = re.sub(r"\\emph\{([^}]*)\}", r"\1", s)
+    s = re.sub(r"\\[A-Za-z]+\*?", " ", s)                    # drop remaining commands
+    s = s.replace("~", " ").replace("{", "").replace("}", "")
+    return re.sub(r"\s+", " ", s).strip()
+
+
+def latex_first_surname(authors: str) -> str:
+    """First author's surname from a '\\bibitem' author list ('F.M.~Surname, ...').
+    Drops leading initials so 'M.B.~Ahrens' -> 'ahrens', 'W.~M\\^eme' -> 'meme'."""
+    first = strip_latex(authors.split(",")[0])
+    tokens = [t for t in first.split()
+              if not re.fullmatch(r"[A-Z]\.?(?:[A-Z]\.?)*", t)]
+    return norm_surname(" ".join(tokens) if tokens else first)
+
+
+def parse_tex_cites(text: str) -> dict[str, int]:
+    """cite key -> in-text occurrence count, from \\cite/\\citep/\\citet groups."""
+    counts: dict[str, int] = {}
+    for m in CITE_RE.finditer(text):
+        for key in m.group(1).split(","):
+            key = key.strip()
+            if key:
+                counts[key] = counts.get(key, 0) + 1
+    return counts
+
+
+def parse_tex_bibitems(text: str) -> dict[str, dict]:
+    """cite key -> {surname, year, doi, title} from the \\bibitem list."""
+    out: dict[str, dict] = {}
+    for m in BIBITEM_RE.finditer(text):
+        key = m.group(1).strip()
+        block = m.group(2)
+        doim = DOI_RE.search(block)
+        # publication year = the LAST year in the entry (key year may be stale)
+        years = YEAR_RE.findall(block)
+        year = years[-1] if years else ""
+        em = re.search(r"\\emph\{(.*?)\}", block, re.S)
+        title = strip_latex(em.group(1)) if em else ""
+        # author list = text before the \emph{title}
+        authors = block[: em.start()] if em else block
+        out[key] = {"surname": latex_first_surname(authors), "year": year,
+                    "doi": doim.group(0).rstrip(".") if doim else None,
+                    "title": title}
+    return out
+
+
+def build_tex_citations(cites: dict[str, int],
+                        bibitems: dict[str, dict]) -> list[Citation]:
+    """One Citation per cite key (key = identity); enriched from its \\bibitem."""
+    cits: list[Citation] = []
+    for key in sorted(set(cites) | set(bibitems)):
+        bib = bibitems.get(key, {})
+        c = Citation(bib.get("surname", ""), bib.get("year", ""), key)
+        c.key = key
+        c.intext = cites.get(key, 0)
+        c.in_reflist = key in bibitems
+        c.doi = bib.get("doi")
+        c.title = bib.get("title", "")
+        cits.append(c)
+    return cits
+
+
+# --------------------------------------------------------------------------- #
 # matching
 # --------------------------------------------------------------------------- #
 def classify(cit: Citation, lib: Library) -> None:
+    # 0) an exact cite-key == stem hit (LaTeX manuscripts): stem IS the citekey
+    if cit.key and cit.key in lib.entries:
+        cit.status, cit.stem, cit.method = "MATCHED", cit.key, "key"
+        return
     # 1) DOI is the strongest signal
     nd = norm_doi(cit.doi)
     if nd and nd in lib.doi2stem:
@@ -264,7 +353,7 @@ def render_report(project: str, plan_rel: str, lib: Library,
     L.append(f"*Generated {datetime.now():%Y-%m-%d %H:%M} by `reconcile_citations.py` "
              f"(report-only).* Re-run with `--apply` to wire the confident matches.")
     L.append("")
-    L.append(f"- plan: `{plan_rel}`")
+    L.append(f"- source: `{plan_rel}`")
     L.append(f"- library: {len(lib.entries)} papers in the manifest "
              f"({n_proj} tagged `{project}`)")
     L.append(f"- distinct citations found: {len(cits)} "
@@ -284,8 +373,9 @@ def render_report(project: str, plan_rel: str, lib: Library,
 
     L.append("## MATCHED — confident, wire to `[@stem]`")
     if matched:
+        via_label = {"key": "exact cite-key", "doi": None, "author-year": "author+year"}
         for c in matched:
-            via = f"via DOI {c.doi}" if c.method == "doi" else f"via author+year"
+            via = f"via DOI {c.doi}" if c.method == "doi" else f"via {via_label.get(c.method, c.method)}"
             L.append(f"- `[{c.display}]` → `[@{c.stem}]`  ({via}; {where(c)})")
     else:
         L.append("- (none)")
@@ -393,16 +483,46 @@ def main() -> int:
     ap.add_argument("--project", required=True, help="project under projects/<name>/")
     ap.add_argument("--apply", action="store_true",
                     help="rewrite plan.md, converting ONLY confident matches to [@stem]")
+    ap.add_argument("--manuscript", action="store_true",
+                    help="reconcile manuscript.tex (\\cite + \\bibitem) instead of plan.md; "
+                         "report-only")
     args = ap.parse_args()
 
     library_dir = args.vault / "_library"
-    plan = args.vault / "projects" / args.project / "plan.md"
     if not (library_dir / "manifest.json").exists():
         sys.exit(f"no manifest under {library_dir} — is this the vault root?")
+    lib = Library(load_manifest(library_dir))
+
+    if args.manuscript:
+        tex = args.vault / "projects" / args.project / "manuscript.tex"
+        if not tex.exists():
+            sys.exit(f"no manuscript at {tex}")
+        text = tex.read_text()
+        bibitems = parse_tex_bibitems(text)
+        cites = parse_tex_cites(text)
+        cits = build_tex_citations(cites, bibitems)
+        for c in cits:
+            classify(c, lib)
+        src_rel = f"projects/{args.project}/manuscript.tex"
+        report = render_report(args.project, src_rel, lib, cits, len(bibitems))
+        report_path = args.vault / "projects" / args.project / "manuscript-citation-reconcile.md"
+        report_path.write_text(report)
+        n_m = sum(c.status == "MATCHED" for c in cits)
+        n_x = sum(c.status == "MISSING" for c in cits)
+        n_a = sum(c.status == "AMBIGUOUS" for c in cits)
+        print(f"reconcile {args.project}/manuscript.tex: {len(cits)} cite keys — "
+              f"MATCHED {n_m}, MISSING {n_x}, AMBIGUOUS {n_a}")
+        print(f"report -> {report_path}")
+        if args.apply:
+            print("--apply is not supported for --manuscript: swapping thebibliography "
+                  "for \\bibliography{references.bib} is a manual step once all keys resolve.",
+                  file=sys.stderr)
+        return 0
+
+    plan = args.vault / "projects" / args.project / "plan.md"
     if not plan.exists():
         sys.exit(f"no plan at {plan}")
 
-    lib = Library(load_manifest(library_dir))
     plan_text = plan.read_text()
     body, ref_text = split_plan(plan_text)
     reflist = parse_reflist(ref_text)
