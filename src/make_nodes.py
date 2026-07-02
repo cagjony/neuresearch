@@ -165,7 +165,8 @@ def _yaml_scalar(v: str) -> str:
 
 
 def build_frontmatter(stem: str, doi: str, year: str, authors: str, source: str,
-                      refs_source: str, projects: list[str], cited_dois: list[str]) -> str:
+                      refs_source: str, projects: list[str], cited_dois: list[str],
+                      role: str = "") -> str:
     doi_val = _yaml_scalar(doi) if doi else '""'
     year_val = _yaml_scalar(year) if year else '""'
     authors_val = _yaml_scalar(authors) if authors else '""'
@@ -177,6 +178,11 @@ def build_frontmatter(stem: str, doi: str, year: str, authors: str, source: str,
              f"authors: {authors_val}",
              f"source: {source}",
              f"refs_source: {refs_source}"]
+    # role mirrors the manifest's role field so Dataview dashboards can split the
+    # citeable library from the novelty-screen corpus. Emitted only when set, so
+    # ordinary citeable nodes stay unchanged (a missing role == citeable).
+    if role:
+        lines.append(f"role: {role}")
     lines.append("projects:" if projects else "projects: []")
     for p in projects:
         lines.append(f"  - {p}")
@@ -319,7 +325,8 @@ def do_propose(args) -> int:
         label = author_label(data["surname"], stem)
         fm = build_frontmatter(stem, entry.get("doi", ""), year, label,
                                entry.get("source_of_fulltext", ""), refs_source,
-                               entry.get("projects", []), data["cited_dois"])
+                               entry.get("projects", []), data["cited_dois"],
+                               entry.get("role", ""))
         status = write_node(lit, stem, fm, label, year, data["title"], data["abstract"])
         n_new += status == "new"
         n_refreshed += status == "refreshed"

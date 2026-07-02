@@ -164,6 +164,10 @@ view at once.
   SAFE** — none use extracellular ATP as a *bifurcation/control parameter* in a Ca²⁺-wave
   model; they use ATP as an intracellular energy metabolite (coggan2025, jiang2025-SERCA),
   or as an experimental/biological signal (the rest). The novelty claim is intact.
+- **The novelty corpus is now marked `role: "novelty_screen"` in the manifest** (8 tagged;
+  xu2026 on acquisition). `build_bib.py` excludes them from `references.bib` (36 entries),
+  `make_nodes.py` mirrors the role into node frontmatter, `reconcile.py` counts them valid,
+  and the dashboards split citeable vs novelty screen. See `neubrain/AGENTS.md`.
 - **These 9 are the NOVELTY-SEARCH CORPUS, and they BELONG in the library by design.**
   The workflow is: search papers published 2024–2026, check whether any asked the same
   question, keep them all in the library as a record of the search — but a paper only
@@ -245,6 +249,15 @@ view at once.
   real fetches — purge the fakes (entries + by_id + files + nodes) before re-fetching.
 
 ### SESSION LOG  (newest first; agent appends one line per session)
+- 2026-07-02 — FORMALIZED the novelty corpus with a `role: "novelty_screen"` manifest field.
+  Tagged the 8 present novelty papers (xu2026 to be tagged on acquisition). Code: `build_bib.py`
+  now EXCLUDES role=novelty_screen from `references.bib` (belt-and-suspenders; **44→36 entries**,
+  0 novelty stems); `make_nodes.py` mirrors `role` into each lit node's frontmatter (only when
+  set — citeable nodes unchanged) so Dataview can split the views; `reconcile.py` reports a
+  **Citeable / novelty-screen = 38 / 8** count and treats the corpus as valid (CLEAN, not drift).
+  Dashboards: `projects/astro_atp/dashboard.md` split into "Citeable library" vs "Novelty screen";
+  master `dashboard.md` gained a Role column + citeable-vs-screen tally. `AGENTS.md` documents the
+  field. Curated 7 concepts untouched. Both repos pushed. (agent: Claude)
 - 2026-07-02 — WIRED the novelty corpus + shipped README/AGENTS. `make_nodes wire` created
   the 8 novelty `lit/` nodes keeping the curated **7 concepts** (0 stubs — rejected the
   disease-keyword balloon after reviewing a regenerated `_proposed.md`); `relate` (8 edges),

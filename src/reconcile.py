@@ -46,6 +46,7 @@ class Findings:
     n_manifest: int = 0
     n_xml_on_disk: int = 0
     n_nodes: int = 0
+    n_novelty: int = 0                                          # role == novelty_screen
 
     missing_files: list[str] = field(default_factory=list)      # in manifest, not on disk
     orphan_xml: list[str] = field(default_factory=list)         # on disk, not in manifest
@@ -77,6 +78,10 @@ def scan(vault: Path) -> Findings:
     manifest = load_manifest(library)
     entries = manifest.get("entries", {})
     f.n_manifest = len(entries)
+    # Novelty-screen papers (2024-26 prior-art corpus) are VALID library members
+    # kept deliberately uncited — a node without a citation is expected here, never
+    # drift. See neubrain/AGENTS.md, "Library superset of bibliography".
+    f.n_novelty = sum(1 for e in entries.values() if e.get("role") == "novelty_screen")
 
     # files actually present in the archive
     xml_stems = {p.name.removesuffix(".tei.xml").removesuffix(".xml")
@@ -141,6 +146,8 @@ def render(f: Findings) -> str:
         f"- Manifest entries: **{f.n_manifest}**",
         f"- XML files on disk: **{f.n_xml_on_disk}**",
         f"- Literature nodes (`lit/`): **{f.n_nodes}**",
+        f"- Citeable / novelty-screen: **{f.n_manifest - f.n_novelty}** / "
+        f"**{f.n_novelty}**  (novelty-screen = uncited prior-art corpus, valid — not drift)",
         "",
         "## Integrity",
         "",

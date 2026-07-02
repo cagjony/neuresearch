@@ -149,8 +149,24 @@ def select_entries(manifest: dict, project: str | None) -> list[str]:
     for stem, entry in manifest.get("entries", {}).items():
         if project and project not in entry.get("projects", []):
             continue
+        # Novelty-screen papers are the 2024-26 prior-art corpus (see neubrain/
+        # AGENTS.md, "Library superset of bibliography"): kept in the library but
+        # NEVER citeable, so they are excluded from references.bib entirely. This
+        # is belt-and-suspenders — BibTeX already omits uncited entries — and keeps
+        # the .bib to citeable papers only.
+        if entry.get("role") == "novelty_screen":
+            continue
         stems.append(stem)
     return sorted(stems)
+
+
+def novelty_screen_stems(manifest: dict, project: str | None) -> list[str]:
+    """Stems excluded from the .bib because role == novelty_screen (for reporting)."""
+    return sorted(
+        stem for stem, entry in manifest.get("entries", {}).items()
+        if (not project or project in entry.get("projects", []))
+        and entry.get("role") == "novelty_screen"
+    )
 
 
 def default_out(vault: Path, project: str | None) -> Path:
@@ -180,6 +196,10 @@ def main() -> int:
 
     manifest = load_manifest(library)
     stems = select_entries(manifest, args.project)
+    excluded = novelty_screen_stems(manifest, args.project)
+    if excluded:
+        print(f"excluding {len(excluded)} novelty_screen paper(s) from the .bib: "
+              f"{', '.join(excluded)}")
     if not stems:
         scope = f" for project '{args.project}'" if args.project else ""
         print(f"no entries to build{scope}.")
