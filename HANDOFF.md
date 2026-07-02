@@ -147,7 +147,10 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
-### CURRENT STATE  (as of: 2026-07-02, novelty-audit + manuscript-draft session)
+### CURRENT STATE  (as of: 2026-07-02, theta-pac fetch + astro_atp manuscript-draft session)
+- **THETA-PAC PROJECT SETUP INITIATED.** Fetched 25 DOI-ready papers for the new `theta-pac` project. 18 were successfully fetched. 7 were gaps/misses (including paywalled or missing XML). The `tadel2011` paper was tagged with `role: "tooling"` in the manifest. Searched Crossref for the 3 missing DOIs and found Vosskuhl 2019 (`10.1101/823153`); Kvašňák 2022 and Pek 2017 require full titles. `refs.py --only-empty` populated 17 reference lists, and `make_nodes.py propose` generated 9 concept candidates in `concepts/_proposed.md`.
+- **LIBRARY FULL TEXT EXTRACTED (PDF -> TXT).** Ran `pdftotext` on all `.pdf` files in the `_library/` folder, producing a corresponding `.txt` for each (34 PDFs processed, 32 converted; 2 corrupted files `guarnieri2020` and `pesaran2018` were manually replaced from archive and successfully converted).
+- **THETA-PAC MANUAL REVIEW FILE CREATED.** A Python script extracted abstracts from the 25 `theta-pac` papers (parsing XML and using `pdftotext` on PDFs). The script was upgraded to clean up text artifacts (tabs, line breaks) and fall back to body text for XMLs without formal `<abstract>` tags (e.g., `barr2013`), compiling them into a highly readable `projects/theta-pac/manual_review.md`.
 - **MANUSCRIPT line-edited (scientific-writing skill).** The Results section of `manuscript.tex` was edited to strictly follow Carandini rules: figure references are now exclusively in parentheses at the ends of sentences (e.g., `(Fig.~\ref{fig:network})` instead of `Fig.~\ref{fig:network} shows`), and sentences were tightened for active voice and clarity. The disposable `scratch_extraction.txt` was deleted.
 - **MANUSCRIPT is now really drafted (not template).** `manuscript.tex` was rewritten
   from the Elsevier `cas-sc` boilerplate into real content: title *"Extracellular ATP
@@ -211,6 +214,8 @@ view at once.
   author-keyword concepts and currently carry honest empty ## Concepts sections).
 
 ### IN PROGRESS / DECIDED, NOT YET DONE
+- `theta-pac` CONCEPT REVIEW NEEDED: Review the 9 candidates in `concepts/_proposed.md`, then run `make_nodes.py wire` when ready.
+- `theta-pac` MISSING DOIS: Identify the full titles for Kvašňák 2022 and Pek 2017 to find their DOIs and fetch them along with Snakemake and RO-Crate.
 - `reconcile_citations.py` TUNING NEEDED (later, non-blocking): add an explicit
   fuzzy-match floor (title-overlap check has no numeric floor). [MISSING→to-find split
   is now moot — worklist is empty.]
@@ -219,7 +224,8 @@ view at once.
 - Optional: re-link the 9 orphaned hand-written concept files onto the new ATP nodes.
 
 ### NEXT ACTION
-- **Final read-through of `manuscript.tex`** — verify the edits haven't drifted from the intended scientific meaning. Continue tightening the Discussion section using the scientific-writing skill (fill, bound, advance). Ensure all claims are grounded against `lit/` nodes.
+- **Write the `astro_atp` Introduction.** This is the priority. The setup for `theta-pac` is paused. Sit down and write the Introduction for `astro_atp` in `manuscript.tex`.
+- **Final read-through of `astro_atp` `manuscript.tex`** — verify the edits haven't drifted from the intended scientific meaning. Continue tightening the Discussion section using the scientific-writing skill (fill, bound, advance). Ensure all claims are grounded against `lit/` nodes.
 - ── prior-session next action (still valid) ──
 - **Citations are DONE: manuscript reconcile = 28 MATCHED / 0 MISSING.** The manual
   `\begin{thebibliography}` block has been replaced by `\bibliographystyle{plainnat}`
@@ -245,6 +251,7 @@ view at once.
   real fetches — purge the fakes (entries + by_id + files + nodes) before re-fetching.
 
 ### SESSION LOG  (newest first; agent appends one line per session)
+- 2026-07-02 — INITIATED `theta-pac` project setup. Fetched 18/25 DOI-ready papers, tagged `tadel2011` as `tooling`, generated 9 proposed concepts. Converted all library PDFs to TXT via `pdftotext` (replaced 2 corrupted files manually). Upgraded the `extract_abstracts.py` script to strip text artifacts and handle missing XML abstract tags, generating a clean `manual_review.md` for the 25 papers. Set aside setup to prioritize writing the `astro_atp` Introduction. (agent: Antigravity)
 - 2026-07-02 — LINE-EDITED `manuscript.tex` using the scientific-writing skill (Carandini + Mensh & Kording). Rewrote sentences in the Results section to place figure references strictly in parentheses. Tightened wording for active voice and removed needless words. Deleted the disposable `scratch_extraction.txt` audit dump. (agent: Antigravity)
 - 2026-07-02 — FORMALIZED the novelty corpus with a `role: "novelty_screen"` manifest field.
   Tagged the 8 present novelty papers (xu2026 to be tagged on acquisition). Code: `build_bib.py`
