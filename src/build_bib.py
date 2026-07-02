@@ -78,6 +78,49 @@ def rekey(bibtex: str, stem: str) -> str:
     return new if n else bibtex
 
 
+# Crossref BibTeX can carry XML/MathML fragments, HTML entities, smart
+# punctuation, and non-Latin symbols (e.g. Greek β) that pdflatex's utf8
+# inputenc cannot typeset — so the generated .bib fails to compile under a plain
+# pdflatex + bibtex workflow. Sanitize those. Latin accents (à, ü, ç, ś, …) are
+# LEFT as UTF-8 on purpose: they typeset fine under T1/utf8 and are real names.
+_TAG_RE = re.compile(r"<[^>]+>")
+_ENTITIES = {"&amp;": r"\&", "&lt;": "<", "&gt;": ">", "&quot;": '"',
+             "&apos;": "'", "&#39;": "'", "&nbsp;": " "}
+_UNICODE = {
+    # smart punctuation -> ASCII / LaTeX dashes
+    "“": '"', "”": '"', "‘": "'", "’": "'",
+    "‐": "-", "‑": "-", "–": "--", "—": "---",
+    # Greek letters that show up in titles -> math mode
+    "α": r"$\alpha$", "β": r"$\beta$", "γ": r"$\gamma$",
+    "δ": r"$\delta$", "ε": r"$\epsilon$", "κ": r"$\kappa$",
+    "λ": r"$\lambda$", "μ": r"$\mu$", "σ": r"$\sigma$",
+    "τ": r"$\tau$", "ω": r"$\omega$", "Δ": r"$\Delta$",
+    "Ω": r"$\Omega$",
+    # misc symbols
+    "°": r"$^\circ$", "±": r"$\pm$", "×": r"$\times$",
+    "⋅": r"$\cdot$",
+}
+
+
+# The url/DOI fields carry raw underscores (e.g. book-chapter DOIs like
+# .../978-3-030-00817-8_5). Style macros such as plainnat's \doi print them as
+# plain text, where '_' triggers "Missing $ inserted" unless hyperref is loaded.
+# Drop both fields — the DOI still lives in the manifest (the source of truth);
+# the .bib is derived and only needs to typeset.
+_URLDOI_RE = re.compile(r",?\s*(?:url|doi)\s*=\s*\{[^}]*\}", re.I)
+
+
+def latex_sanitize(bibtex: str) -> str:
+    """Make a Crossref BibTeX entry safe for a pdflatex + bibtex build."""
+    s = _TAG_RE.sub(" ", bibtex)                 # drop <mml:...> etc. (pad w/ space)
+    s = _URLDOI_RE.sub("", s)                     # drop url/DOI (underscore landmines)
+    for k, v in _ENTITIES.items():
+        s = s.replace(k, v)
+    for k, v in _UNICODE.items():
+        s = s.replace(k, v)
+    return re.sub(r"[ \t]{2,}", " ", s)          # collapse spaces the strip introduced
+
+
 def minimal_entry(stem: str, entry: dict) -> str:
     """A bare @article built ONLY from manifest metadata; unknowns left blank.
 
@@ -176,7 +219,7 @@ def main() -> int:
             print(f"[minimal ] {stem}  (no DOI)")
 
         if block:
-            blocks.append(block.rstrip())
+            blocks.append(latex_sanitize(block).rstrip())
         else:
             n_skipped += 1
             print(f"[skip    ] {stem}")

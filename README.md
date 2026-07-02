@@ -21,25 +21,19 @@ layer that gets the right literature in front of that workflow.
 
 ## The pipeline
 
-```
-planyourscience plan
-        │   new_project.py  → slots projects/<name>/ (plan.md, manuscript.md, references.bib, papers.txt, archive/)
-        ▼
-  supporting literature
-        │   fetch_papers.py → open-access full text into _library/ (manifest = source of truth)
-        │   ingest.py       → absorb a manually-acquired PDF as a library citizen
-        ▼
-   a linked library
-        │   refs.py         → backfill cited_dois (Crossref/GROBID)
-        │   make_nodes.py   → lit/ nodes (claim summary + concepts) — propose, then wire
-        │   relate.py       → ## Related: bibliographic-coupling + direct-citation edges
-        │   suggest.py      → discover NEW relevant papers → projects/<name>/suggestions.md
-        ▼
-   draft + review  ◀── the core
-        │   scientific-writing skill (drafting + review modes), grounded in
-        │   [@carandini2022] and [@mensh2017]
-        ▼
-     a cited draft   (projects/<name>/manuscript.md)
+```mermaid
+flowchart TD
+    A["planyourscience plan"] --> B["new_project.py<br/>scaffolds projects/&lt;name&gt;/<br/>(plan.md · manuscript.md · references.bib · papers.txt · archive/)"]
+    B --> C["fetch_papers.py &nbsp;·&nbsp; ingest.py<br/>open-access full text &amp; manual PDFs<br/>→ _library/ &nbsp;(manifest = source of truth)"]
+    C --> D["refs.py &nbsp;·&nbsp; make_nodes.py &nbsp;·&nbsp; relate.py &nbsp;·&nbsp; suggest.py<br/>→ a linked library (lit/ nodes + citation graph)"]
+    D --> E["scientific-writing skill — drafting + review<br/>grounded in carandini2022 &amp; mensh2017"]:::core
+    E --> F["a cited draft<br/>projects/&lt;name&gt;/manuscript.md"]
+    R(["reconcile.py — audits _library ↔ lit ↔ manifest"]):::check -.-> C
+    R -.-> D
+
+    classDef default fill:#ffffff,stroke:#334155,stroke-width:1.5px,color:#0f172a;
+    classDef core fill:#fff7cc,stroke:#b45309,stroke-width:2px,color:#0f172a;
+    classDef check fill:#eef2ff,stroke:#4338ca,stroke-width:1px,color:#0f172a;
 ```
 
 Health checks run throughout: `reconcile.py` audits `_library/ ↔ lit/ ↔ manifest`,

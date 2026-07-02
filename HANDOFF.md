@@ -147,7 +147,38 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
-### CURRENT STATE  (as of: 2026-07-01)
+### CURRENT STATE  (as of: 2026-07-02, novelty-audit + manuscript-draft session)
+- **MANUSCRIPT is now really drafted (not template).** `manuscript.tex` was rewritten
+  from the Elsevier `cas-sc` boilerplate into real content: title *"Extracellular ATP
+  Drives Spatial Fragmentation in Astrocyte Calcium Waves"*, a written **abstract**, 4
+  real `\highlights`, real `\keywords`, and updated authorship/affiliations (added
+  **Çağatay Aydın, VIB-KU Leuven / Medipol SABITA** as a second corresponding author;
+  removed leftover template `\nonumnote`/footnotes). **natbib switched to `numbers`
+  mode** (was `authoryear,longnamesfirst`) — bibliography is numbered now.
+- **NOVELTY AUDIT DONE — claim holds.** 10 recent (2025–2026) papers an LLM (Llama-3)
+  flagged as possible prior art were fetched: **9 landed in the library** via
+  europepmc-jats (`bai2026 barcelon2026 coggan2025 jiang2025 kaufman2026 schubert2026
+  spagnuolo2026 yang2025 zhu2026`); `xu2026` is paywalled (not fetched). Each was
+  triaged by reading its ATP mentions (extracted to `projects/astro_atp/scratch_extraction.txt`)
+  and written up in **`projects/astro_atp/manual_review.md`** (Turkish). **Verdict: ALL
+  SAFE** — none use extracellular ATP as a *bifurcation/control parameter* in a Ca²⁺-wave
+  model; they use ATP as an intracellular energy metabolite (coggan2025, jiang2025-SERCA),
+  or as an experimental/biological signal (the rest). The novelty claim is intact.
+- **These 9 are the NOVELTY-SEARCH CORPUS, and they BELONG in the library by design.**
+  The workflow is: search papers published 2024–2026, check whether any asked the same
+  question, keep them all in the library as a record of the search — but a paper only
+  enters the printed bibliography if it is actually cited. So the 9 are correctly tagged
+  `projects:[astro_atp]`; they are deliberately never `\cite`d and thus never appear in the
+  rendered bibliography (numbered natbib only prints cited keys). This is intended, NOT an
+  error to undo — do not untag or delete them.
+- **Only loose end: `lit/` nodes.** `reconcile.py` reports **8 MISSING NODES** (the 8 new
+  ones; `jiang2025` already had a node) because manifest members without `lit/` notes read
+  as drift. This is a nodes-only gap, cosmetic to the manuscript. Clear it by generating
+  the 8 nodes (does NOT put them in the printed bib) — see NEXT ACTION. `references.bib`
+  is 36 entries and the manuscript's citations were CLEAN (28 MATCHED / 0 MISSING) last
+  session.
+
+### CURRENT STATE  (earlier, as of: 2026-07-01)
 - **ALL 9 PREVIOUSLY-MISSING PAPERS NOW INGESTED — `to-find.md` is EMPTY.** The
   full acquisition worklist (the 8 non-OA papers + `bellinger2005`) has been acquired
   and ingested as real library citizens via `ingest.py --doi` (real PDFs in
@@ -174,6 +205,12 @@ view at once.
   author-keyword concepts and currently carry honest empty ## Concepts sections).
 
 ### IN PROGRESS / DECIDED, NOT YET DONE
+- **Generate `lit/` nodes for the 8 novelty papers to clear the reconcile drift** (they
+  stay UNcited → never in the printed bib; this only fixes the manifest↔lit consistency
+  check). `make_nodes propose` → *review `concepts/_proposed.md` by hand* (they carry JATS
+  author-keywords, so propose WILL suggest concept stubs; the curated set is a deliberate
+  **7** — don't let it balloon) → `wire` → `relate` → `reconcile.py` back to CLEAN. No
+  untagging, no deletion — the novelty corpus is meant to live in the library.
 - `reconcile_citations.py` TUNING NEEDED (later, non-blocking): add an explicit
   fuzzy-match floor (title-overlap check has no numeric floor). [MISSING→to-find split
   is now moot — worklist is empty.]
@@ -182,6 +219,17 @@ view at once.
 - Optional: re-link the 9 orphaned hand-written concept files onto the new ATP nodes.
 
 ### NEXT ACTION
+- **(Optional, cosmetic) generate the 8 `lit/` nodes** for the novelty corpus to take
+  `reconcile.py` back to CLEAN (see IN PROGRESS). This does NOT add them to the printed
+  bibliography — they stay in the library as the recorded 2024–2026 novelty search, uncited.
+  Safe to commit as-is without this; it's a housekeeping step, not a blocker.
+- **Continue line-editing `manuscript.tex`** — the abstract/title/highlights are now
+  real; keep tightening Background/Results with the scientific-writing skill (Carandini +
+  Mensh & Kording): CCC at every scale, one-contribution framing, interpret-don't-restate.
+  Ground every new/changed citation against `lit/` nodes.
+- Housekeeping: `scratch_extraction.txt` is disposable scratch (ATP-mention dump for the
+  audit) — keep or gitignore; `manual_review.md` is the audit record worth keeping.
+- ── prior-session next action (still valid) ──
 - **Citations are DONE: manuscript reconcile = 28 MATCHED / 0 MISSING.** The manual
   `\begin{thebibliography}` block has been replaced by `\bibliographystyle{plainnat}`
   + `\bibliography{references}` (natbib author-year). Build workflow is now
@@ -206,6 +254,18 @@ view at once.
   real fetches — purge the fakes (entries + by_id + files + nodes) before re-fetching.
 
 ### SESSION LOG  (newest first; agent appends one line per session)
+- 2026-07-02 — NOVELTY AUDIT + MANUSCRIPT DRAFT. Fetched 10 LLM-flagged recent (2025–26)
+  prior-art candidates: 9 into `_library` via europepmc-jats (bai2026 barcelon2026 coggan2025
+  jiang2025 kaufman2026 schubert2026 spagnuolo2026 yang2025 zhu2026), xu2026 paywalled;
+  extracted each paper's ATP mentions → `scratch_extraction.txt` and triaged in
+  `manual_review.md` → **all SAFE** (none use extracellular ATP as a Ca²⁺-wave bifurcation
+  parameter). Rewrote `manuscript.tex` from Elsevier template into real content: title
+  "Extracellular ATP Drives Spatial Fragmentation in Astrocyte Calcium Waves", written
+  abstract, 4 highlights, keywords, added Çağatay Aydın (VIB-KU Leuven) as 2nd corresponding
+  author, natbib→numbers mode. The 9 novelty papers are the intended 2024–2026 novelty-search
+  corpus: they stay tagged astro_atp in the library but are deliberately uncited (never in the
+  printed bib). Only residue is a cosmetic reconcile drift (8 missing `lit/` nodes) — optional
+  to clear next session; no untagging/deletion. (agent: Claude, reviewing user's work)
 - 2026-07-02 — RESOLVED the last 4 manuscript citations → **28 MATCHED / 0 MISSING**: dropped silva2019 (reworded intro sentence to bai2024; removed from a 4-cite group) + ahrens2024 (Background → nowacka2025), removing both `\bibitem`s; ingested the two split book-chapter PDFs (de2019 [ingest auto-stemmed De Pittà→`de2019`, aligned manuscript key], lallouette2019), gave both `pdftotext` text layers; refs/make_nodes(propose+wire, 7 concepts/36 nodes)/relate/build_bib (**36 Crossref entries**); library-health CLEAN. **Replaced the manual `thebibliography` block with `\bibliographystyle{plainnat}`+`\bibliography{references}`** (fixed a self-inflicted `re.sub` `\b`→backspace bug; file verified control-char-clean). (agent: Claude)
 - 2026-07-02 — INGESTED 5 manually-supplied PDFs (falcke2000, peng2026, nimmerjahn2015, cotrina2000, scemes2006) after identifying each by content + confirming DOIs; STOPPED on 3 (depitta2019/lallouette2019 = whole-book PDF not chapters; silva2019 = no DOI) + ahrens2024 (no PDF). Gave all 14 PDF-only papers a `pdftotext -layout` .txt layer (`fulltext_txt: true` in manifest; none <5000 chars → no scans; `_library/*.txt` gitignored). Curated concepts to **7** (merged Ca2+/calcium encoding/intracellular calcium signaling → [[calcium signaling]]; kept 6 de2012 specifics; dropped 8 generic; deleted empty `calcium encoding.md`); wire (7 concepts/34 nodes) + relate (5 edges) + build_bib (**34 Crossref entries, 0 minimal**). Manuscript reconcile **26 MATCHED / 4 MISSING**; library-health CLEAN. (agent: Claude)
 - 2026-07-01 — MANUSCRIPT citation reconcile (colleague's `manuscript.tex`, 30 \cite keys): renamed 4 mismatched keys to library stems (verkhratsky2017→verkhratsky2018, zonca2024→zonca2025, barel2018→bar2018, meme2004→mme2004); **built `--manuscript` mode into `reconcile_citations.py`** (parses \cite + \bibitem, exact cite-key==stem match, report → `manuscript-citation-reconcile.md`; plan.md path regression-clean); discovered DOIs for the 13 missing via Crossref; `fetch_papers` grabbed **4 real OA** (bowser2007, goenaga2023, hashioka2014, skupin2008) + refs/nodes/relate/build_bib (29 bib entries); reconcile went **17→21 MATCHED / 9 MISSING**; library-health CLEAN; rewrote `to-find.md` with the 9 outstanding (all need manual PDFs — paywalled/OA-blocked/preprint/no-DOI). Bibliography swap deferred until 30/0. (agent: Claude)
