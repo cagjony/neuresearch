@@ -7,13 +7,20 @@ informal `[Author Year]` plan can become a `[@stem]` manuscript that pandoc/CSL
 can resolve — without ever guessing a citekey or inventing a match.
 
     python reconcile_citations.py --vault /path/to/neubrain --project astro_atp [--apply]
-    python reconcile_citations.py --vault ... --project astro_atp --manuscript   # .tex
+    python reconcile_citations.py --vault ... --project astro_atp --manuscript      # .tex
+    python reconcile_citations.py --vault ... --project theta-pac --manuscript-md   # .md
 
 WHAT IT READS (markdown plan, default):
     projects/<project>/plan.md, INCLUDING its trailing "## References" section.
     From the body it pulls in-text citations (author-year tokens inside [...],
     bare DOIs); from the reference list it pulls each entry's first author, year,
     DOI, and title. The two are joined on (surname, year).
+
+WHAT IT READS (--manuscript-md, a Markdown draft):
+    projects/<project>/manuscript.md — same shape as a plan (author-year tokens in
+    [...] + a trailing "## References" list), for projects that draft in Markdown and
+    have no separate plan.md. Report-only -> manuscript-citation-reconcile.md; the
+    MISSING list IS the fetch list (each carries the reference's DOI).
 
 WHAT IT READS (--manuscript, a LaTeX draft):
     projects/<project>/manuscript.tex. In-text \cite/\citep/\citet keys (counted)
@@ -486,6 +493,9 @@ def main() -> int:
     ap.add_argument("--manuscript", action="store_true",
                     help="reconcile manuscript.tex (\\cite + \\bibitem) instead of plan.md; "
                          "report-only")
+    ap.add_argument("--manuscript-md", action="store_true",
+                    help="reconcile manuscript.md (Markdown [Author Year] + ## References) "
+                         "instead of plan.md; report-only")
     args = ap.parse_args()
 
     library_dir = args.vault / "_library"
@@ -517,6 +527,32 @@ def main() -> int:
             print("--apply is not supported for --manuscript: swapping thebibliography "
                   "for \\bibliography{references.bib} is a manual step once all keys resolve.",
                   file=sys.stderr)
+        return 0
+
+    if args.manuscript_md:
+        md = args.vault / "projects" / args.project / "manuscript.md"
+        if not md.exists():
+            sys.exit(f"no manuscript at {md}")
+        md_text = md.read_text()
+        body, ref_text = split_plan(md_text)
+        reflist = parse_reflist(ref_text)
+        intext = parse_intext(body)
+        cits = build_citations(intext, reflist)
+        for c in cits:
+            classify(c, lib)
+        src_rel = f"projects/{args.project}/manuscript.md"
+        report = render_report(args.project, src_rel, lib, cits, len(reflist))
+        report_path = args.vault / "projects" / args.project / "manuscript-citation-reconcile.md"
+        report_path.write_text(report)
+        n_m = sum(c.status == "MATCHED" for c in cits)
+        n_x = sum(c.status == "MISSING" for c in cits)
+        n_a = sum(c.status == "AMBIGUOUS" for c in cits)
+        print(f"reconcile {args.project}/manuscript.md: {len(cits)} citations — "
+              f"MATCHED {n_m}, MISSING {n_x}, AMBIGUOUS {n_a}")
+        print(f"report -> {report_path}")
+        if args.apply:
+            print("--apply is not supported for --manuscript-md (report-only); the "
+                  "MISSING list is a fetch list, not a rewrite target.", file=sys.stderr)
         return 0
 
     plan = args.vault / "projects" / args.project / "plan.md"

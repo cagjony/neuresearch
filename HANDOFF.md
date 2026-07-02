@@ -148,6 +148,7 @@ view at once.
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
 ### CURRENT STATE  (as of: 2026-07-02, novelty-audit + manuscript-draft session)
+- **MANUSCRIPT line-edited (scientific-writing skill).** The Results section of `manuscript.tex` was edited to strictly follow Carandini rules: figure references are now exclusively in parentheses at the ends of sentences (e.g., `(Fig.~\ref{fig:network})` instead of `Fig.~\ref{fig:network} shows`), and sentences were tightened for active voice and clarity. The disposable `scratch_extraction.txt` was deleted.
 - **MANUSCRIPT is now really drafted (not template).** `manuscript.tex` was rewritten
   from the Elsevier `cas-sc` boilerplate into real content: title *"Extracellular ATP
   Drives Spatial Fragmentation in Astrocyte Calcium Waves"*, a written **abstract**, 4
@@ -218,12 +219,7 @@ view at once.
 - Optional: re-link the 9 orphaned hand-written concept files onto the new ATP nodes.
 
 ### NEXT ACTION
-- **Continue line-editing `manuscript.tex`** — the abstract/title/highlights are now
-  real; keep tightening Background/Results with the scientific-writing skill (Carandini +
-  Mensh & Kording): CCC at every scale, one-contribution framing, interpret-don't-restate.
-  Ground every new/changed citation against `lit/` nodes.
-- Housekeeping: `scratch_extraction.txt` is disposable scratch (ATP-mention dump for the
-  audit) — keep or gitignore; `manual_review.md` is the audit record worth keeping.
+- **Final read-through of `manuscript.tex`** — verify the edits haven't drifted from the intended scientific meaning. Continue tightening the Discussion section using the scientific-writing skill (fill, bound, advance). Ensure all claims are grounded against `lit/` nodes.
 - ── prior-session next action (still valid) ──
 - **Citations are DONE: manuscript reconcile = 28 MATCHED / 0 MISSING.** The manual
   `\begin{thebibliography}` block has been replaced by `\bibliographystyle{plainnat}`
@@ -249,6 +245,7 @@ view at once.
   real fetches — purge the fakes (entries + by_id + files + nodes) before re-fetching.
 
 ### SESSION LOG  (newest first; agent appends one line per session)
+- 2026-07-02 — LINE-EDITED `manuscript.tex` using the scientific-writing skill (Carandini + Mensh & Kording). Rewrote sentences in the Results section to place figure references strictly in parentheses. Tightened wording for active voice and removed needless words. Deleted the disposable `scratch_extraction.txt` audit dump. (agent: Antigravity)
 - 2026-07-02 — FORMALIZED the novelty corpus with a `role: "novelty_screen"` manifest field.
   Tagged the 8 present novelty papers (xu2026 to be tagged on acquisition). Code: `build_bib.py`
   now EXCLUDES role=novelty_screen from `references.bib` (belt-and-suspenders; **44→36 entries**,
