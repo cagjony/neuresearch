@@ -171,12 +171,13 @@ view at once.
   `projects:[astro_atp]`; they are deliberately never `\cite`d and thus never appear in the
   rendered bibliography (numbered natbib only prints cited keys). This is intended, NOT an
   error to undo — do not untag or delete them.
-- **Only loose end: `lit/` nodes.** `reconcile.py` reports **8 MISSING NODES** (the 8 new
-  ones; `jiang2025` already had a node) because manifest members without `lit/` notes read
-  as drift. This is a nodes-only gap, cosmetic to the manuscript. Clear it by generating
-  the 8 nodes (does NOT put them in the printed bib) — see NEXT ACTION. `references.bib`
-  is 36 entries and the manuscript's citations were CLEAN (28 MATCHED / 0 MISSING) last
-  session.
+- **RESOLVED — library is CLEAN again.** The 8 novelty nodes were wired
+  (`make_nodes wire`): curated **7-concept** set kept, **0 stubs created** (rejected the
+  disease-specific keyword balloon — HIV/depression/panic/ischemia/etc.), so the novelty
+  nodes carry honest empty `## Concepts`. `relate` drew 8 edges; `build_bib` → **44
+  entries** (the 8 novelty papers are pooled in `references.bib` but deliberately uncited,
+  so numbered natbib never prints them); `reconcile.py` = **CLEAN**. Manuscript citations
+  were 28 MATCHED / 0 MISSING last session.
 
 ### CURRENT STATE  (earlier, as of: 2026-07-01)
 - **ALL 9 PREVIOUSLY-MISSING PAPERS NOW INGESTED — `to-find.md` is EMPTY.** The
@@ -205,12 +206,6 @@ view at once.
   author-keyword concepts and currently carry honest empty ## Concepts sections).
 
 ### IN PROGRESS / DECIDED, NOT YET DONE
-- **Generate `lit/` nodes for the 8 novelty papers to clear the reconcile drift** (they
-  stay UNcited → never in the printed bib; this only fixes the manifest↔lit consistency
-  check). `make_nodes propose` → *review `concepts/_proposed.md` by hand* (they carry JATS
-  author-keywords, so propose WILL suggest concept stubs; the curated set is a deliberate
-  **7** — don't let it balloon) → `wire` → `relate` → `reconcile.py` back to CLEAN. No
-  untagging, no deletion — the novelty corpus is meant to live in the library.
 - `reconcile_citations.py` TUNING NEEDED (later, non-blocking): add an explicit
   fuzzy-match floor (title-overlap check has no numeric floor). [MISSING→to-find split
   is now moot — worklist is empty.]
@@ -219,10 +214,6 @@ view at once.
 - Optional: re-link the 9 orphaned hand-written concept files onto the new ATP nodes.
 
 ### NEXT ACTION
-- **(Optional, cosmetic) generate the 8 `lit/` nodes** for the novelty corpus to take
-  `reconcile.py` back to CLEAN (see IN PROGRESS). This does NOT add them to the printed
-  bibliography — they stay in the library as the recorded 2024–2026 novelty search, uncited.
-  Safe to commit as-is without this; it's a housekeeping step, not a blocker.
 - **Continue line-editing `manuscript.tex`** — the abstract/title/highlights are now
   real; keep tightening Background/Results with the scientific-writing skill (Carandini +
   Mensh & Kording): CCC at every scale, one-contribution framing, interpret-don't-restate.
@@ -254,6 +245,15 @@ view at once.
   real fetches — purge the fakes (entries + by_id + files + nodes) before re-fetching.
 
 ### SESSION LOG  (newest first; agent appends one line per session)
+- 2026-07-02 — WIRED the novelty corpus + shipped README/AGENTS. `make_nodes wire` created
+  the 8 novelty `lit/` nodes keeping the curated **7 concepts** (0 stubs — rejected the
+  disease-keyword balloon after reviewing a regenerated `_proposed.md`); `relate` (8 edges),
+  `build_bib` (**44 entries**, novelty papers pooled-but-uncited), `reconcile.py` = **CLEAN**.
+  Converted `neuresearch/README.md` pipeline to a **white-background Mermaid** flowchart;
+  added the **library ⊇ bibliography** durable rule to `neubrain/AGENTS.md`; committed the
+  novelty-search tools (`dragnet.py`, `triage_abstracts.py`) + `build_bib.py` LaTeX sanitizer.
+  Both repos pushed. (Left untracked: `recent_candidates.json` raw dump, `test_oa.py` probe.)
+  (agent: Claude)
 - 2026-07-02 — NOVELTY AUDIT + MANUSCRIPT DRAFT. Fetched 10 LLM-flagged recent (2025–26)
   prior-art candidates: 9 into `_library` via europepmc-jats (bai2026 barcelon2026 coggan2025
   jiang2025 kaufman2026 schubert2026 spagnuolo2026 yang2025 zhu2026), xu2026 paywalled;
