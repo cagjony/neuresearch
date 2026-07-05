@@ -147,7 +147,148 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
-### CURRENT STATE  (as of: 2026-07-02, theta-pac fetch + astro_atp manuscript-draft session)
+### CURRENT STATE  (as of: 2026-07-05, theta-pac pipeline COMPLETE — user's 3 citation decisions applied, all steps run)
+- **theta-pac pipeline is DONE.** User resolved the 3 blocking decisions and I ran the whole
+  remaining pipeline. Final reconcile: **manuscript.md 28 citations — MATCHED 27, MISSING 1,
+  AMBIGUOUS 0**; `reconcile.py` library health = **clean**. Manifest **73 entries**.
+- **USER'S 3 DECISIONS (applied):** (a) Vosskuhl → **published 2020** `10.3389/fnhum.2020.536070`;
+  (b) Kvašňák 2022 → `10.3390/bs13010039` ("10 Minutes Frontal 40 Hz tACS…Luck-Vogel Task",
+  verified Crossref, on-topic); (c) Pek → `10.1037/met0000126` (Pek & Flora, **2018** not 2017).
+  All 3 DOIs verified real via Crossref before use.
+- **DOI + in-text fixes applied** to `papers.txt` and `manuscript.md`: Staresina `nn.3886`→`nn.4119`;
+  Vosskuhl "[Unable to verify]"→2020 DOI **and in-text year 2019→2020 ×2**; Pek in-text **2017→2018**;
+  added ref-list entries for Kvašňák and Pek (were in-text-only). Kvašňák in-text year 2022 unchanged (correct).
+- **FETCHED (europepmc-jats):** `staresina2015` (nn.4119, correct paper), `vosskuhl2020`, `kvak2022`
+  — all tagged theta-pac, refs backfilled (staresina 53, vosskuhl 44, kvak 126).
+- **Pek 2018 is a GROUNDED GAP, not in the library — do NOT fabricate.** APA/Psychological Methods
+  returns **403** (paywalled, no OA XML/PDF). Citation is grounded (verified DOI + ref-list entry +
+  correct year); it just has no full text. This is the single remaining reconcile MISSING and is the
+  correct end state per the no-fabrication invariant.
+- **Snakemake (`mlder2021`) was NOT actually missing** — it was already a 2026-07-02 manual ingest
+  (real 1.8MB PDF, DOI `.29032.1`). The earlier reconcile flagged `[Molder 2021]` only because its
+  ref-list line led with initials ("F. Mölder, …") which the parser couldn't associate to the DOI.
+  **Fix = reformatted the ref-list entry to "Mölder, F., …"** (now matches). A stray `.3` fetch this
+  session created a duplicate `mlder2025`; **purged it cleanly** (entry + by_id + pdf, no node existed).
+  papers.txt/manuscript.md Snakemake DOI kept at `.1` to match the existing entry.
+- **CONCEPTS curated + wired:** merged the `[[EEG]]` candidate into the existing
+  `[[electroencephalography]]` hub (now hipp2013 + kvak2022 + vosskuhl2020); merged two tACS keyword
+  variants into one `[[transcranial alternating current stimulation (tACS)]]` stub; added `[[working
+  memory]]` stub. Dropped single-paper granular keywords. `wire` = 11 concepts (2 new stubs, 9 existed),
+  27 nodes; `relate` = 9 edges; `build_bib` = **27 entries** (all Crossref, 0 skipped). staresina2015
+  has honest empty `## Concepts` (no author keywords).
+- **⚠ NOT committed yet** — both repos dirty (neubrain: manifest, curated `_proposed.md`, wired lit
+  nodes, 3 new nodes, 2 new concepts, wainger2015 deletion, theta-pac manuscript/papers/bib, logs;
+  neuresearch: HANDOFF.md). User commits + pushes both. Also present but pre-existing/unrelated:
+  `.obsidian/graph.json`, `projects/astro_atp/manuscript.tex`, untracked `astro_atp/archive/fig*.py`.
+
+### CURRENT STATE  (as of: 2026-07-04, theta-pac resume — library integrity fixes, PARTIAL; paused mid-edit, awaiting user)
+- **RESUMED `theta-pac`.** All **25** planned papers were already fetched and tagged
+  `theta-pac` (18 OA + 7 manual, per 2026-07-02). `tadel2011` = `role: tooling`. This
+  session did integrity work on the library before the concept-wire/reconcile pipeline;
+  it is **not finished** — see NEXT ACTION for the exact resume point.
+- **FOUND + PURGED a wrong-paper fetch (data-integrity bug).** `papers.txt` line 21 had
+  DOI `10.1038/nn.3886`, which Crossref confirms is **Wainger 2015, "Modeling pain in vitro
+  using nociceptor neurons reprogrammed from fibroblasts"** (an off-topic pain paper) — NOT
+  the intended **Staresina 2015, "Hierarchical nesting of slow oscillations, spindles and
+  ripples in the human hippocampus during sleep."** The wrong DOI originated in the
+  manuscript's own reference list (`manuscript.md` L78 also lists `nn.3886` for Staresina).
+  The bad paper was fetched as `wainger2015` and tagged theta-pac. **PURGED `wainger2015`**
+  cleanly: removed the `entries` record, the 3 `by_id` keys (`10.1038/nn.3886`, PMID
+  `25420066`, `PMC4429606`), `_library/wainger2015.xml`, and `lit/wainger2015.md` (its
+  Concepts/Related were empty, so no concept files referenced it). Manifest re-dumped with
+  the tools' exact format (`json.dumps(indent=2, sort_keys=True)`); diff = 78 deletions only.
+  **Manifest now 70 entries** (was 71). ⚠ `projects/theta-pac/manual_review.md` still contains
+  a stale wainger2015 abstract block — cosmetic, in a disposable review file; regenerate or
+  ignore.
+- **CORRECT DOIs RESOLVED via Crossref (verified, not yet applied to files):**
+  - **Staresina 2015** → `10.1038/nn.4119` (confirmed: title + Staresina first author + 2015).
+  - **Vosskuhl** "Signal-space projection suppresses the tACS artifact in EEG recordings" →
+    version of record `10.3389/fnhum.2020.536070` (2020, Front Hum Neurosci, fully OA);
+    preprint `10.1101/823153` (2019). Manuscript cites `[Vosskuhl 2019]` in-text ×3 and the
+    ref-list entry reads "DOI: [Unable to verify]". **DECISION NEEDED (user):** cite the
+    published **2020** version (better scholarship, but change 3 in-text "2019"→"2020") vs the
+    **2019** preprint (keeps the text as written). Reconcile needs the in-text year to match
+    the fetched stem's year either way.
+- **TWO CITATIONS CANNOT BE RESOLVED — do NOT fabricate (core invariant):**
+  - **Kvašňák 2022** (in-text ×1, not in ref-list): **no matching neuroscience paper exists in
+    Crossref** (author+year+topic searches return only unrelated dinosaur/cardiology hits).
+    Needs the user's exact title, or drop the citation.
+  - **Pek 2017** (in-text ×1 with Barr 2013, re LMM/effect-size/CI reporting; not in ref-list):
+    **ambiguous.** Best topical fit is **Pek & Flora, "Reporting effect sizes in original
+    psychological research"** = `10.1037/met0000126` but that is **2018**, not 2017. A genuine
+    2017 Pek paper exists (`10.4236/ojs.2017.73029`, "CIs for the Mean of a Non-Normal
+    Distribution") but is a weaker fit. Needs the user to confirm which.
+- **The 2026-07-02 `manuscript-citation-reconcile.md` is STALE** (says "0 tagged theta-pac,
+  MATCHED 0 / MISSING 29") — it predates the manual fetches + tagging. Re-run
+  `reconcile_citations.py --manuscript` after the pipeline to get the true count.
+
+### CURRENT STATE  (as of: 2026-07-03, astro_atp manuscript render-fix + claim-calibration; co-editing with user)
+- **`astro_atp`: manuscript cleanup done on-disk; user doing the Overleaf pass in parallel.**
+  (Still the intent to move to `theta-pac` next — see NEXT ACTION.) Colleague-shared
+  `manuscript.tex` is now fully drafted (Gemini @ home wrote all sections overnight: Intro,
+  Methods, Results, Discussion, Conclusion — the earlier Intro *proposal* was NOT used, the
+  file has its own Intro). Reviewed the real file this session and fixed **5 blocking render
+  bugs** (verified clean: no residual `[refN]`, no template junk, all `\cite` keys resolve):
+  1. **Undefined citations** — Discussion cited `spagnuolo2026`/`schubert2026` (novelty-screen,
+     excluded from `references.bib` by design → would render `[?]`); replaced with grounded
+     in-bib `mme2004`+`lapato2018` (mme2004: *"[ATP] massively released following brain insults,
+     including trauma, ischemia and inflammation"*).
+  2. **Literal placeholder cites** printing as text — `[ref8, ref16]`→`\cite{manninen2018,lallouette2019}`
+     (L116, FHN normal forms); `[ref1..4]`→`\cite{bowser2007,hashioka2014,skupin2008,falcke2000}`
+     (L180, ATP-excitability + spontaneous activity, matching the file's own Background usage);
+     `[ref17 ref18 ref19]`→`\cite{manninen2018,lallouette2019,peng2026}` (L335, param ranges).
+  3. **Template boilerplate removed** — `\section{My Appendix}` filler + all fake `\bio{}`
+     "Author biography…" blocks (cas-sc scaffolding); kept the real `\printcredits`.
+  4. **Bib style** `cas-model2-names` (author-year) → `cas-model1-names` (numbered) to match
+     `\usepackage[numbers]{natbib}`. ⚠ On submission, swap for the target journal's `.bst`.
+  5. **Broken duplicated clause** at L138 ("bistable nullcline geometry required for…") removed.
+- **SCIENTIFIC/VOICE ITEMS 6–8 NOW ALSO DONE (co-edited with user; user does the Overleaf
+  pass in parallel).** Clarified first that the disease discussion is *earned* — Figs 3–4 are
+  a quantified healthy-vs-disease contrast (S_C, χ-peak, ξ, λ/Δλ, R_SC across the ATP sweep);
+  the fix was verb-calibration to **susceptibility**, NOT cutting disease.
+  6. **Disease-mechanism overreach softened** at all 4 spots: L531 *"acts as … forcibly
+     uncoupling"*→*"may act as … uncoupling"*; L533 *"provide a robust theoretical foundation
+     for why … present with a complete breakdown"*→*"are consistent with the reduced …
+     coordination reported following …"*; L539 (Conclusion) *"offers a novel theoretical
+     explanation for the breakdown … in neurological diseases"*→*"offers a candidate dynamical
+     account, consistent with the loss … in conditions characterized by elevated purinergic
+     tone"*; L99 (Intro, the parallel closer) *"may mechanistically explain the loss …
+     diseases"*→*"may be relevant to the loss … diseases"* (kept "ATP acts as a critical
+     topological switch" — that's earned model dynamics). Named diseases retained only as
+     motivation, not as claims the model explains them.
+  7. **"re-entrant"** (L99) DROPPED — appeared once, never demonstrated in Results; "non-
+     monotonic" carries the point everywhere (user's rule: dangling term, no related result → cut).
+  8. **Grounding added:** `mme2004` (canonical GJ-suppression) added at both headline spots
+     (Intro L93, Discussion L529); `cotrina2000` added at Intro L93 as the earliest/foundational
+     paper that introduced the ATP↔gap-junction dimension. ⚠ `cotrina2000` is Claude's pick for
+     "the earlier paper" — user to confirm/swap in Overleaf if a specific seminal paper was meant.
+- ⚠ **Still not done (verification):** re-run `reconcile_citations.py --manuscript` to reconfirm
+  clean after all cite edits, and a test `pdflatex→bibtex→pdflatex×2` build (needs `cas-sc.cls`
+  + figs). All `\cite` keys currently verified to resolve in `references.bib` by grep.
+
+### CURRENT STATE  (earlier same day, 2026-07-03, astro_atp Introduction-draft session — SUPERSEDED)
+- **`astro_atp` INTRODUCTION DRAFTED AS A GROUNDED PROPOSAL (not yet in `manuscript.tex`).**
+  Produced a 3-paragraph English Introduction (CCC, one-contribution funnel) for the
+  user to rewrite in their own voice — deliberately NOT written into `manuscript.tex`
+  (user reviews first). **Refocused framing** the user supplied (NOT in the files):
+  ATP is an **IMPOSED control parameter** (the `dA/dt` feedback was CUT); the
+  **propagation→fragmentation transition** and **healthy-vs-disease loss of the critical
+  peak** are DONE ("we show"); **hysteresis (up/down sweep)** and the **D_eff coupling
+  clamp** are PENDING ("we investigate whether"). One-contribution sentence: *a stochastic
+  network model with imposed extracellular ATP shows Ca²⁺ networks transition from
+  coordinated propagation to fragmented local oscillation as ATP rises, a critical
+  transition sharply peaked in healthy networks and lost in disease-perturbed ones.*
+  - **CLAIM-STRENGTH FUNNEL enforced:** model is phenomenological/pure-dynamics; disease
+    is ¶1 MOTIVATION only, never a mechanism the model proves (that stays hedged, in
+    Discussion). ¶1 = biphasic-ATP paradox (ATP triggers activity AND suppresses coupling);
+    ¶2 = two pathways (gap-junction vs ATP/purinergic) + what prior models miss (ATP never
+    isolated as a single imposed control parameter spanning regimes); ¶3 = what we do.
+  - **Every claim grounded** with a quoted source sentence from the `lit/` node or full
+    text (verkhratsky2018, scemes2006, guthrie1999, mme2004, retamal2007 for ¶1; scemes2000,
+    fujii2017, dahl2015, lapato2018, gibson2007, bellinger2005, de2012, lallouette2019 for ¶2).
+    Two flagged as *synthesis, not quote* (the "balance sets propagation-vs-fragmentation"
+    framing; the "ATP not isolated as a control parameter" gap) — the user owns these as
+    argument. No pipeline/tool runs this session; no files modified.
 - **THETA-PAC PROJECT SETUP INITIATED.** Fetched 25 DOI-ready papers for the new `theta-pac` project. 18 were successfully fetched. 7 were gaps/misses (including paywalled or missing XML). The `tadel2011` paper was tagged with `role: "tooling"` in the manifest. Searched Crossref for the 3 missing DOIs and found Vosskuhl 2019 (`10.1101/823153`); Kvašňák 2022 and Pek 2017 require full titles. `refs.py --only-empty` populated 17 reference lists, and `make_nodes.py propose` generated 9 concept candidates in `concepts/_proposed.md`.
 - **LIBRARY FULL TEXT EXTRACTED (PDF -> TXT).** Ran `pdftotext` on all `.pdf` files in the `_library/` folder, producing a corresponding `.txt` for each (34 PDFs processed, 32 converted; 2 corrupted files `guarnieri2020` and `pesaran2018` were manually replaced from archive and successfully converted).
 - **THETA-PAC MANUAL REVIEW FILE CREATED.** A Python script extracted abstracts from the 25 `theta-pac` papers (parsing XML and using `pdftotext` on PDFs). The script was upgraded to clean up text artifacts (tabs, line breaks) and fall back to body text for XMLs without formal `<abstract>` tags (e.g., `barr2013`), compiling them into a highly readable `projects/theta-pac/manual_review.md`.
@@ -224,7 +365,21 @@ view at once.
 - Optional: re-link the 9 orphaned hand-written concept files onto the new ATP nodes.
 
 ### NEXT ACTION
-- **Write the `astro_atp` Introduction.** This is the priority. The setup for `theta-pac` is paused. Sit down and write the Introduction for `astro_atp` in `manuscript.tex`.
+- **theta-pac pipeline is COMPLETE (2026-07-05).** All 2026-07-04 paused steps are done:
+  DOI/in-text fixes applied, staresina2015/vosskuhl2020/kvak2022 fetched, refs backfilled,
+  concepts curated + wired, relate/build_bib run, reconcile = 27 MATCHED / 1 MISSING (Pek, the
+  paywalled gap) / library clean. **First action next session: `git add -A && commit && push`
+  BOTH repos** (neubrain + neuresearch) — the work is on disk but uncommitted.
+- **theta-pac follow-ups (optional, when writing resumes):**
+  - **Pek 2018** stays a grounded gap unless the user obtains a legal PDF → then `ingest.py --doi
+    10.1037/met0000126` to make it a library citizen and clear the last MISSING. Do NOT fabricate.
+  - The manuscript.md `## References` list can be wired to `[@stem]` form later; the automated
+    citation format isn't applied yet (manuscript still uses narrative `[Author Year]`).
+  - Optional cleanup: regenerate `projects/theta-pac/manual_review.md` (still holds a stale
+    wainger2015 abstract block — cosmetic, disposable file).
+- **When astro_atp resumes later (not now):** deferred scientific items 6–8 above; re-run
+  `reconcile_citations.py --manuscript` + a test build. The paused-Intro proposal + title/
+  abstract skeleton drafts from earlier today are moot (Gemini wrote the real sections).
 - **Final read-through of `astro_atp` `manuscript.tex`** — verify the edits haven't drifted from the intended scientific meaning. Continue tightening the Discussion section using the scientific-writing skill (fill, bound, advance). Ensure all claims are grounded against `lit/` nodes.
 - ── prior-session next action (still valid) ──
 - **Citations are DONE: manuscript reconcile = 28 MATCHED / 0 MISSING.** The manual
@@ -251,6 +406,29 @@ view at once.
   real fetches — purge the fakes (entries + by_id + files + nodes) before re-fetching.
 
 ### SESSION LOG  (newest first; agent appends one line per session)
+- 2026-07-05 — COMPLETED theta-pac. User gave the 3 blocking decisions (Vosskuhl→published 2020
+  `10.3389/fnhum.2020.536070`; Kvašňák 2022→`10.3390/bs13010039`; Pek→`10.1037/met0000126`, which is
+  2018). Verified all 3 DOIs via Crossref. Applied DOI + in-text-year fixes to papers.txt/manuscript.md
+  (Staresina nn.4119; Vosskuhl 2019→2020 ×2; Pek 2017→2018; added Kvašňák+Pek ref-list entries). Fetched
+  staresina2015/vosskuhl2020/kvak2022 (europepmc-jats), backfilled refs. Curated concepts (merged EEG
+  into electroencephalography hub, unified tACS, added working memory), wired (11 concepts/27 nodes),
+  relate (9 edges), build_bib (27). Discovered Snakemake was never missing — already ingested as
+  `mlder2021`; reconcile mis-flagged it due to initials-first ref-list format, now reformatted; purged
+  a stray duplicate `mlder2025` from a `.3`-version fetch. Final: reconcile 27 MATCHED / 1 MISSING
+  (Pek 2018, paywalled — grounded gap, not fabricated); library clean; manifest 73. NOT committed —
+  user to commit+push both repos. (agent: Claude)
+- 2026-07-04 — RESUMED theta-pac (all 25 papers already fetched+tagged). Caught a wrong-paper
+  fetch: `papers.txt` DOI `10.1038/nn.3886` is Wainger 2015 (pain/reprogramming), not the
+  intended Staresina 2015 — wrong DOI originated in `manuscript.md`'s own ref list. PURGED
+  `wainger2015` (entry + 3 by_id keys + xml + node; manifest 71→70, clean 78-line diff).
+  Resolved correct DOIs via Crossref: Staresina 2015 = `10.1038/nn.4119`; Vosskuhl = published
+  `10.3389/fnhum.2020.536070` (2020) or preprint `10.1101/823153` (2019). Could NOT resolve
+  Kvašňák 2022 (no Crossref match) or Pek 2017 (ambiguous: 2018 met0000126 vs 2017 ojs) — left
+  unfabricated for the user to disambiguate. PAUSED before applying DOI edits (user stepped
+  away); DOI fixes, fetch, refs, concept-wire, relate, build_bib, and reconcile all pending —
+  see NEXT ACTION. (agent: Claude)
+- 2026-07-03 — REVIEWED the real (Gemini-drafted, colleague-shared) `astro_atp/manuscript.tex` and FIXED 5 blocking render bugs: 2 undefined cites (spagnuolo2026/schubert2026 → grounded in-bib mme2004/lapato2018), 3 literal `[refN]` placeholders → real `\cite`s, removed cas-sc template junk (My Appendix + fake bios, kept `\printcredits`), bib style `cas-model2-names`→`cas-model1-names` (match numbers natbib), and a duplicated dangling clause (L138). Verified clean (no residual placeholders/junk; all `\cite` keys resolve in references.bib). Deferred 3 scientific/voice items to the user (disease-mechanism overreach in Discussion/Conclusion; unshown "re-entrant"; add mme2004 to headline GJ-suppression claim). then, co-editing with the user, also resolved scientific items 6–8: SOFTENED disease-mechanism overreach at 4 spots (L531/L533/L539/L99 → "may act"/"consistent with"/"candidate account"/"may be relevant"), DROPPED the dangling "re-entrant" (L99), and ADDED grounding (`mme2004` at headline GJ-suppression spots L93/L529; `cotrina2000` as the earliest ATP↔GJ paper at L93). Verified: no residual overreach verbs, all `\cite` keys resolve. Remaining: reconcile+build verification, and user's Overleaf pass. Next project = resume theta-pac. NB: today's earlier Intro-proposal + title/abstract drafts are moot (Gemini wrote the real file). (agent: Claude)
+- 2026-07-03 — DRAFTED the `astro_atp` Introduction as a grounded PROPOSAL (not written into `manuscript.tex` — user rewrites first). Read 13 `lit/` nodes + full texts and extracted a quoted source sentence for every claim; wrote a 3-paragraph English intro (CCC, one-contribution funnel) around the user's refocused framing: ATP as an IMPOSED control parameter (dA/dt feedback cut), propagation→fragmentation + healthy-vs-disease critical-peak loss as DONE ("we show"), hysteresis + D_eff clamp as PENDING ("we investigate whether"). Enforced the claim-strength funnel (phenomenological model; disease = ¶1 motivation only, never mechanism). Flagged 2 claims as synthesis-not-quote. No tool/pipeline runs; no files modified besides this HANDOFF. (agent: Claude)
 - 2026-07-02 — INITIATED `theta-pac` project setup. Fetched 18/25 DOI-ready papers, tagged `tadel2011` as `tooling`, generated 9 proposed concepts. Converted all library PDFs to TXT via `pdftotext` (replaced 2 corrupted files manually). Upgraded the `extract_abstracts.py` script to strip text artifacts and handle missing XML abstract tags, generating a clean `manual_review.md` for the 25 papers. Set aside setup to prioritize writing the `astro_atp` Introduction. (agent: Antigravity)
 - 2026-07-02 — LINE-EDITED `manuscript.tex` using the scientific-writing skill (Carandini + Mensh & Kording). Rewrote sentences in the Results section to place figure references strictly in parentheses. Tightened wording for active voice and removed needless words. Deleted the disposable `scratch_extraction.txt` audit dump. (agent: Antigravity)
 - 2026-07-02 — FORMALIZED the novelty corpus with a `role: "novelty_screen"` manifest field.
