@@ -147,6 +147,195 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
+### CURRENT STATE  (as of: 2026-07-09, astro_atp: Fig 5 written in, τ_ac confound resolved, 7 citations added — manuscript essentially submission-ready)
+Builds on the 2026-07-08 EVE block below (Chaos supplements + Fig 3 reorder). This session:
+- **FIGURE 5 (χ phase diagram over (α,σ)) WRITTEN INTO the manuscript** — new Results subsection
+  "ATP--Noise Phase Diagram of the Crossover" (capstone after the robustness section) + figure float +
+  caption + `\label{fig:phase}`, citing **garcaojalvo2002**. Result: the healthy high-χ ridge (critical line)
+  spans all noise levels; in disease it collapses to a narrow low-ATP band ⇒ the wave-supporting regime shrinks
+  and the transition sits at lower ATP. `bayat-et-al/fig_5_phase_diagram.py` → `Figure_5.png`.
+- **τ_ac CONFOUND RESOLVED + Fig S3 panel C added.** The disease>healthy τ_ac in S3 is largely INHERITED from
+  the imposed τ_h→3τ_h (built-in, not emergent). Morph analysis (`bayat-et-al/explore_tau_ac_normalized.py`,
+  reads cached S3 means): (A) raw τ_ac disease ~2×; (B) ÷τ_h → disease drops BELOW healthy (0.65×); (C)
+  baseline-normalized + transitions aligned → curves nearly COLLAPSE (peak-over-baseline H 2.7×, D 2.3×).
+  **Verdict: no independent "disease slows more" effect.** Genuine findings = comparable relative slowing + the
+  transition shifts to lower ATP in disease (χ peak α 0.065 vs 0.120, consistent with Fig 5). Added **panel (C)**
+  to `fig_S3_critical_slowing.py` (Figure_S3 now 3 panels); **S3 Results paragraph + caption reframed honestly**
+  (disclose the τ_h inheritance; don't claim disease-specific slowing).
+- **7 NEW LIBRARY CITIZENS added + cited** (all with PDF + TXT in `_library/` for future search; archive PDFs
+  renamed to `<stem>.pdf`): **falcke2004** (Intro, physics of Ca²⁺ signaling), **fellin2004** (Discussion,
+  astro→neuron synchrony), **kuchibhotla2009** (Discussion, AD astrocyte Ca hyperactivity), **garcaojalvo2002**
+  (Fig 5, stochastic-FHN phase-diagram precedent — PRE 65 011105), **maturana2020 / scheffer2009 / golomb1994**
+  (framing/methods). Found via `suggest.py` (astrocyte domain) + a targeted OpenAlex physics search (for the
+  Fig 5 cite). `references.bib` clean-regenerated (**43 entries, all 33 manuscript cites resolve**).
+- **⚠ build_bib LESSON:** `build_bib.py` regenerates `references.bib` from the manifest ONLY and DROPS any
+  hand-added entry. This session it silently dropped 3 hand-added framing cites (golomb1994/maturana2020/
+  scheffer2009); fixed by making all three real manifest citizens (fetch/ingest). **Never hand-edit
+  references.bib; make the paper a manifest citizen instead.**
+- **Percolation (P_inf/P_frag) stays ARCHIVE-ONLY** (confounded by excitability / weak) — see
+  `neubrain/projects/astro_atp/archive/EXPLORATION_synchrony_percolation_observables.md` and the other archive
+  notes (NOVELTY_framing, PLAN_fig3_observable_swap, OPEN_QUESTION).
+- **Manuscript is essentially submission-ready.** Fig 3 (4-panel + significance strips), Figs S2/S3/S4, Fig 5 all
+  wired with captions + text; citations resolve. Open judgment calls: (a) Fig 5 main vs supplement (currently
+  main); (b) optional promotion of hysteresis/CSD to a main figure.
+
+### CURRENT STATE  (as of: 2026-07-08 EVE, astro_atp: built all 3 Chaos supplements; reordered Fig 3 panels)
+- **ALL THREE "GOOD-TO-HAVE" CHAOS ANALYSES BUILT** in `bayat-et-al` (env `/opt/conda/envs/ece`), each a
+  self-contained script carrying the exact fig_3 FHN core verbatim, compute→cache(`processed_data/*.npz`+csv)
+  →plot, PDF+PNG, `--recompute`/`--smoke` flags. All rendered clean at 10×10, 20 seeds:
+  - **`fig_S2_hysteresis.py` → Figure_S2** — up- then down-α sweep (continuous trajectory, down-leg starts
+    from up-leg end state) of χ and R_sync, 2×2 (observable × condition) with 95% CI. **RESULT: transition is
+    essentially CONTINUOUS** (up/down legs overlap); weak path-dependence visible mainly in the disease χ peak.
+    ⇒ supports a critical (not 1st-order/bistable) transition.
+  - **`fig_S3_critical_slowing.py` → Figure_S3** — early-warning indicators of the population signal
+    m(t)=⟨C⟩: (A) lag-1 AR(1) at a τ_ac-scale cadence (Δt≈3.4; raw cadence saturated at ~1 — FIXED), (B)
+    autocorrelation time τ_ac (1/e-fold). **RESULT: both PEAK at the χ-peak (the transition) and are ELEVATED
+    throughout in disease** ⇒ critical slowing down; disease network is more sluggish.
+  - **`fig_S4_power_spectrum.py` → Figure_S4** — Welch PSD of m(t), ensemble-averaged, low (α=0.15) vs high
+    (α=1.0) ATP, log-log. Peak-freq was useless (1/f spectrum → lowest bin for both); **switched metric to
+    SPECTRAL CENTROID**, which ~DOUBLES low→high ATP (H 0.042→0.087, D 0.038→0.081). **RESULT: high ATP shifts
+    power to higher frequency** ⇒ backs the "high-ATP fast/localized oscillation" claim (Fig 2/Results).
+- **FIG 3 PANELS REORDERED (user request):** synchrony before coherence → now **A S_C · B χ · C R_sync · D ξ**
+  (descending impact: high, high, partial, null). Pure column swap of the cached data — no recompute (`OBS`
+  tuple + `TITLES` letters edited in `fig_3_criticality_ci.py`; re-plotted from `fig3_ci.npz`).
+- **⚠ R_sync CLAIM CHECKED vs DATA (user flagged the framing as unverified — corrected):**
+  - "Synchrony REDUCED in disease" = **TRUE and size-robust**: healthy>disease at **19/21 α at BOTH 10×10 and
+    20×20**, CI-disjoint 12/21 both, mean(H−D)>0 (+0.023 at 10×10, +0.009 at 20×20). Model mechanism: disease
+    sets D0×0.5, κ×1.5 → Deff=D0/(1+(κα)⁴) smaller → weaker coupling → less synchrony. But it is a **MODEST**
+    effect (the "partial" tier), not a headline breakdown.
+  - "Size-INVARIANT" = **do NOT say this literally**. The curve SHAPE + the finding are size-robust
+    (corr(10×10,20×20)=0.99, same peak, same 19/21 direction, same 12/21 discrimination), but the **absolute R
+    magnitude scales DOWN ~2× at 20×20** (H peak 0.54→0.26) — expected finite-size behaviour of the
+    Golomb–Rinzel order parameter (larger N ⇒ smaller population-mean variance). Correct wording for the paper:
+    "the disease-vs-healthy synchrony difference is **robust to lattice size**," NOT "synchrony is size-invariant."
+- **EDGE-ARTIFACT FIX:** the "weird cutoff" at the α=0.01/1.11 endpoints of Fig 3 / S2 / S3 curves was a
+  SMOOTHING bug — `np.convolve(mode='same')` zero-pads beyond the array, plunging the endpoints (τ_ac raw 3.67
+  → smoothed 2.47). Replaced `smooth()` in all three with an **edge-normalised boxcar** (divide by the count of
+  real contributing points); endpoints now honest (3.67→3.71). Plot-time only, all three re-plotted, no recompute.
+- **MANUSCRIPT: 3 SI figures WIRED into `projects/astro_atp/manuscript.tex`** (scientific-writing skill):
+  new **Supplementary Material** section at end with Figure_S2/S3/S4 + full captions; **Results text added** —
+  S4 spectrum sentence in the network-dynamics subsection; a new S2+S3 paragraph in the coherence subsection.
+  **PHENOMENOLOGICAL framing (user decision — do NOT oversell criticality):** S2 worded as "consistent with a
+  continuous rather than first-order crossover" (NOT "identifies/proves"), with an explicit "quasi-static
+  stochastic protocol cannot exclude weak metastability" caveat + the disease-χ weak-path-dependence hedge; S3
+  as "critical-LIKE slowing / phenomenological signature," and the disease τ_ac elevation framed as EXPECTED
+  from the imposed τ_h (NOT a discovery); closes "we treat these as phenomenological signatures... rather than
+  evidence of a rigorous critical point." Recovery slowdown stated HONESTLY: imposed τ_h 3× → **emergent τ_ac
+  ~2×** (do NOT claim 3×). Cited **scheffer2009 + maturana2020** (Crossref-verified). All 28 \cite keys resolve.
+  **CRITICALITY→CROSSOVER PASS DONE (user decision — do not claim criticality):** replaced physics-sense
+  "critical transition/criticality" throughout with **"crossover"** + ATP as a **"bifurcation/control parameter"**
+  / **"topological control switch"**; colloquial "critical role" → "central role". Abstract, intro (×2 + the
+  headline switch), single-cell Results, and the SI paragraph/captions all updated. Remaining "critical" strings
+  are ONLY the invisible internal label `fig:critical` (renders as "Fig. 3") and the SI disclaimer "do not claim
+  a rigorous critical transition." Title was already safe ("…Drives Spatial Fragmentation…"). S3 slowing framed
+  as expected-from-imposed-τ_h, not a discovery. (Optional cleanup: rename the `fig:critical` label → `fig:crossover`.)
+- **⚠ CITATION HYGIENE:** scheffer2009 + maturana2020 were **hand-added to `references.bib`** (verified BibTeX)
+  — but that file is manifest-DERIVED, so `build_bib.py` will DROP them on next regen. TODO: ingest both into
+  the neubrain library (ingest.py --doi or manifest entry) so they survive. Golomb–Rinzel 1994 (R_sync) still
+  NOT added (R_sync formula not yet in Methods — that's the main-Fig-3 edit track).
+- **⚠ STILL PENDING (main-Fig-3 track, NOT done this session):** the main text/caption of Fig 3 still describe
+  the OLD figure (`Figure_3_29.png`, panel C = ξ) — the R_sync-panel swap, impact-gradient rewrite, and
+  `Figure_3_29.png`→`Figure_3_ci.png` are outstanding. SI numbering starts at **S2** (S1 = fig_S1 delta-contrast
+  exists but not wired; decide whether it's redundant now that Fig 3 has significance strips). SI figure PNGs
+  (Figure_S2/S3/S4.png, in bayat-et-al) must be uploaded to Overleaf — NO figure files live in the repo.
+- **EXACT DISCRIMINATION COUNTS (from 10×10 20-seed `fig3_ci.npz`, for the manuscript):** significance
+  (paired-bootstrap p<0.05) — S_C 20/21, χ 21/21, **R_sync 13/21 (all correct direction healthy>disease)**,
+  **ξ 2/21**. CI-disjoint (the figure's discrimination_report) — S_C 19, χ 21, R_sync 11–12, ξ 0–1. Use these,
+  NOT the handoff's earlier estimates (ξ was ~3/21 at 20×20; R_sync ~11/21).
+- **DRAFT ONE-SENTENCE RESULTS FRAMINGS (ready to place when the manuscript pass happens, not yet written in):**
+  hysteresis — "Up- and down-ATP sweeps trace the same curve (Fig. S2), indicating a continuous rather than a
+  hysteretic transition." · slowing down — "The autocorrelation time and lag-1 autocorrelation of network
+  activity peak at the transition and are elevated in disease (Fig. S3), the temporal early-warning signature
+  of critical slowing down." · spectrum — "The activity power spectrum shifts to higher frequency with ATP
+  (spectral centroid roughly doubles; Fig. S4), consistent with the emergence of fast, localized oscillations."
+- **⚠ UNCOMMITTED at handoff:** `bayat-et-al` — 3 new `fig_S2/S3/S4` scripts + Figure_S2/S3/S4 (pdf+png) +
+  3 new caches, plus the reordered `fig_3_criticality_ci.py` and regenerated `Figure_3_ci.*`. Still bundled
+  with the earlier uncommitted 2nd-commit work (ξ fix, fig_S1, restyled fig_1/2/4). Own commit, own repo.
+
+### CURRENT STATE  (as of: 2026-07-08 PM, astro_atp: resolved ξ; added R_sync + significance to Fig 3; approved Chaos "good-to-have" analyses)
+- **ξ QUESTION RESOLVED.** The 20×20 run confirmed **ξ still fails to discriminate (3/21)** — not a
+  finite-size artifact (Path B dead). χ=21/21, S_C=19/21 unchanged at 20×20.
+- **LITERATURE-GROUNDED OBSERVABLE EXPLORATION** (`bayat-et-al/explore_sync_observable.py`, env
+  `/opt/conda/envs/ece`): prototyped what the archived refs actually use.
+  - **R_sync — Golomb–Rinzel synchrony order parameter** `R=sqrt(Var_t(<C>)/mean_i Var_t(C_i))`:
+    **11/21, correct direction (healthy>disease), STABLE at both 10×10 and 20×20.** The genuine
+    "little/moderate impact" observable and the synchrony axis Nimmerjahn/Lapato/Peng use.
+  - **Percolation extent:** naive P_∞ (giant cluster/lattice) = 18–19/21 but **WRONG direction —
+    an excitability confound** (disease doubles γ → more cells active). Confound-corrected P_frag
+    (giant/active, Stauffer–Aharony normalization) = 5/21 (10×10) / 11/21 (20×20). **KEPT ARCHIVE-ONLY,
+    OUT OF THE PAPER** (confounded or weak; no time to fix).
+- **DECISIONS APPROVED BY USER (this session):**
+  1. **ADD R_sync to Fig 3, KEEP ξ** (not a swap). Fig 3 = **4-panel row S_C, χ, ξ, R_sync** with 95% CI
+     bands, each with a **significance strip beneath** (paired-bootstrap p-value, log y-axis, N_BOOT=10000),
+     then snapshot rows E (healthy) / F (disease). Framing = **no-impact (ξ) / little (R_sync) /
+     high (S_C, χ) gradient** reads as more honest than everything-positive.
+  2. **20×20 robustness** for all metrics → supplement sentence "larger lattice, same result" (R_sync
+     confirmed stable; S_C/χ/ξ from earlier 20×20 cache `processed_data/fig3_ci_20x20_scXichi.npz`).
+  3. **Three "good-to-have" Chaos analyses approved** (target journal = *Chaos*, AIP): **hysteresis**
+     (up- vs down-α sweep), **critical slowing down** (τ_ac / recovery rate), **power spectrum** (high-ATP
+     high-freq claim). Proposed as SUPPLEMENTS, one Results sentence each. NOT the bifurcation diagram.
+- **CODE DONE:** `fig_3_criticality_ci.py` rewritten — Numba core now also computes R_sync; `OBS` has 4
+  entries; new 12-col gridspec plot (4 curves + significance row + 6 snapshots); `pvalue_paired_bootstrap`
+  added. Backward-compatible (fig_S1 still reads the cache). **10×10 render in progress at handoff**
+  (`Figure_3_ci.png`; will overwrite). fig3_ci.npz will hold 10×10 with Rsync stacks.
+- **ARCHIVE NOTES (committed, neubrain `1dfd561`):** `OPEN_QUESTION_discriminating_observable.md` (updated
+  w/ 20×20 + new-obs results + ξ-vs-manuscript discrepancy), `EXPLORATION_synchrony_percolation_observables.md`
+  (full provenance: confound + fix + citations), `NOVELTY_framing.md`, `PLAN_fig3_observable_swap.md`
+  (the approved master plan). Percolation stays in these notes, not the paper.
+- **⚠ NOT DONE (next session):** manuscript text/formula/caption edits (add R_sync formula + Golomb–Rinzel
+  1994 cite; keep ξ; rewrite coherence paragraph w/ impact-gradient + larger-lattice sentence; Fig 3 caption
+  → 4 panels + sig row); **Fig 5 Results paragraph + caption + `\includegraphics` + cite**; the 3 new
+  analyses (build scripts + supplement figs + text); add **Golomb & Rinzel 1994** to `references.bib`
+  (+ `_library/` node); wire the new `Figure_3_ci.png` into `manuscript.tex` (currently `Figure_3_29.png`).
+- **⚠ MANUSCRIPT/ANALYSIS ξ DISCREPANCY (do not fix yet):** manuscript.tex:212 uses a topological
+  Θ-threshold ξ that it claims discriminates; the corrected exp-fit ξ does not. Logged; resolve when editing.
+- **⚠ UNCOMMITTED at handoff:** `bayat-et-al` (modified `fig_3_criticality_ci.py`, new
+  `explore_sync_observable.py`, regenerated figures, cache) — SEPARATE repo, own commit. neubrain still has
+  the earlier staged figfig deletions + cover_letter/manuscript working changes.
+
+### CURRENT STATE  (as of: 2026-07-08, astro_atp: NEW code repo `bayat-et-al` + cover letter + new figures)
+- **NEW THIRD REPO: `bayat-et-al`** (at `/mnt/sysfs01/users/cagatay/code/bayat-et-al`, remote
+  **github.com/neurophysiology-expertise-unit/bayat-et-al**) now holds the astro_atp SIMULATION +
+  FIGURE code as an open-science repo (env `environment.yml`/`requirements.txt`, `README.md`). It is
+  SEPARATE from neubrain (vault/data) and neuresearch (builder). Figure scripts were **moved out of
+  `neubrain/projects/astro_atp/archive/`** (they were tracked → `git rm` staged in neubrain, **user must
+  commit that deletion**). Runs in any env with numpy+matplotlib+numba+pandas; I used `/opt/conda/envs/ece`
+  (the `neuresearch` env has NO numba). Numba `prange` parallel over 12 cores.
+- **RENAMED** `figfig*.py` → `fig_<n>_<description>.py`: `fig_1_single_cell`, `fig_2_network_activity`,
+  `fig_3_criticality` (legacy single-seed), `fig_3_criticality_ci`, `fig_4_lyapunov_robustness`,
+  `fig_5_phase_diagram`, plus `fig_S1_delta_contrast` and shared `plotstyle.py`.
+- **TWO NEW ANALYSES** (approved via brainstorm plan): (Fig3-CI) `fig_3_criticality_ci.py` = 20-seed
+  ensemble of S_C/χ/ξ with **mean ± 95% CI bands**; (Fig5) `fig_5_phase_diagram.py` = 2D **χ phase
+  diagram over (ATP α, noise σ)**, healthy vs disease. Both faithful to `fig_3_criticality.py` formulas.
+- **PUBLICATION STYLE + CACHING** (per user, modelled on `aon_pir_rev`): `plotstyle.py` = Arial, no grid,
+  top/right spines off, outward ticks, editable-vector `pdf.fonttype=42`; every fig saved **PDF + PNG**.
+  Compute→cache→plot split: results cached to `processed_data/*.npz` + tidy `*.csv`; plotting loads cache
+  (re-render <1s); `--recompute` forces a rerun.
+- **⚠ ξ (coherence length) FINDING — DECISION NEEDED.** User noticed only χ (panel B) cleanly separated
+  healthy/disease. Quantified: **χ disjoint 21/21 α, S_C 19/21, ξ 1/21**. Fixed the ξ estimator (old one
+  ran `np.correlate` on the FLATTENED field = a row-order ARTIFACT, not a spatial length; new one = 2D
+  radial autocorr → exp fit `G(r)~exp(-r/ξ)`). Corrected ξ is **small (~0.5–1.1 lattice units) and STILL
+  does not discriminate (1/21)** at the 10×10 lattice — ξ is genuinely the weak metric. **Options for
+  user:** (a) keep corrected small-ξ panel + de-emphasize ξ; (b) recompute ξ on a LARGER lattice (20×20+)
+  where a coherence length is resolvable; (c) drop ξ from main Fig 3, keep only in supplement.
+- **SUPPLEMENTARY `fig_S1_delta_contrast.py`** = disease−healthy paired bootstrap (5000×, shared seeds)
+  per observable with 95% CI + significance markers. Confirms ΔS_C>0 (sig ~everywhere), Δχ<<0 (deep sig
+  dip at mid-ATP), **Δξ≈0 (CI includes 0 almost everywhere)**.
+- **RESTYLED legacy `fig_1/2/4`** to `plotstyle` + `save_fig` (PDF+PNG). `fig_4` caching NOT added yet
+  (only style) — optional follow-up. Figures being regenerated at handoff time.
+- **COVER LETTER** `projects/astro_atp/cover_letter_chaos.tex` (target: *Chaos, Solitons & Fractals*,
+  editor del Genio): shortened, then reorganized to biology-on-ramp → nonlinear-dynamics pivot → 3 points,
+  corrected to state **"we are NOT proposing a new astrocyte model"** (framework is prior; novelty = ATP as
+  imposed swept bifurcation parameter + healthy/disease), points lead with explicit thesis statements.
+  `.txt` version deleted. **User then rewrote it in their own voice — that on-disk version is CANONICAL**
+  (~1 page, tighter). PDF built. Open: user's final call on length.
+- **⚠ NOT wired into the manuscript yet.** `manuscript.tex` still references old `Figure_3_29.png` etc.
+  **Fig 5 is a genuinely NEW figure with NO Results text/caption** — needs a Results paragraph +
+  `\includegraphics` + caption before submission (Carandini: never add a figure the text doesn't walk
+  through). Fig3-CI could replace the single-realization Fig 3; supplement S1 needs an SI section.
+- **⚠ UNCOMMITTED at handoff:** bayat-et-al has a pending 2nd commit (ξ fix, supplement, restyled
+  fig_1/2/4, regenerated figures). neubrain has the staged figfig deletions + cover_letter edits.
+
 ### CURRENT STATE  (as of: 2026-07-05, theta-pac pipeline COMPLETE — user's 3 citation decisions applied, all steps run)
 - **theta-pac pipeline is DONE.** User resolved the 3 blocking decisions and I ran the whole
   remaining pipeline. Final reconcile: **manuscript.md 28 citations — MATCHED 27, MISSING 1,
@@ -365,6 +554,92 @@ view at once.
 - Optional: re-link the 9 orphaned hand-written concept files onto the new ATP nodes.
 
 ### NEXT ACTION
+- **astro_atp (2026-07-09) — RESUME HERE.** The manuscript is essentially submission-ready. Remaining:
+  1. **Final LaTeX build** (Overleaf, `cas-model2-names` style): verify Figs 1--5 + S2--S4 render and all 33
+     citations resolve. Figure files live in `bayat-et-al/` (Overleaf upload); the manuscript dir holds no copies.
+  2. **Decide Fig 5 placement** — currently a MAIN figure (`\label{fig:phase}`); could be demoted to supplement.
+     Optionally promote hysteresis (S2) or critical slowing (S3) to a main figure.
+  3. **Do NOT hand-edit `references.bib`** — it is regenerated from the manifest by `build_bib.py`. Every cite is
+     now a manifest citizen, so it is safe to regenerate.
+  4. Percolation (P_inf/P_frag) stays archive-only — do not put it in the paper.
+- **astro_atp (2026-07-08 EVE) — largely superseded by the 2026-07-09 entry above.**
+  - **DONE this session:** Fig 3 verified + reordered (A S_C·B χ·C R_sync·D ξ); 3 Chaos supplements built &
+    verified (Figure_S2 hysteresis / S3 slowing down / S4 spectrum); R_sync claims verified vs data (reduced-in-
+    disease TRUE & size-robust; "size-invariant" CORRECTED — magnitude scales ~2× with N); endpoint smoothing
+    artifact fixed; **S2/S3/S4 WIRED into manuscript.tex** (SI section + captions + Results text; critical-
+    transition + critical-slowing-down framing; scheffer2009/maturana2020 hand-added to references.bib).
+  - **1. COMMIT (do first):** `bayat-et-al` — S2/S3/S4 scripts+figures+caches, reordered `fig_3_criticality_ci.py`
+    + regenerated `Figure_3_ci.*`, edge-fix in `fig_S2/S3`, older ξ-fix/fig_S1/restyle. **neubrain** — the
+    manuscript.tex SI edits + references.bib, staged figfig deletions, cover_letter. **neuresearch** — HANDOFF.
+    Then push all three. Pull-before / never two agents at once.
+  - **2. MAIN Fig 3 edit — DONE (2026-07-08 EVE later):** swapped `Figure_3_29.png`→`Figure_3_ci.png`; caption
+    rewritten to 4 panels in new order (A S_C·B χ·C R·D ξ) + significance strips + E/F snapshots; Results
+    §coherence rewritten as the impact gradient with R (partial, consistent direction) and **ξ reported as an
+    honest NULL** (flips the old "ξ discriminates" claim, which came from the flawed estimator). Methods: added
+    R (Golomb–Rinzel) synchrony formula + `\cite{golomb1994}` and **rewrote the ξ definition to match the code**
+    (2D radial-autocorrelation exp-fit, replacing the stale Θ-threshold proxy — resolves the ξ discrepancy).
+    Discussion ξ-as-disease-signature sentence fixed → S_C↑/χ↓/R↓. **CRITICALITY→CROSSOVER pass done** across
+    abstract/intro/results (see EVE state). golomb1994 added to references.bib (Crossref-verified; handoff's old
+    DOI was WRONG — correct is 10.1016/0167-2789(94)90214-3). All 29 \cite keys resolve.
+  - **3. FIG 1 REBUILT (2026-07-08 EVE later)** — `fig_1_single_cell.py` now a composite: 3 traces (500 s window,
+    time in **seconds**, 1 s/a.u. placeholder — PIN to a cited Ca²⁺-oscillation period), shared bottom x-axis,
+    coupling schematics (user-supplied, progressive uncoupling) beside each; **right column = 3 panels** from
+    **10-min × 10-seed** records with error bars — transient **rate** (0.13/1.33/2.86 min⁻¹, rises with ATP),
+    **peak amplitude** (1.68/1.74/1.91, ~flat — transients same height), **resting baseline** (−1.11/−0.98/+0.09,
+    rises = the baseline shift quantified). Transients via `scipy.find_peaks` (height 0.5, prom 1.0). All plots
+    BLACK; right panels = lines + error bars only (no markers, no caps); panels labelled **A** schematics / **B**
+    traces / **C·D·E** rate·peak·baseline; rep. trace per row chosen to show ≥2 transients. `Figure_1.*`.
+    **DONE + INTEGRATED into manuscript.tex:** Fig 1 now `figure*` full-width `Figure_1.png` with a new A–E
+    caption; single-cell Results gained the mean±SD transient-rate sentence (0.13±0.05 / 1.33±0.18 / 2.86±0.05
+    min⁻¹). Figure error bars = SEM, in-text values = SD. ⚠ still: upload `Figure_1.png` to Overleaf; PIN the
+    1 s/a.u. time scale to a citation.
+  - **3b. FIG 2 REBUILT (2026-07-09)** — `fig_2_network_activity.py` restructured to the **Fig-1 left→right flow**:
+    LEFT representative traces (black, no y-axis line), MIDDLE per-cell heatmaps (shared colour scale + single
+    colorbar), RIGHT metrics vs ATP (mean pairwise **correlation** ↓ monotonic; **active fraction** U-shaped),
+    mean±SD over 6 seeds. Numba-ported the network sim (= fig_3 model). Time in seconds (T=500). `Figure_2.*`.
+    **KEY FINDING (drove the ATP choice):** network activity is **non-monotonic / U-shaped** in ATP — active+
+    coordinated at low α (waves), **quiescent minimum at α≈0.15–0.4**, active-but-fragmented at high α. So α=0.27
+    is the network's DIP, NOT a representative middle. **Fig 2 ATP = 0.10 / 0.40 / 0.90** (mid 0.40 ≈ Fig 3's
+    snapshot mid 0.395, past the dip). NB: **0.27 is only the SINGLE-CELL (Fig 1) intermediate, where it IS active
+    (oscillation onset)** — the single-cell and network have different activity-vs-ATP profiles; do NOT use 0.27 as
+    a network "representative middle." Fig 3 core is a full sweep (captures the U-shape). ⚠ NOT yet integrated:
+    manuscript still `Figure_2_29.png` with the OLD 2×2 (A–D low/high) caption + Results refs — swap to
+    `Figure_2.png`, rewrite caption (traces|heatmaps|metrics; low/inter/high), update the network Results subsection
+    (and consider stating the non-monotonic-activity finding there). Fig 1 error bars switched SEM→SD (SEM
+    invisible once black); Fig 1 figure + in-text now both SD.
+  - **4. Fig 5** (phase diagram) Results paragraph + caption + `\includegraphics` + cite — still unwired.
+  - **5. references.bib:** **ingest scheffer2009 + maturana2020 + golomb1994 into the library** (ingest.py --doi
+    or manifest entry) so they survive `build_bib` (currently hand-added only).
+  - **5. SI housekeeping:** decide whether fig_S1 delta-contrast belongs in the SI now that Fig 3 has
+    significance strips (if yes, renumber S1–S4; if no, current S2–S4 numbering needs an S1 or renumber). Upload
+    Figure_S2/S3/S4.png to Overleaf (no figure files live in the repo). Percolation stays ARCHIVE-ONLY. 20×20
+    robustness supplement (combine `fig3_ci_20x20_scXichi.npz` + `explore_sync.npz`) still to build.
+- ── superseded 2026-07-08 PM plan (steps mostly done; kept for the ξ-discrepancy note) ──
+- **astro_atp Fig 3 rebuild + Chaos analyses (2026-07-08 PM):**
+  1. **Verify the new `Figure_3_ci.png`** (4-panel S_C/χ/ξ/R_sync + significance strips + snapshots) rendered
+     cleanly at 10×10; tweak layout if the significance strips or snapshot spacing look cramped
+     (`bayat-et-al/fig_3_criticality_ci.py plot()`), then regenerate.
+  2. **Manuscript edits** (use scientific-writing skill; keep ξ, add R_sync): Methods — add the R_sync
+     formula + cite **Golomb & Rinzel 1994**; Results §coherence — rewrite as the **no/little/high impact
+     gradient** (ξ none, R_sync partial 11/21 correct-direction, S_C/χ strong) + a **larger-lattice
+     robustness** sentence; Fig 3 caption → 4 panels + significance row; swap `Figure_3_29.png` →
+     `Figure_3_ci.png` (or the renamed final).
+  3. **Add `references.bib` entry** Golomb & Rinzel 1994 (Physica D 72:259) + matching `_library/` node.
+  4. **Build the 3 approved Chaos analyses** (`bayat-et-al`, reuse the sim core): hysteresis (up/down α
+     sweep), critical slowing down (τ_ac / recovery rate), power spectrum (low vs high ATP). Add as
+     SUPPLEMENT figures + one Results sentence each. Frame as characterization, not new phenomena.
+  5. **Wire Fig 5** into `manuscript.tex` (still outstanding from the morning): Results paragraph + caption +
+     `\includegraphics` + supporting cite.
+  6. **20×20 robustness supplement:** combine `fig3_ci_20x20_scXichi.npz` (S_C/χ/ξ) + `explore_sync.npz`
+     (R_sync 20×20, seeds 11–30 aligned) into a "10×10 vs 20×20 unchanged" supp figure.
+  7. Percolation stays ARCHIVE-ONLY — do NOT put P_∞/P_frag in the paper.
+- **astro_atp figures/repo (2026-07-08):** (1) COMMIT — `bayat-et-al` 2nd commit (ξ fix, `fig_S1`,
+  restyled `fig_1/2/4`, regenerated figures) + push; in **neubrain**, commit the staged `figfig*` deletions
+  and the `cover_letter_chaos.*` changes. (2) **Resolve the ξ decision** (a/b/c above — recommend showing
+  the honest corrected small ξ and de-emphasising, or recomputing on a 20×20 lattice). (3) **Wire the new
+  figures into `manuscript.tex`**: Fig 5 needs a fresh Results paragraph + caption; consider swapping the
+  single-realization Fig 3 for the CI version; add an SI section for `fig_S1`. (4) Optional: add caching to
+  `fig_4`; harmonise its axis labels (`alpha`→`$\alpha$`).
 - **theta-pac pipeline is COMPLETE (2026-07-05).** All 2026-07-04 paused steps are done:
   DOI/in-text fixes applied, staresina2015/vosskuhl2020/kvak2022 fetched, refs backfilled,
   concepts curated + wired, relate/build_bib run, reconcile = 27 MATCHED / 1 MISSING (Pek, the
@@ -406,6 +681,56 @@ view at once.
   real fetches — purge the fakes (entries + by_id + files + nodes) before re-fetching.
 
 ### SESSION LOG  (newest first; agent appends one line per session)
+- 2026-07-09 (PM) — astro_atp: wrote Figure 5 (χ phase diagram) into manuscript.tex (+`garcaojalvo2002` cite);
+  resolved the S3 τ_ac confound with a baseline-normalized/transition-aligned morph (disease slowing inherited
+  from the imposed τ_h; genuine findings = comparable relative slowing + transition shifts to lower ATP) — added
+  Fig S3 panel C + reframed S3 text/caption; added & cited **7 library citizens** (falcke2004, fellin2004,
+  kuchibhotla2009, garcaojalvo2002, maturana2020, scheffer2009, golomb1994), each with PDF+TXT in `_library/`;
+  clean-rebuilt `references.bib` (43 entries, all 33 cites resolve); renamed archive PDFs to stems. Fixed a
+  build_bib regression (it dropped hand-added cites) by ingesting them as manifest citizens. (agent: Claude)
+- 2026-07-09 — astro_atp figures (continuation): WIRED the main Fig 3 into manuscript.tex (Figure_3_ci.png,
+  4-panel new-order caption + sig strips + E/F snapshots, impact-gradient Results with **ξ reported as honest
+  null**; Methods gained the R Golomb–Rinzel formula + **golomb1994** cite (correct DOI 10.1016/0167-2789(94)
+  90214-3; handoff's old DOI was wrong) and the ξ definition rewritten to the exp-fit code — resolves the ξ
+  discrepancy). Did the **criticality→"crossover"** language pass (abstract/intro/results; user decision, keep
+  phenomenological). REBUILT Fig 1 (single-cell composite: A schematics/B traces/C·D·E rate·peak·baseline over
+  10-min×10-seed, SD bars, all black, seconds, integrated into manuscript). REBUILT Fig 2 (network: traces|
+  heatmaps|metrics left→right; found network activity is **U-shaped in ATP**, so switched mid 0.27→0.40 =Fig 3;
+  0.27 is the network dip, only OK as single-cell mid). Figs 1&2 + Fig 3-CI + supplements all uncommitted.
+  Fig 2 not yet wired into manuscript. (agent: Claude)
+- 2026-07-08 (EVE) — astro_atp: VERIFIED the rebuilt 4-panel Figure_3_ci (exact 10×10 counts: χ 21/21,
+  S_C 19–20/21, R_sync 12–13/21 correct-direction, ξ 1–2/21) and explained the non-monotonic/critical-peak
+  reading to the user. BUILT all 3 approved Chaos supplements in `bayat-et-al` (each self-contained w/ the
+  verbatim fig_3 FHN core, compute→cache→plot, PDF+PNG): `fig_S2_hysteresis` (up/down α sweep → continuous
+  transition, weak disease path-dependence), `fig_S3_critical_slowing` (AR(1)+τ_ac both peak at the χ-peak,
+  elevated in disease — fixed AR(1) cadence which saturated at raw resolution), `fig_S4_power_spectrum`
+  (Welch PSD low vs high ATP; swapped peak-freq→spectral-centroid, which ~doubles → high-freq shift).
+  REORDERED Fig 3 panels per user (synchrony before coherence → S_C·χ·R_sync·ξ, no recompute). VERIFIED the
+  R_sync claims vs data (reduced-in-disease TRUE & size-robust 19/21 both lattices; "size-invariant" corrected
+  — magnitude scales ~2× with N). FIXED an endpoint smoothing artifact (edge-normalised boxcar) in Fig 3/S2/S3.
+  WIRED S2/S3/S4 into manuscript.tex (new SI section + captions + Results text; critical-transition + critical
+  slowing-down framing cited to scheffer2009/maturana2020, Crossref-verified & hand-added to references.bib;
+  recovery slowdown stated honestly as emergent τ_ac ~2×, not the imposed 3×). Main-Fig-3 caption/R_sync swap
+  still pending. Uncommitted. (agent: Claude)
+- 2026-07-08 (PM) — astro_atp: resolved ξ (fails 3/21 at 20×20, not finite-size); explored lit-grounded
+  observables → R_sync (Golomb–Rinzel synchrony, 11/21 both lattices, correct direction) chosen to ADD to
+  Fig 3 alongside ξ; percolation P_∞/P_frag found confounded/weak → archive-only. Rebuilt
+  `fig_3_criticality_ci.py` to 4-panel + paired-bootstrap significance strips. Approved 3 Chaos "good-to-have"
+  analyses (hysteresis, critical slowing down, power spectrum). Wrote 3 archive notes + master plan; committed
+  notes (neubrain `1dfd561`). Manuscript edits + new analyses + Fig 5 wiring = next session. (agent: Claude)
+- 2026-07-08 — astro_atp: created NEW open-science repo `bayat-et-al`
+  (github.com/neurophysiology-expertise-unit/bayat-et-al) for the simulation/figure code; moved
+  `figfig*.py` out of neubrain (git rm staged) and RENAMED to `fig_<n>_<description>.py`. Built two new
+  analyses (brainstorm-approved): `fig_3_criticality_ci.py` (20-seed ensemble, 95% CI bands) and
+  `fig_5_phase_diagram.py` (α×σ χ phase diagram), both Numba-`prange` parallel. Added `plotstyle.py`
+  (Nature/aon_pir_rev style, PDF+PNG, pdf.fonttype=42) and a compute→cache(`processed_data/*.npz`+csv)→plot
+  split. FIXED the ξ estimator (old = flatten-artifact `np.correlate`; new = 2D radial autocorr exp-fit) —
+  finding: corrected ξ is small & does NOT discriminate healthy/disease (1/21) at 10×10, confirming ξ is the
+  weak metric; χ 21/21, S_C 19/21. Added supplementary `fig_S1_delta_contrast.py` (disease−healthy paired
+  bootstrap, 95% CI + sig markers). Restyled legacy `fig_1/2/4`. Cover letter reorganized
+  (biology→dynamics→3 thesis-led points; "not a new astrocyte model" correction) then user rewrote it in
+  own voice (canonical, ~1p); `.txt` deleted. NOT wired into manuscript.tex; Fig 5 has no Results text yet.
+  Both repos have uncommitted work at handoff. (agent: Claude)
 - 2026-07-05 — COMPLETED theta-pac. User gave the 3 blocking decisions (Vosskuhl→published 2020
   `10.3389/fnhum.2020.536070`; Kvašňák 2022→`10.3390/bs13010039`; Pek→`10.1037/met0000126`, which is
   2018). Verified all 3 DOIs via Crossref. Applied DOI + in-text-year fixes to papers.txt/manuscript.md
