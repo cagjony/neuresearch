@@ -147,6 +147,34 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
+### CURRENT STATE  (as of: 2026-07-09 LATE, astro_atp: figure/caption polish pass — filenames, S-numbering, stats format, Fig 1/2 alignment, consistent panel labels)
+Continues the 2026-07-09 block below. Fixes from a detailed review pass:
+- **Figure filenames fixed** in `manuscript.tex`: `Figure_2_29.png`→`Figure_2.png`, `Figure_4_67.png`→`Figure_4.png`
+  (Fig 1/3/5 were already correct).
+- **Supplement S-numbering fixed.** The SI figures were auto-numbering as "Figure 6/7/8" while their captions
+  said "Figure S2/3/4". Added `\setcounter{figure}{0}` + `\renewcommand{\thefigure}{S\arabic{figure}}` at the
+  Supplementary Material section, dropped the manual "Figure SX." caption prefixes, switched in-text `Fig.~SX`
+  to `\ref{fig:sup_*}`. They now auto-number **S1 (hysteresis), S2 (slowing), S3 (spectrum)**. The old
+  delta-contrast **Supplementary Figure 1 was already removed** (superseded by the Fig 3 significance strips);
+  `Figure_S1.png` is orphaned in `bayat-et-al` but unused.
+- **Stats reported as mean ± SD (n).** Added per-seed extraction to `fig_S3` (τ_ac peak/baseline enhancement)
+  and `fig_S4` (spectral-centroid high/low ratio); recomputed. Captions now read: S3 enhancement **healthy
+  2.71 ± 0.28, disease 2.36 ± 0.12 (n=20)** (comparable → the collapse); S4 centroid ratio **healthy
+  1.91 ± 0.46, disease 2.15 ± 0.33 (n=20)** (~doubles). Vague "∼2.3–2.7×"/"roughly doubling" removed.
+- **Fig 1 aligned to Fig 2 ATP levels** — `ATP_levels` 0.19/0.27/0.9 → **0.10/0.40/0.90** so "intermediate ATP"
+  means the same regime in both; Fig 1 regenerated.
+- **Abstract wording corrected.** "moderate levels enhance network coherence" was WRONG — Fig 2 (right panels)
+  shows intermediate ATP (α=0.4) is the **quiescent dip** (activity minimum; coordination monotonically
+  collapses, highest at low ATP). Reworded to the honest non-monotonic story: low = coordinated/active,
+  **intermediate = quiescent, weakly coordinated**, high = uncoupled/fragmented. (The Discussion line 523 makes
+  a similar "moderate...coherent" claim — worth a follow-up check for consistency.)
+- **Consistent panel labels across ALL figures.** Added `panel_label(ax, letter)` to `plotstyle.py` (Fig 1's
+  top-left bold-letter style). Applied to Figs 2,3,4,5,S2,S3,S4; removed embedded "(A)" from titles; **each
+  panel gets its own letter, no sub-numbering.** Fig 3 snapshots relabeled **E1–E3/F1–F3 → E,F,G / H,I,J**
+  (caption + all in-text refs synced). Fig 2 had a **stale 4-panel caption** describing an old layout — rewritten
+  for the real 8-panel figure (**A–C traces, D–F heatmaps, G coordination, H population activity**).
+- **All figures being regenerated** at handoff time; verify Figs 2 & 3 for label collisions after the run.
+
 ### CURRENT STATE  (as of: 2026-07-09, astro_atp: Fig 5 written in, τ_ac confound resolved, 7 citations added — manuscript essentially submission-ready)
 Builds on the 2026-07-08 EVE block below (Chaos supplements + Fig 3 reorder). This session:
 - **FIGURE 5 (χ phase diagram over (α,σ)) WRITTEN INTO the manuscript** — new Results subsection
@@ -554,7 +582,11 @@ Builds on the 2026-07-08 EVE block below (Chaos supplements + Fig 3 reorder). Th
 - Optional: re-link the 9 orphaned hand-written concept files onto the new ATP nodes.
 
 ### NEXT ACTION
-- **astro_atp (2026-07-09) — RESUME HERE.** The manuscript is essentially submission-ready. Remaining:
+- **astro_atp (2026-07-09 LATE) — RESUME HERE.** Remaining after the figure/caption polish pass:
+  0. **Verify regenerated Figs 2 & 3 for panel-label collisions** (dense grids; the letters were added blind and
+     re-rendered — eyeball them). Check the Discussion line ~523 "moderate...coherent wave propagation" for
+     consistency with the corrected abstract (intermediate ATP = quiescent dip).
+- **astro_atp (2026-07-09) — earlier.** The manuscript is essentially submission-ready. Remaining:
   1. **Final LaTeX build** (Overleaf, `cas-model2-names` style): verify Figs 1--5 + S2--S4 render and all 33
      citations resolve. Figure files live in `bayat-et-al/` (Overleaf upload); the manuscript dir holds no copies.
   2. **Decide Fig 5 placement** — currently a MAIN figure (`\label{fig:phase}`); could be demoted to supplement.
@@ -681,6 +713,13 @@ Builds on the 2026-07-08 EVE block below (Chaos supplements + Fig 3 reorder). Th
   real fetches — purge the fakes (entries + by_id + files + nodes) before re-fetching.
 
 ### SESSION LOG  (newest first; agent appends one line per session)
+- 2026-07-09 (LATE) — astro_atp figure/caption polish: fixed Fig 2/4 includegraphics filenames; SI figures now
+  S-numbered (S1–S3) via `\setcounter`+`\renewcommand{\thefigure}` (were rendering as Fig 6–8); reported the S3
+  τ_ac enhancement and S4 centroid ratio as mean ± SD (n=20) after adding per-seed extraction; aligned Fig 1 ATP
+  levels to Fig 2 (0.10/0.40/0.90) and regenerated; corrected the abstract's wrong "moderate enhances coherence"
+  to the true non-monotonic story (intermediate ATP = quiescent dip); added `panel_label()` to plotstyle and gave
+  every figure consistent top-left corner letters (no sub-numbering) — Fig 3 snapshots E,F,G/H,I,J with caption+refs
+  synced, Fig 2's stale 4-panel caption rewritten for the real 8-panel A–H figure. All figures regenerated. (agent: Claude)
 - 2026-07-09 (PM) — astro_atp: wrote Figure 5 (χ phase diagram) into manuscript.tex (+`garcaojalvo2002` cite);
   resolved the S3 τ_ac confound with a baseline-normalized/transition-aligned morph (disease slowing inherited
   from the imposed τ_h; genuine findings = comparable relative slowing + transition shifts to lower ATP) — added
