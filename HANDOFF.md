@@ -173,7 +173,10 @@ Continues the 2026-07-09 block below. Fixes from a detailed review pass:
   panel gets its own letter, no sub-numbering.** Fig 3 snapshots relabeled **E1–E3/F1–F3 → E,F,G / H,I,J**
   (caption + all in-text refs synced). Fig 2 had a **stale 4-panel caption** describing an old layout — rewritten
   for the real 8-panel figure (**A–C traces, D–F heatmaps, G coordination, H population activity**).
-- **All figures being regenerated** at handoff time; verify Figs 2 & 3 for label collisions after the run.
+- **All figures regenerated; Figs 2 & 3 panel labels VERIFIED CLEAN (2026-07-11)** — eyeballed both PNGs in
+  `submission/`. Fig 2 (A–C traces / D–F heatmaps / G coordination / H population activity) and Fig 3 (A–D
+  curves+sig strips / E–G healthy snapshots / H–J disease snapshots): all panel letters top-left, no collisions
+  with titles, axes, data, or the Fig 3 legend. No relabeling needed.
 
 ### CURRENT STATE  (as of: 2026-07-09, astro_atp: Fig 5 written in, τ_ac confound resolved, 7 citations added — manuscript essentially submission-ready)
 Builds on the 2026-07-08 EVE block below (Chaos supplements + Fig 3 reorder). This session:
@@ -583,9 +586,10 @@ Builds on the 2026-07-08 EVE block below (Chaos supplements + Fig 3 reorder). Th
 
 ### NEXT ACTION
 - **astro_atp (2026-07-09 LATE) — RESUME HERE.** Remaining after the figure/caption polish pass:
-  0. **Verify regenerated Figs 2 & 3 for panel-label collisions** (dense grids; the letters were added blind and
-     re-rendered — eyeball them). Check the Discussion line ~523 "moderate...coherent wave propagation" for
-     consistency with the corrected abstract (intermediate ATP = quiescent dip).
+  0. ~~Verify regenerated Figs 2 & 3 for panel-label collisions~~ **DONE 2026-07-11 — verified clean** (both
+     PNGs eyeballed; all panel letters top-left, no collisions). STILL PENDING: check the Discussion line ~523
+     "moderate...coherent wave propagation" for consistency with the corrected abstract (intermediate ATP =
+     quiescent dip).
 - **astro_atp (2026-07-09) — earlier.** The manuscript is essentially submission-ready. Remaining:
   1. **Final LaTeX build** (Overleaf, `cas-model2-names` style): verify Figs 1--5 + S2--S4 render and all 33
      citations resolve. Figure files live in `bayat-et-al/` (Overleaf upload); the manuscript dir holds no copies.
