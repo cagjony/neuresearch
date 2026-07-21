@@ -21,6 +21,13 @@ field contains --project):
         we actually hold (title / year, and author / journal if present). Unknown
         fields are left blank — never invented.
 
+    Preprints (Crossref type "posted-content") come back with NO journal field,
+    since they have no container title, and would otherwise render as a bare
+    title with a dangling period. For those we look up the hosting server in
+    Crossref's `institution` (falling back to `publisher`) and add
+    journal={bioRxiv} + note={Preprint}. Still real Crossref metadata — if no
+    server is named, the entry is left untouched.
+
 The manifest is the source of truth: this script reads it, never writes it, and
 fabricates no bibliographic field or citation. Output is fully regenerated each
 run (idempotent). Default --out is projects/<project>/references.bib when
@@ -76,6 +83,38 @@ def rekey(bibtex: str, stem: str) -> str:
     """Swap the entry's Crossref citekey for OUR manifest stem (header only)."""
     new, n = _BIB_HEADER.subn(rf"\g<1>{stem},", bibtex, count=1)
     return new if n else bibtex
+
+
+# Crossref's BibTeX transform emits no journal/booktitle for `posted-content`
+# (preprints) — there is no container title to emit. The result renders as a
+# bare title with a dangling period. The hosting server IS in the metadata,
+# just in `institution` rather than `container-title`, so we can fill the venue
+# from real Crossref data. Nothing here is invented: if Crossref names no
+# server, the entry is left exactly as it came.
+_HAS_VENUE_RE = re.compile(r"\b(?:journal|booktitle)\s*=\s*\{", re.I)
+
+
+def preprint_venue(doi: str, session: requests.Session) -> str | None:
+    """The preprint server hosting `doi`, or None if it is not a preprint."""
+    r = session.get(f"{CROSSREF}/{doi}", timeout=30)
+    if r.status_code != 200:
+        return None
+    msg = r.json().get("message", {})
+    if msg.get("type") != "posted-content":
+        return None
+    institutions = msg.get("institution") or []
+    name = (institutions[0].get("name") if institutions else "") or msg.get("publisher", "")
+    return name.strip() or None
+
+
+def add_venue(bibtex: str, venue: str, note: str = "Preprint") -> str:
+    """Append journal/note fields inside the entry's closing brace."""
+    body = bibtex.rstrip()
+    close = body.rfind("}")
+    if close < 0:
+        return bibtex
+    head = body[:close].rstrip().rstrip(",")
+    return f"{head}, journal={{{venue}}}, note={{{note}}} }}"
 
 
 # Crossref BibTeX can carry XML/MathML fragments, HTML entities, smart
@@ -211,7 +250,7 @@ def main() -> int:
     session.headers["User-Agent"] = f"neuresearch/1.0 (mailto:{args.email})"
 
     blocks: list[str] = []
-    n_crossref = n_minimal = n_skipped = 0
+    n_crossref = n_minimal = n_skipped = n_preprint = 0
     for stem in stems:
         entry = manifest["entries"][stem]
         doi = (entry.get("doi") or "").strip()
@@ -225,6 +264,18 @@ def main() -> int:
                 print(f"[warn] {stem}: Crossref error ({e}); falling back to minimal", file=sys.stderr)
             if bib:
                 block = rekey(bib, stem)
+                if not _HAS_VENUE_RE.search(block):
+                    time.sleep(POLITE_DELAY)
+                    try:
+                        venue = preprint_venue(doi, session)
+                    except requests.RequestException as e:
+                        venue = None
+                        print(f"[warn] {stem}: venue lookup failed ({e}); leaving as-is",
+                              file=sys.stderr)
+                    if venue:
+                        block = add_venue(block, venue)
+                        n_preprint += 1
+                        print(f"[preprint] {stem}  venue <- {venue}")
                 n_crossref += 1
                 print(f"[crossref] {stem}  <-  {doi}")
             else:
@@ -251,7 +302,8 @@ def main() -> int:
     out.write_text(header + "\n\n".join(blocks) + "\n")
 
     print(f"\n{len(blocks)} written -> {out}")
-    print(f"  {n_crossref} via Crossref, {n_minimal} minimal, {n_skipped} skipped.")
+    print(f"  {n_crossref} via Crossref ({n_preprint} preprint venue filled), "
+          f"{n_minimal} minimal, {n_skipped} skipped.")
 
     # eyeball the first few entries
     preview = "\n\n".join(blocks[:3])
