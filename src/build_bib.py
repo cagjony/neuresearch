@@ -160,6 +160,60 @@ def latex_sanitize(bibtex: str) -> str:
     return re.sub(r"[ \t]{2,}", " ", s)          # collapse spaces the strip introduced
 
 
+# Elsevier's cas-model2-names.bst (and most sentence-case styles) lowercase the
+# whole title with BibTeX's change.case$ "t", which turns "ATP" into "atp" and
+# "Rett syndrome" into "rett syndrome". Only characters inside braces survive.
+# So brace the tokens whose capitalization is load-bearing, and leave ordinary
+# words alone so the style can still impose sentence case. This preserves the
+# casing Crossref gave us — it never invents or re-cases anything.
+_TITLE_FIELD_RE = re.compile(r"(\btitle\s*=\s*\{)(.*?)(\}\s*,)", re.I | re.S)
+
+# Capitalized words a lowercasing style would mangle but the rules below cannot
+# detect, because their only capital is the first letter — indistinguishable
+# from an ordinary word. Extend as the library grows; keep it to real proper
+# nouns (people, diseases named after people, organisms, methods).
+_PROPER_NOUNS = {
+    "alzheimer", "parkinson", "huntington", "rett", "creutzfeldt", "jakob",
+    "purkinje", "bergmann", "schwann", "hodgkin", "huxley", "hopf", "markov",
+    "gaussian", "poisson", "bayesian", "fourier", "brownian", "drosophila",
+    "xenopus", "caenorhabditis", "escherichia",
+}
+
+
+def _needs_brace(token: str, nxt: str = "") -> bool:
+    """Would a lowercasing style corrupt this token?
+
+    `nxt` is the following token, needed only for chemical symbols that some
+    publishers space out ("Ca 2 + release"), where the capital would otherwise
+    look like an ordinary word.
+    """
+    # leave LaTeX alone: math, macros, and anything already braced
+    if any(c in token for c in "${}\\"):
+        return False
+    core = token.strip(".,;:()[]\"'")
+    if not core:
+        return False
+    n_upper = sum(c.isupper() for c in core)
+    if n_upper >= 2:                       # ATP, NMDA, P2Y, mGluR, RBA-2
+        return True
+    if n_upper >= 1 and any(c.isdigit() for c in core):   # Ca2+, IP3
+        return True
+    if core[0].isupper() and core.isalpha() and len(core) <= 2 and nxt[:1].isdigit():
+        return True                        # "Ca 2 +", "K +"
+    return core.lower().rstrip("'s") in _PROPER_NOUNS     # Alzheimer's, Rett
+
+
+def protect_caps(bibtex: str) -> str:
+    """Brace-protect acronyms and proper nouns in the entry's title field."""
+    def fix(m: re.Match) -> str:
+        words = m.group(2).split(" ")
+        out = [f"{{{w}}}" if _needs_brace(w, words[i + 1] if i + 1 < len(words) else "")
+               else w for i, w in enumerate(words)]
+        return m.group(1) + " ".join(out) + m.group(3)
+
+    return _TITLE_FIELD_RE.sub(fix, bibtex, count=1)
+
+
 def minimal_entry(stem: str, entry: dict) -> str:
     """A bare @article built ONLY from manifest metadata; unknowns left blank.
 
@@ -290,7 +344,7 @@ def main() -> int:
             print(f"[minimal ] {stem}  (no DOI)")
 
         if block:
-            blocks.append(latex_sanitize(block).rstrip())
+            blocks.append(protect_caps(latex_sanitize(block)).rstrip())
         else:
             n_skipped += 1
             print(f"[skip    ] {stem}")
