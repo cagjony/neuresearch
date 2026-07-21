@@ -763,6 +763,20 @@ Builds on the 2026-07-08 EVE block below (Chaos supplements + Fig 3 reorder). Th
   real fetches — purge the fakes (entries + by_id + files + nodes) before re-fetching.
 
 ### SESSION LOG  (newest first; agent appends one line per session)
+- 2026-07-21 (LATEST+2) — **submission provenance** established after the user asked how we would know, later,
+  which version was actually submitted. Added `projects/astro_atp/SUBMISSIONS.md` (ledger), a
+  `submissions/<date>-<journal>/` folder holding the PDFs force-added past the `*.pdf` ignore rule, and git
+  tags `submitted/2026-07-11-csf` (02bd826) + `submitted/2026-07-14-cnsns` (7ec68e1). Both entries are
+  **reconstructions**, rebuilt from their commits — the CSF one does NOT rebuild cleanly because its graphical
+  abstract was the placeholder `figs/cas-grabs.pdf`, which `*.pdf` keeps out of git. New durable rule in
+  `neubrain/AGENTS.md`: freeze at submission time (snapshot PDFs → ledger row → tag), never reconstruct later.
+- 2026-07-21 (LATEST+1) — astro_atp bibliography polish: `maly2021`→`maly2022` (the cited bioRxiv preprint had
+  been published in Neurosci. Lett. 783, 136711 (2022); stem/files/node/`\cite` all moved, cited_dois
+  re-resolved) — a real citation change; `build_bib.py` taught to fill preprint venues from Crossref
+  `institution` (`journal={bioRxiv}`, `note={Preprint}`; also caught `maris2019`) and to brace-protect
+  acronyms/proper nouns so the CAS style stops printing "atp", "nmda", "rett", "alzheimer's". Verified by
+  rendering the reference page to image, not just `pdftotext` (en-dashes and casing don't survive extraction).
+  Known residue: `falcke2004`'s Crossref title genuinely contains lowercase "ca 2+". (agent: Claude)
 - 2026-07-21 (LATEST) — astro_atp **bib hygiene CLOSED**. User supplied the two institutional-access PDFs;
   `ingest.py --doi` brought in `sanchezmico2026` (233 Crossref refs) and `weiss2025` (77) with stems matching
   the manuscript `\cite` keys, both given `pdftotext -layout` text layers (`fulltext_txt: true`);
