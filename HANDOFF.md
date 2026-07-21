@@ -619,12 +619,16 @@ Builds on the 2026-07-08 EVE block below (Chaos supplements + Fig 3 reorder). Th
   bibliography-hygiene chore.**
   1. **Submit to CNSNS** from `neubrain/projects/astro_atp/submission/`. Upload manuscript, highlights,
      cover letter, graphical abstract, figures. Nothing further to build.
-  2. **BIB HYGIENE (real risk, do before any bib regeneration).** Five entries are **hand-added** to
-     `references.bib` and are NOT manifest citizens: `scheffer2009`, `maturana2020`, `shah2022`,
-     `sanchezmico2026`, `weiss2025`. A future `build_bib.py` run **will silently drop them** and the
-     manuscript will build with undefined citations. Either ingest all five properly (`ingest.py --doi`
-     → `make_nodes.py` → `build_bib.py`) or do not regenerate the bib. This supersedes the older
-     "safe to regenerate" note below — it is no longer true.
+  2. **BIB HYGIENE — narrowed to 2 papers (2026-07-21).** The earlier "five hand-added entries" flag was
+     overstated: `scheffer2009` and `maturana2020` were already proper manifest citizens, and `shah2022`
+     has now been fetched properly (Europe PMC JATS, 88 cited DOIs, node wired). **Two remain**, both
+     cited in the Discussion neurodegeneration paragraph and both hand-written in `references.bib`:
+     `sanchezmico2026` (10.1038/s41583-026-01032-6, Nat Rev Neurosci, paywalled) and `weiss2025`
+     (10.1523/jneurosci.0349-25.2025, PMC12491769, CC BY-NC-SA but no EPMC XML and 403 on both PDF
+     endpoints). **Until they are ingested, do NOT run `build_bib.py`** — verified 2026-07-21 by a test
+     regeneration to a scratch path that it drops exactly these two. Full instructions + commands in
+     `projects/astro_atp/to-find.md`. They need PDFs pulled by hand through KU Leuven / Medipol access.
+     This supersedes the older "safe to regenerate" note below.
   3. Optional, only if a reviewer pushes: pin the 1 s-per-model-time-unit conversion to a cited Ca²⁺
      oscillation period. Currently stated as a convention, not a fit.
   4. Affiliation [2] currently reads "Electrical and Electronics Engineering Department, Istanbul Medipol
@@ -762,6 +766,16 @@ Builds on the 2026-07-08 EVE block below (Chaos supplements + Fig 3 reorder). Th
   real fetches — purge the fakes (entries + by_id + files + nodes) before re-fetching.
 
 ### SESSION LOG  (newest first; agent appends one line per session)
+- 2026-07-21 (LATE) — astro_atp **bib hygiene**: audited the 5 suspected hand-added `references.bib` entries —
+  `scheffer2009`/`maturana2020` were already manifest citizens (earlier flag overstated); **`shah2022` ingested
+  properly** via `fetch_papers.py` (Europe PMC JATS, `refs.py` → 88 cited DOIs, node wired). `sanchezmico2026`
+  (Nat Rev Neurosci, paywalled) and `weiss2025` (J Neurosci; CC BY-NC-SA but no EPMC `fullTextXML` and 403 on
+  both PMC and publisher PDF endpoints) could NOT be fetched legally by script → written into `to-find.md` with
+  DOIs + ingest commands; no dummy files and no metadata-only manifest entries were created (a fileless entry
+  would make `reconcile.py` permanently DIRTY, and dummy PDFs were purged as fakery once before). Verified by
+  test-regenerating the bib to a scratch path that exactly those two drop. Also cleared the **8 missing `lit/`
+  nodes** that had been carried as cosmetic drift since 2026-07-01 (`make_nodes propose` + `wire`, 52 nodes) —
+  `reconcile.py` is now **CLEAN**. `references.bib` deliberately left hand-edited and unregenerated. (agent: Claude)
 - 2026-07-21 — astro_atp **retargeted to CNSNS and submission package finalized** (work spanned home + work
   machines; this entry consolidates it). Chaos, Solitons & Fractals returned the paper without external review
   (CHAOS-D-26-06657) → new `cover_letter_cnsns.tex` framing it as a transfer, old chaos letter to `archive/`;
