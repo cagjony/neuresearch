@@ -763,6 +763,13 @@ Builds on the 2026-07-08 EVE block below (Chaos supplements + Fig 3 reorder). Th
   real fetches — purge the fakes (entries + by_id + files + nodes) before re-fetching.
 
 ### SESSION LOG  (newest first; agent appends one line per session)
+- 2026-07-21 (LATEST+3) — submission record **completed with the authoritative artefacts**: user downloaded the
+  Editorial Manager PDFs (`CHAOS-D-26-06657.pdf` 36 pp, `CNSNS-D-26-03814.pdf` 41 pp) into
+  `projects/astro_atp/submissions/`. Verified both earlier reconstructions against them sentence-by-sentence
+  (clean match), so the tags are trustworthy. **Corrected the CSF date 07-11 → 07-09**: EM reports US Eastern
+  while the assembled PDFs carry CEST stamps 6 h later, pinned by the CNSNS pair (EM 07-14 18:54:10 ET =
+  PDF 07-15 00:55:03 CEST). Tag renamed `submitted/2026-07-09-csf`; CNSNS ms. no. recorded. Noted that
+  `02bd826` was committed two days *after* the submission it is tagged for. (agent: Claude)
 - 2026-07-21 (LATEST+2) — **submission provenance** established after the user asked how we would know, later,
   which version was actually submitted. Added `projects/astro_atp/SUBMISSIONS.md` (ledger), a
   `submissions/<date>-<journal>/` folder holding the PDFs force-added past the `*.pdf` ignore rule, and git
