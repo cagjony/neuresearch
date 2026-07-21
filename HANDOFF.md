@@ -147,6 +147,36 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
+### CURRENT STATE  (as of: 2026-07-21, astro_atp: SUBMISSION PACKAGE COMPLETE — retargeted to CNSNS)
+The manuscript is **built, verified, and ready to submit**. Work spanned several sessions on two machines
+(home + work), so the record below is reconstructed from the files.
+
+- **Target journal changed: Chaos, Solitons & Fractals → Communications in Nonlinear Science and
+  Numerical Simulation (CNSNS).** CSF returned it without external review (Ms.\ Ref.\ No.\
+  CHAOS-D-26-06657). The cover letter is now `cover_letter_cnsns.tex` and states this openly: transfer,
+  no prior referee reports, manuscript unchanged. `cover_letter_chaos.tex` moved to `archive/`.
+- **Abstract rewritten for the CNSNS audience** — opens on the nonlinear-dynamics framing ("spatially
+  extended excitable media reorganize their collective dynamics when a single control parameter is
+  varied") and reaches astrocytes as the realization, rather than opening on astrocyte biology.
+- **Graphical abstract is real** — `graphical_abstract.png` replaces the placeholder `figs/cas-grabs.pdf`.
+- **Fig 3B claim tightened** (text + caption): the χ peak is at **low-to-intermediate ATP, maximal at
+  α≈0.18, decaying steeply thereafter** — not "intermediate ATP".
+- **Author block final.** Full names with diacritics (Fazlı Kemal Bayat, Feyyaz Oktay, Çağatay Aydın).
+  Affiliation assignment **verified in the built PDF**: Bayat = a,c · Oktay = c · Aydın = b,c,d, where
+  a = Marmara EEE, b = Istanbul Medipol EEE, c = SABITA (Medipol), d = VIB-KU Leuven.
+- **Declarations added** (Elsevier policy): a *Code and data availability* section pointing at
+  `https://github.com/neurophysiology-expertise-unit/bayat-et-al`, and a *Declaration of generative AI*
+  covering language editing plus drafting/refining the analysis and figure-generation code. Both sit
+  immediately before the references, per Elsevier's placement rule.
+- **`submission/` is a self-contained bundle** and is current as of the last build: `manuscript.tex/.pdf`
+  (21 pp, 0 errors, 0 undefined citations), `highlights.tex/.pdf` (standalone, 1 p), `cover_letter_cnsns.tex/.pdf`,
+  `references.bib`, `manuscript.bbl`, the CAS class files (`cas-sc.cls`, `cas-common.sty`,
+  `cas-model2-names.bst`), `graphical_abstract.png`, 8 figures, `thumbnails/`, `figs/`.
+- **Build is local, not Overleaf** (Overleaf could not build). From `submission/`:
+  `pdflatex → bibtex → pdflatex ×2`. The CAS class files are vendored in the bundle so it builds anywhere.
+- **`bayat-et-al` has a `.gitignore`** for `*.pdf`/`*.png` (commit `dc9de0a`); `processed_data/` is kept,
+  so every figure regenerates from code + caches.
+
 ### CURRENT STATE  (as of: 2026-07-09 LATE, astro_atp: figure/caption polish pass — filenames, S-numbering, stats format, Fig 1/2 alignment, consistent panel labels)
 Continues the 2026-07-09 block below. Fixes from a detailed review pass:
 - **Figure filenames fixed** in `manuscript.tex`: `Figure_2_29.png`→`Figure_2.png`, `Figure_4_67.png`→`Figure_4.png`
@@ -585,7 +615,22 @@ Builds on the 2026-07-08 EVE block below (Chaos supplements + Fig 3 reorder). Th
 - Optional: re-link the 9 orphaned hand-written concept files onto the new ATP nodes.
 
 ### NEXT ACTION
-- **astro_atp (2026-07-09 LATE) — RESUME HERE.** Remaining after the figure/caption polish pass:
+- **astro_atp (2026-07-21) — RESUME HERE. The package is ready; what's left is submitting it and one
+  bibliography-hygiene chore.**
+  1. **Submit to CNSNS** from `neubrain/projects/astro_atp/submission/`. Upload manuscript, highlights,
+     cover letter, graphical abstract, figures. Nothing further to build.
+  2. **BIB HYGIENE (real risk, do before any bib regeneration).** Five entries are **hand-added** to
+     `references.bib` and are NOT manifest citizens: `scheffer2009`, `maturana2020`, `shah2022`,
+     `sanchezmico2026`, `weiss2025`. A future `build_bib.py` run **will silently drop them** and the
+     manuscript will build with undefined citations. Either ingest all five properly (`ingest.py --doi`
+     → `make_nodes.py` → `build_bib.py`) or do not regenerate the bib. This supersedes the older
+     "safe to regenerate" note below — it is no longer true.
+  3. Optional, only if a reviewer pushes: pin the 1 s-per-model-time-unit conversion to a cited Ca²⁺
+     oscillation period. Currently stated as a convention, not a fit.
+  4. Affiliation [2] currently reads "Electrical and Electronics Engineering Department, Istanbul Medipol
+     University". An earlier session had it as "Faculty of Engineering and Natural Sciences" — the
+     current wording is the newer one and is what the built PDF shows.
+- **astro_atp (2026-07-09 LATE) — superseded by the entry above.** Remaining after the figure/caption polish pass:
   0. ~~Verify regenerated Figs 2 & 3 for panel-label collisions~~ **DONE 2026-07-11 — verified clean** (both
      PNGs eyeballed; all panel letters top-left, no collisions). STILL PENDING: check the Discussion line ~523
      "moderate...coherent wave propagation" for consistency with the corrected abstract (intermediate ATP =
@@ -717,6 +762,16 @@ Builds on the 2026-07-08 EVE block below (Chaos supplements + Fig 3 reorder). Th
   real fetches — purge the fakes (entries + by_id + files + nodes) before re-fetching.
 
 ### SESSION LOG  (newest first; agent appends one line per session)
+- 2026-07-21 — astro_atp **retargeted to CNSNS and submission package finalized** (work spanned home + work
+  machines; this entry consolidates it). Chaos, Solitons & Fractals returned the paper without external review
+  (CHAOS-D-26-06657) → new `cover_letter_cnsns.tex` framing it as a transfer, old chaos letter to `archive/`;
+  abstract rewritten to open on the nonlinear-dynamics framing; real `graphical_abstract.png` replaced the CAS
+  placeholder; Fig 3B χ-peak claim tightened to "low-to-intermediate, maximal at α≈0.18"; author names given in
+  full with diacritics and affiliations reassigned (Bayat a,c · Oktay c · Aydın b,c,d) and verified in the built
+  PDF; added *Code and data availability* (GitHub `neurophysiology-expertise-unit/bayat-et-al`) and the Elsevier
+  *generative AI* declaration before the references; standalone `highlights.tex` built; `submission/` refreshed
+  as a self-contained locally-buildable bundle (21 pp, 0 errors, 0 undefined citations). Flagged: 5 hand-added
+  bib entries would be dropped by `build_bib.py`. (agent: Claude)
 - 2026-07-09 (LATE) — astro_atp figure/caption polish: fixed Fig 2/4 includegraphics filenames; SI figures now
   S-numbered (S1–S3) via `\setcounter`+`\renewcommand{\thefigure}` (were rendering as Fig 6–8); reported the S3
   τ_ac enhancement and S4 centroid ratio as mean ± SD (n=20) after adding per-seed extraction; aligned Fig 1 ATP
