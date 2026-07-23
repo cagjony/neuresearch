@@ -31,8 +31,15 @@ STEM = CITEKEY CONVENTION
 SCOPE / HONEST LIMITS  (open-access only, in priority order)
     1. Europe PMC full-text JATS XML   (publisher-structured)
     2. Unpaywall -> legal OA PDF        (fallback; optional GROBID -> TEI XML)
+    3. NCBI PMC efetch -> JATS XML      (last resort; different subset to EPMC)
     Paywalled papers with no legal OA copy are NOT downloaded; they are logged
     as gaps for you to fetch via institutional access. No stub is ever written.
+
+    Route 3 exists because Europe PMC and NCBI expose overlapping but NOT
+    identical subsets: a paper can 404 at EPMC's fullTextXML and still be served
+    by efetch. Publishers that withhold XML answer efetch with HTTP 200 and an
+    explanatory notice rather than an error, so the body is inspected for a
+    <body> element and a response without one is treated as "not available".
 
 DESIGN (ephys-pipeline-invariants)
     - "not open access" is an expected RESULT (logged as a gap), not an error.
@@ -65,6 +72,7 @@ from log_writer import FetchLog  # noqa: E402
 
 EPMC = "https://www.ebi.ac.uk/europepmc/webservices/rest"
 UNPAYWALL = "https://api.unpaywall.org/v2"
+EFETCH = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
 POLITE_DELAY = 0.34  # seconds between external calls
 
 
@@ -213,6 +221,36 @@ def fetch_epmc_xml(rec: Record, session: requests.Session) -> bytes | None:
     return r.content
 
 
+def fetch_pmc_efetch(rec: Record, session: requests.Session) -> bytes | None:
+    """Return JATS bytes from NCBI PMC, or None when the full text is withheld.
+
+    Tried only after Europe PMC and Unpaywall, because it recovers a genuinely
+    different subset (several alz-olf sources of record are here and nowhere else).
+
+    Two shapes have to be handled that the EPMC route does not:
+      - efetch wraps the article in <pmc-articleset>, so it is unwrapped here and
+        the stored file is a plain <article>, identical in shape to route 1;
+      - a publisher that opts out of XML redistribution still answers HTTP 200,
+        with a comment/notice and no <body>. That is "not available", not an
+        error, so it returns None and the caller logs a gap.
+    """
+    r = session.get(EFETCH, params={"db": "pmc", "id": rec.pmcid, "rettype": "xml"},
+                    timeout=60)
+    r.raise_for_status()
+    try:
+        root = ET.fromstring(r.content)
+    except ET.ParseError:
+        return None
+    if root.tag.split("}")[-1].lower() == "pmc-articleset":
+        art = next((c for c in root if c.tag.split("}")[-1].lower() == "article"), None)
+        if art is None:
+            return None
+        root = art
+    if root.find(".//body") is None:
+        return None
+    return ET.tostring(root, encoding="utf-8")
+
+
 def validate_jats(xml_bytes: bytes) -> bool:
     try:
         root = ET.fromstring(xml_bytes)
@@ -330,6 +368,7 @@ def main() -> int:
         stem = assign_stem(rec, manifest)
         xmlp = library / f"{stem}.xml"
         src_label = ""
+        pdf_error = ""   # a route-2 failure worth reporting if routes 2 and 3 both fail
 
         # --- source 1: Europe PMC JATS XML --- #
         if rec.in_epmc and rec.pmcid:
@@ -355,25 +394,45 @@ def main() -> int:
                 except requests.exceptions.RequestException as e:
                     # 403/401/5xx/timeout/connection error on the OA PDF is an
                     # expected gap (paywall, anti-bot, dead mirror), not a crash.
+                    # Fall through to route 3 rather than abandoning the paper:
+                    # publishers that 403 an automated PDF request often still
+                    # serve the same article as XML from NCBI.
                     if pdf.exists():
                         pdf.unlink()  # drop any partial/empty file
-                    log.gap(raw, f"OA PDF download failed: {e}"); n_gap += 1
-                    print(f"[GAP]   {stem}: OA PDF download failed: {e}"); continue
-                if args.grobid:
-                    tei = grobid_tei(pdf, args.grobid, session)
-                    if not (validate_jats(tei) or b"<TEI" in tei[:200]):
-                        raise RuntimeError(f"{stem}: GROBID returned unexpected content")
-                    xmlp = library / f"{stem}.tei.xml"
-                    xmlp.write_bytes(tei)
-                    src_label = "unpaywall-pdf+grobid-tei"
+                    pdf_error = f"OA PDF download failed: {e}"
                 else:
-                    xmlp = pdf
-                    src_label = "unpaywall-pdf"
+                    # `else` matters: on a failed download the file has just been
+                    # unlinked, so nothing below may claim it as the fetched copy.
+                    # Without this the manifest records a file that is not on disk.
+                    if args.grobid:
+                        tei = grobid_tei(pdf, args.grobid, session)
+                        if not (validate_jats(tei) or b"<TEI" in tei[:200]):
+                            raise RuntimeError(f"{stem}: GROBID returned unexpected content")
+                        xmlp = library / f"{stem}.tei.xml"
+                        xmlp.write_bytes(tei)
+                        src_label = "unpaywall-pdf+grobid-tei"
+                    else:
+                        xmlp = pdf
+                        src_label = "unpaywall-pdf"
+
+        # --- source 3: NCBI PMC efetch (a different subset to Europe PMC) --- #
+        if not src_label and rec.pmcid:
+            time.sleep(POLITE_DELAY)
+            xml = fetch_pmc_efetch(rec, session)     # None if the XML is withheld
+            if xml is not None and validate_jats(xml):
+                xmlp = library / f"{stem}.xml"
+                xmlp.write_bytes(xml)
+                src_label = "ncbi-efetch-jats"
 
         # --- nothing worked -> log a gap, keep going --- #
         if not src_label:
-            if rec.in_epmc and rec.pmcid:
-                reason = "EPMC full text unavailable (404) and no OA copy via Unpaywall"
+            if pdf_error:
+                # Unpaywall said OA but the publisher refused the script, and no
+                # XML route covered it. Almost always fetchable in a browser.
+                reason = pdf_error
+            elif rec.in_epmc and rec.pmcid:
+                reason = ("no full text at Europe PMC or NCBI efetch, "
+                          "and no OA copy via Unpaywall")
             elif rec.doi:
                 reason = "no legal OA copy (paywalled)"
             else:
