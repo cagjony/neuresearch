@@ -81,8 +81,10 @@ view at once.
 
 ## TOOLS (in neuresearch/src/)
 
-- `fetch_papers.py` — OA fetch: Europe PMC JATS XML + Unpaywall PDF → `_library/`,
-  updates manifest, logs to `logs/fetch-log.md`. `--vault --project --email`. [BUILT]
+- `fetch_papers.py` — OA fetch → `_library/`, updates manifest, logs to `logs/fetch-log.md`.
+  `--vault --project --email`. **Three routes, in order: Europe PMC JATS → Unpaywall PDF →
+  NCBI PMC efetch** (added 2026-07-23; EPMC and NCBI expose different subsets, and a route-2
+  403 now falls through to route 3 instead of abandoning the paper). [BUILT]
 - `refs.py` — backfill `cited_dois` per paper: JATS → Crossref → GROBID(optional). [BUILT]
 - `ingest.py` — absorb a manually-acquired PDF as a full library citizen. [BUILT]
 - `make_nodes.py` — two-phase: `propose` (nodes + concepts/_proposed.md) then
@@ -105,6 +107,18 @@ view at once.
   an explicit fuzzy-match floor (currently a title-overlap check, no numeric floor).]
 - `new_project.py` — scaffold a new project (plan template, papers.txt, manuscript
   stub) + print next steps. [BUILT]
+- `triage_refs.py` — build a project's reference triage table: one row per DOI with year,
+  first author, journal, times-cited, which draft sections cite it, whether a full text is
+  held, and a mechanically proposed tier. Author fills `tier` / `replacement_doi` / `note`;
+  those three survive regeneration, keyed by DOI. `record` and `seminal` are NEVER proposed
+  — the script cannot know a 1996 paper introduced Tg2576. `--cut-sections 2,6
+  --current-from 2016`. Report-only: reads the manifest, never writes it. [BUILT ✓ — ran for
+  alz-olf, 165 refs]
+- `gen_tofind.py` — derive `to-find.md` from the triage table: only references that are KEPT
+  and still lack a full text, grouped by tier. **`to-find.md` is generated, never
+  hand-maintained** — it and the tier column drift apart the moment a tier changes, and
+  chasing a PDF for a section about to be deleted is exactly the waste this prevents.
+  [BUILT ✓ — alz-olf worklist 56 → 19]
 - `sync_skills.py` — deploy `neuresearch/skills/` → `~/.claude/skills/`; `--check`
   audits. [BUILT — `--check` reports scientific-writing in-sync]
 
@@ -146,6 +160,63 @@ view at once.
 ---
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
+
+### CURRENT STATE  (as of: 2026-07-23, alz-olf: reference base triaged, claim sharpened, manuscript assembled on a new spine)
+
+**`alz-olf` is the active project. `astro_atp` is unchanged — still with CNSNS, nothing pending.**
+
+The review went from an unstructured draft with an unaudited bibliography to a settled
+architecture with an assembled manuscript. Three things were decided and are now on disk.
+
+- **The reference base is fully triaged. 165 references → 105 kept, 60 cut**, every row
+  carrying a tier AND a written reason. Tiers: `record` (34) · `current` (65) ·
+  `seminal` (2) · `replace` (4, each with a verified recent substitute) · `cut` (60).
+  The policy is **role, not age**: a 1984 instrument paper is a source of record; a 2016
+  paper that does not serve the claim is cut. Lives in
+  `projects/alz-olf/refs-triage.tsv` (new `note` column) and
+  `specs/2026-07-21-review-restructure-design.md`.
+- **The claim was sharpened mid-session and this changed the architecture.** It was
+  "the bottleneck is assay standardization"; it is now **"olfactory testing is stuck at
+  Phase 2 because mouse and human studies measure different olfactory constructs —
+  the bottleneck is construct alignment, not biology."** Human instruments measure
+  *identification* (a naming task needing semantic memory); mouse paradigms measure
+  *detection/discrimination* (no naming). `kareken2003` + `hedner2010` show these
+  dissociate anatomically. This makes the mouse-heavy evidence base an asset rather
+  than an awkwardness under a clinical claim. The roadmap (`pepe2001`, `boccardi2021`)
+  remains the spine; the phase verdicts are unchanged.
+- **Six sections became five, with DECLARATIVE headings** (Mensh Rule 7 — the contents
+  page now carries the argument). `projects/alz-olf/toc-with-references.md` maps every
+  kept reference to exactly one section: 1 Forty years a candidate · 2 The biology is
+  settled · **3 The assay is not: mice and humans measure different constructs (CORE)** ·
+  4 Every downstream phase inherits the mismatch · 5 What would close the gap.
+- **`projects/alz-olf/manuscript.md` is ASSEMBLED** — 7,842 words, the students' prose
+  moved into the new order, **not rewritten**. 120 Zotero citation groups → 93 citekeys;
+  45 citations to cut references stripped; **8 TODO blocks** where new text is needed and
+  **8 SPLIT notes** where a paragraph feeds two sections (placed whole in its primary
+  destination — relocating a sentence is a deliberate editing act, not a mechanical one).
+  Verified: no cut reference is cited anywhere. `projects/alz-olf/migration-map.md` records
+  the paragraph-by-paragraph reasoning; the build scripts are in `projects/alz-olf/tools/`.
+- **Author list recorded** in `projects/alz-olf/authors.md` (six authors; Aydın
+  corresponding). Six items still open there: Sevgili's exact position, Alp's email, a
+  name/address mismatch on author 2, affiliations, ORCIDs, CRediT.
+- **Working format = Markdown, LaTeX at submission** (user decision). Target journal is
+  still undecided, so a class file would be premature, and the students wrote in Word —
+  `pandoc manuscript.md -o draft.docx` keeps them able to revise their own paper.
+
+**Three lessons worth carrying forward.**
+
+1. **Triage before hunting.** The acquisition worklist went **56 → 19** purely because
+   triage removed papers first. A PDF had already been chased for a section that was
+   about to be deleted. `to-find.md` is now DERIVED from the tier column by
+   `gen_tofind.py` and must never be hand-maintained.
+2. **Changing the claim invalidates earlier cut decisions.** `niimura2006` (species
+   differences in olfactory receptor genes) and `larsson2009` (autobiographical odour
+   memory) were correctly cut under the old claim and are *central* under the new one —
+   the students cite both for exactly the mismatch sentence. Both **reinstated**. After
+   any claim change, re-sweep the cut list.
+3. **The students had already written the core argument** — in old §7.p4, as a
+   *limitation*, two-thirds of the way through the paper. The restructure is largely
+   relocation, not invention. Look for this before assuming prose must be written.
 
 ### CURRENT STATE  (as of: 2026-07-21 END, astro_atp: SUBMITTED to CNSNS — awaiting editor; working copy has moved ahead)
 **The paper is out.** `CNSNS-D-26-03814`, submitted 2026-07-14 18:54:10 ET, after
@@ -637,7 +708,46 @@ Builds on the 2026-07-08 EVE block below (Chaos supplements + Fig 3 reorder). Th
 - Optional: re-link the 9 orphaned hand-written concept files onto the new ATP nodes.
 
 ### NEXT ACTION
-- **astro_atp (2026-07-21 END) — RESUME HERE. Nothing to do; the paper is with CNSNS.**
+- **alz-olf (2026-07-23) — RESUME HERE. The active project.**
+  1. **DO THIS FIRST — make the triage take effect.** `references.bib` still emits all 60
+     cut papers, so the triage is recorded but not yet binding. Per the spec: add
+     `dropped` to the excluded-role enumeration in `build_bib.py` (it already skips
+     `role: "novelty_screen"` — same pattern), make `reconcile.py` treat `dropped` as
+     valid-uncited rather than drift, apply `role: "dropped"` to the 60 cut manifest
+     entries, document it in `neubrain/AGENTS.md`, then regenerate `references.bib`.
+     **Nothing is deleted** — a dropped paper stays a library citizen. Self-contained;
+     no user input needed.
+  2. **Then write the 8 TODO blocks in `manuscript.md`.** Two are load-bearing:
+     **§3.2** — no paragraph in the draft describes what mouse olfactory *tests* actually
+     measure, and §3.3 cannot land without it (~180 words, `[@yang2009; @zhang2022;
+     @vanderlinden2018]`); and **§4's claim** that Phases 3–5 are blocked *by* Phase 2,
+     which appears nowhere in the draft. Also §3.3 (use `kareken2003`/`hedner2010` to
+     *argue* the dissociation, don't just cite them) and §1 (`pepe2001`/`boccardi2021`
+     have still never been cited in any prose). Use the `scientific-writing` skill.
+  3. **Resolve the 8 SPLIT notes** — paragraphs feeding two sections. The important one:
+     old §7.p4 carries both the species-difference sentences (→ §3.3) and the
+     standardization/confound material (→ §3.4).
+  4. **14 citekeys are PROVISIONAL** (papers not yet acquired). They follow the
+     `firstauthor+year` convention so ingest should bind them, but run `reconcile.py`
+     after any ingest to confirm rather than assuming.
+  **Waiting on the user, not on us:**
+  - 19 PDFs (`projects/alz-olf/to-find.md`). **`mucke2000` (J20) and `oakley2006` (5xFAD)
+    are one browser click each** — Unpaywall says OA, jneurosci.org 403s any script, and
+    NCBI withholds their XML. The rest are paywalled/ILL.
+  - **`Kobal 1996`** — the *Rhinology* Sniffin' Sticks paper, cited in the draft, not in
+    the corpus, and **deliberately NOT aliased** to `hummel1997` (they are different
+    papers). Acquire it or switch the citation. Three other citations are unresolved and
+    marked in-text: a WHO report with no DOI, `Comas-Herrera 2024`, and the cut `Wang 2015`.
+  - **Figure 1 collision** — the spec assigns Fig 1 to the roadmap diagram, but the draft's
+    Fig 1 is "Multifactorial mechanisms of Aβ- and tau-mediated neurodegeneration".
+    Renumber into Box 1 or drop.
+  - The six open items in `authors.md`, and the target journal (still undecided; it
+    decides the LaTeX class).
+  **Note for whoever picks this up:** the spec's enumeration of "the mouse lines" is
+  wrong and is marked partially superseded. Counting mentions in the draft put **J20
+  first at 15**, ahead of APP/PS1 at 8, with Tg2576 last at 1. J20 (`mucke2000`) was not
+  in the spec's list at all. Count before assuming.
+- **astro_atp (2026-07-21 END) — nothing to do; the paper is with CNSNS.**
   The next move belongs to the editor. When they respond:
   1. **Record the outcome** in `projects/astro_atp/SUBMISSIONS.md` (the Outcome column).
   2. **If revisions are requested**, the working copy already contains post-submission improvements
@@ -797,6 +907,19 @@ Builds on the 2026-07-08 EVE block below (Chaos supplements + Fig 3 reorder). Th
   real fetches — purge the fakes (entries + by_id + files + nodes) before re-fetching.
 
 ### SESSION LOG  (newest first; agent appends one line per session)
+- 2026-07-23 (LATEST+4) — **alz-olf: whole reference base triaged and the review restructured.** 165 refs
+  tiered (105 kept / 60 cut), each with a written reason; worklist 56 → 19. Ingested 20 user-supplied PDFs
+  including the two roadmap papers (`pepe2001`, `boccardi2021`) the claim rests on, and resolved all ten
+  sources of record (mouse lines, Braak, UPSIT, buried-food assay). **Claim sharpened** to name the
+  mouse/human construct mismatch as the *cause* of the Phase-2 bottleneck, which promoted the old §3.3 to
+  the review's spine and cut six sections to five with declarative headings. **`manuscript.md` assembled**
+  (7,842 words) from the students' prose, moved not rewritten, with 8 TODOs and 8 SPLIT notes. Three new
+  cut passes (interventions, off-claim recent work, receptor trio) all at user's direction. New tools
+  `triage_refs.py` and `gen_tofind.py`; `fetch_papers.py` gained an NCBI-efetch route **and a
+  phantom-entry bug was introduced and fixed in the same session** — dropping a `continue` left the
+  success path running after a failed download, so the manifest recorded two PDFs that had just been
+  unlinked; caught only by checking the files rather than trusting the `[OK]`. Full manifest sweep now
+  clean (228/228 files exist). (agent: Claude)
 - 2026-07-21 (LATEST+3) — submission record **completed with the authoritative artefacts**: user downloaded the
   Editorial Manager PDFs (`CHAOS-D-26-06657.pdf` 36 pp, `CNSNS-D-26-03814.pdf` 41 pp) into
   `projects/astro_atp/submissions/`. Verified both earlier reconstructions against them sentence-by-sentence
