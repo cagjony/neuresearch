@@ -73,12 +73,13 @@ DELAY = 0.12  # seconds between live Crossref calls
 COLUMNS = [
     "doi", "stem", "year", "first_author", "journal", "title",
     "draft_sections", "crossref_citations", "have_pdf",
-    "proposed_tier", "tier", "replacement_doi",
+    "proposed_tier", "tier", "replacement_doi", "note",
 ]
-# Author-owned columns, preserved across regeneration.
-AUTHOR_COLUMNS = ("tier", "replacement_doi")
+# Author-owned columns, preserved across regeneration. `note` records why a tier
+# was chosen, so a decision can be checked without re-deriving it.
+AUTHOR_COLUMNS = ("tier", "replacement_doi", "note")
 
-CURRENT_FROM = 2021  # "recent" boundary; pre-this is subject to the tiered policy
+DEFAULT_CURRENT_FROM = 2021  # "recent" boundary; pre-this is subject to the tiered policy
 
 
 # --------------------------------------------------------------------------- #
@@ -202,7 +203,7 @@ def load_cache(path: Path) -> dict:
 # tiers
 # --------------------------------------------------------------------------- #
 def propose_tier(year: int | None, sections: list[str], cut_sections: set[str],
-                 has_meta: bool = True) -> str:
+                 has_meta: bool = True, current_from: int = DEFAULT_CURRENT_FROM) -> str:
     """
     Mechanical proposal only. `record` and `seminal` are author judgements and are
     never proposed here — the point of the table is that a person makes those calls.
@@ -215,7 +216,7 @@ def propose_tier(year: int | None, sections: list[str], cut_sections: set[str],
         return "cut"          # cited nowhere in the prose: Zotero cruft
     if set(sections) <= cut_sections:
         return "cut"          # lives only in sections being removed
-    if year and year >= CURRENT_FROM:
+    if year and year >= current_from:
         return "current"
     return "replace"          # pre-2021 and still load-bearing: needs a substitute
 
@@ -256,6 +257,9 @@ def main() -> int:
                          "references living only there are proposed 'cut' (e.g. 2,6)")
     ap.add_argument("--email", default=DEFAULT_EMAIL,
                     help="contact email placed in the polite Crossref User-Agent")
+    ap.add_argument("--current-from", type=int, default=DEFAULT_CURRENT_FROM,
+                    help="first year counted as 'recent'; earlier work is subject to "
+                         f"the tiered policy (default {DEFAULT_CURRENT_FROM})")
     ap.add_argument("--refresh", action="store_true",
                     help="ignore the Crossref cache and refetch every DOI")
     args = ap.parse_args()
@@ -327,9 +331,11 @@ def main() -> int:
             "draft_sections": ",".join(sections),
             "crossref_citations": meta.get("crossref_citations", ""),
             "have_pdf": "yes" if entry.get("files") else "no",
-            "proposed_tier": propose_tier(year, sections, cut_sections, bool(meta)),
+            "proposed_tier": propose_tier(year, sections, cut_sections, bool(meta),
+                                          args.current_from),
             "tier": "",
             "replacement_doi": "",
+            "note": "",
         }
         row.update(decisions.get(key, {}))
         rows.append(row)
@@ -351,12 +357,12 @@ def main() -> int:
     from collections import Counter
     proposed = Counter(r["proposed_tier"] for r in rows)
     decided = sum(1 for r in rows if r["tier"])
-    pre = sum(1 for r in rows if r["year"] and int(r["year"]) < CURRENT_FROM)
+    pre = sum(1 for r in rows if r["year"] and int(r["year"]) < args.current_from)
 
     print(f"\nwrote {out}  ({len(rows)} rows)")
     print(f"  crossref: {n_fetched} fetched, {n_cached} cached"
           + (f", {n_failed} with no metadata" if n_failed else ""))
-    print(f"  pre-{CURRENT_FROM}: {pre} | {CURRENT_FROM}+: {len(rows) - pre}")
+    print(f"  pre-{args.current_from}: {pre} | {args.current_from}+: {len(rows) - pre}")
     print("  proposed: " + ", ".join(f"{k}={v}" for k, v in sorted(proposed.items())))
     if decided:
         print(f"  carried over {decided} decision(s) from the previous table")
