@@ -161,6 +161,41 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
+### CURRENT STATE  (as of: 2026-08-09, astro_atp: BOTH journals rejected — pivot to a falsifiable rebuild; Phase 0.1 numerics gate DONE)
+
+**astro_atp is active again. The earlier "SUBMITTED to CNSNS — awaiting editor" state is DEAD.**
+Both nonlinear-science journals **desk-rejected**: CSF (returned without review, recorded earlier)
+and now **CNSNS — rejected without external review** (`SUBMISSIONS.md` row updated 2026-08-09).
+
+- **The substantive objection is the whole game.** The editor's line — the ATP crossover is
+  "largely an expected consequence of progressively weaker coupling in an excitable lattice" —
+  is now what the project must answer. The response is a falsifiable rebuild plan the user
+  supplied: **`neubrain/projects/astro_atp/new_plan.md`** (Revision Blueprint). It fixes the
+  numerics, does finite-size scaling, then runs ONE pre-registered decisive test (Phase 2:
+  full ATP sweep vs a coupling-only sweep reparametrised by `D_eff`) whose outcome routes the
+  paper to a physics venue (separation) or a biology/modelling venue (collapse). **Do not appeal;
+  do not write manuscript text before the Phase 2 decision.**
+- **The blueprint was written without seeing the repo**, so it imagined an `analysis/{core,
+  experiments,results,figures}` tree. Reality: `bayat-et-al` is FLAT — nine self-contained
+  `fig_*.py` scripts at root, each carrying its OWN verbatim copy of the FHN core; outputs in
+  `processed_data/`. I reconciled `new_plan.md` to the real bench (added a "Bench reality"
+  section + corrected every invented path) — read that section first.
+- **Phase 0.1 (the blocking numerics gate) is DONE.** The noise bug is real and confirmed by
+  reading the code (`fig_3_criticality_ci.py` L153-160): `noise` is folded into `dC` and then
+  the whole thing is `* dt`, so noise scales as `dt` not `sqrt(dt)`. Because the core is
+  copy-pasted, **the same bug sits in all nine fig scripts**, and the sigma axis of Fig 5 is
+  physically undefined. Built `bayat-et-al/core/integrator.py` (`em_step`, correct `sqrt(dt)`),
+  `core/provenance.py` (`save_result` embeds params+git hash, per invariant #2), and
+  `tests/test_noise_scaling.py`. **Gate PASSES** — corrected scheme gives `Var[C(T)] = T·σ²`
+  constant across dt to 4.9%; old scheme is 264% dt-dependent and ~1000× too small. Runs in
+  `/opt/conda/envs/ece` (numba 0.60, numpy 1.26; the `neuresearch` env has no numba). Gate uses
+  4000 realizations not the blueprint's 500 — 500 draws can't resolve a 5% variance tolerance.
+- **NOT done:** the nine fig scripts still carry the buggy inline core. Until they are repointed
+  at `core/`, every figure in the repo is a product of the OLD scheme. That migration is the next
+  step and it unblocks Phase 0.2 (recalibrate sigma) → Phase 1.
+- **Third repo, different bench.** This work is in `bayat-et-al` (simulation/figure code), NOT
+  neubrain/neuresearch. Its own git remote (`neurophysiology-expertise-unit/bayat-et-al`).
+
 ### CURRENT STATE  (as of: 2026-07-23, alz-olf: reference base triaged, claim sharpened, manuscript assembled on a new spine)
 
 **`alz-olf` is the active project. `astro_atp` is unchanged — still with CNSNS, nothing pending.**
@@ -708,7 +743,28 @@ Builds on the 2026-07-08 EVE block below (Chaos supplements + Fig 3 reorder). Th
 - Optional: re-link the 9 orphaned hand-written concept files onto the new ATP nodes.
 
 ### NEXT ACTION
-- **alz-olf (2026-07-23) — RESUME HERE. The active project.**
+- **astro_atp (2026-08-09) — RESUME HERE. Active again after both rejections.**
+  Follow `neubrain/projects/astro_atp/new_plan.md` (read its "Bench reality" section first).
+  Work is in the **`bayat-et-al`** repo, env `/opt/conda/envs/ece`.
+  1. **Finish Phase 0.1: migrate the nine `fig_*.py` scripts off their inline buggy core.**
+     The gate (`tests/test_noise_scaling.py`) passes, but the figures don't use the fix yet.
+     Each script's loop does `C = C + dt*dC` with `noise` folded into `dC`; change to
+     `C = C + dt*dC_deterministic + sqrt(dt)*noise_coeff*eta`. Extract the shared FHN + 6-channel
+     core into `core/model.py` so it stops being copy-pasted, then repoint the scripts. Verify a
+     figure still runs end-to-end in `ece` before/after.
+  2. **Phase 0.2 — recalibrate sigma.** After the fix, nominal `sigma=0.4` is far noisier; sweep
+     `sigma ∈ {0.02…0.4}` to find where the published regimes reappear, record the new nominal in
+     `NUMERICS_NOTE.md`. If they never reappear, that is itself a finding — report it honestly.
+  3. **Phase 0.3/0.4 — audit the `I0 = 0.05 + (1/sqrt(A))*U(...)` sign (it acts opposite to the
+     stated ATP effect) and enumerate all six ATP channels in `CHANNELS.md`.** Two of the six
+     suppress coupling — that is why the editor's objection has force.
+  4. **Then Phase 1 (finite-size scaling) → Phase 2 (the decisive pre-registered test).** Do NOT
+     write any manuscript text before the Phase 2 decision; the framing depends entirely on it.
+     One pre-registration call to settle up front: run the Phase-2 coupling-only control at a
+     SECOND `alpha_ref` (not just 0.10) as cheap insurance against "you rigged the reference point".
+  - **Provenance:** every Phase-1+ `.npz` goes through `core/provenance.py::save_result`.
+  - **Do not appeal CSF or CNSNS.** Scientific judgement, not process error (see new_plan.md §4c).
+- **alz-olf (2026-07-23) — the other active project; resume when astro_atp is between decisions.**
   1. **DO THIS FIRST — make the triage take effect.** `references.bib` still emits all 60
      cut papers, so the triage is recorded but not yet binding. Per the spec: add
      `dropped` to the excluded-role enumeration in `build_bib.py` (it already skips
@@ -907,6 +963,15 @@ Builds on the 2026-07-08 EVE block below (Chaos supplements + Fig 3 reorder). Th
   real fetches — purge the fakes (entries + by_id + files + nodes) before re-fetching.
 
 ### SESSION LOG  (newest first; agent appends one line per session)
+- 2026-08-09 (LATEST+5) — **astro_atp: both journals desk-rejected → pivot to falsifiable rebuild
+  (`new_plan.md`), Phase 0.1 done.** CNSNS rejected without review (SUBMISSIONS.md row corrected).
+  User supplied a Revision Blueprint written without seeing the repo; reconciled it to the real
+  flat `bayat-et-al` bench (added "Bench reality" section, fixed invented `analysis/*` paths).
+  Confirmed the Euler-Maruyama noise bug by reading the code (noise folded into `dC` then `*dt`,
+  so it scales as `dt` not `sqrt(dt)`; duplicated across all nine fig scripts). Built
+  `core/integrator.py` + `core/provenance.py` + `tests/test_noise_scaling.py`; **gate PASSES**
+  (Var[C(T)]=T·σ² constant to 4.9% vs old scheme 264% dt-dependent). Fig-script migration is the
+  next step; until then repo figures are OLD-scheme. Env `/opt/conda/envs/ece`. (agent: Claude)
 - 2026-07-23 (LATEST+4) — **alz-olf: whole reference base triaged and the review restructured.** 165 refs
   tiered (105 kept / 60 cut), each with a written reason; worklist 56 → 19. Ingested 20 user-supplied PDFs
   including the two roadmap papers (`pepe2001`, `boccardi2021`) the claim rests on, and resolved all ten
