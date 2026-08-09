@@ -199,8 +199,18 @@ and now **CNSNS — rejected without external review** (`SUBMISSIONS.md` row upd
   Phase-0.2 science call, not a mechanical fix. **The repo's figures/caches are still OLD-scheme**
   until each script is re-run (a Phase-0.2 step, after the amplitude is settled). Also found:
   `fig_4` has no `__main__` guard (runs its full analysis on import).
-- **NEXT is Phase 0.2** (recalibrate sigma → pick the canonical amplitude → extract `core/model.py`
-  → regenerate figures), then 0.3/0.4, then Phase 1 → the pre-registered Phase 2 test.
+- **Phase 0.2 DONE (2026-08-09):** recalibrated **sigma 0.4 → 0.02332 = 0.4·sqrt(dt)**. It is an
+  algebraic identity (legacy@0.4 ≡ correct@0.4·sqrt(dt) on the same seed), so the noise fix ONLY
+  relabels the sigma axis and changes no conclusion; the published regimes recover exactly at
+  0.02332. `phase0_recalibrate.py` confirmed empirically (best match 0.0233 for single-unit and
+  10×10). `core/model.py` = the single canonical model now. Write-up: `bayat-et-al/NUMERICS_NOTE.md`.
+  Two caveats: (a) this does NOT address the editor's coupling objection — a relabeling can't
+  (that's Phase 2); (b) downstream scripts still hardcode sigma=0.4 and repo figures are still
+  old-scheme — regenerate at 0.02332. Surfaced for 0.3: the low-alpha chi outlier is the
+  `I0 = 1/sqrt(alpha)` blow-up, not a transition.
+- **NEXT is Phase 0.3/0.4** (audit the I0 sign + enumerate the six ATP channels into CHANNELS.md),
+  then Phase 1 (finite-size scaling), then the pre-registered Phase 2 decisive test. Do NOT write
+  manuscript text before the Phase 2 decision.
 - **Third repo, different bench.** This work is in `bayat-et-al` (simulation/figure code), NOT
   neubrain/neuresearch. Its own git remote (`neurophysiology-expertise-unit/bayat-et-al`).
 
