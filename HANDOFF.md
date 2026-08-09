@@ -216,7 +216,15 @@ and now **CNSNS — rejected without external review** (`SUBMISSIONS.md` row upd
   opposite to γA — a likely-deliberate-but-undisclosed device that may impose the low-ATP active
   regime (it's the Phase 0.2 α=0.05 χ outlier); added to the Phase 2 leave-one-out. Also: code
   has an undocumented ×3 on the noise. All logged for the Phase 4 Methods rewrite.
-- **Phase 0 COMPLETE.** NEXT is **Phase 1 — finite-size scaling** (run the healthy ATP sweep at
+- **Phase 0 validation gates DONE (2026-08-09):** `bayat-et-al/PHASE0_VALIDATION.md`. Gate 1a
+  PASS — `core/model.py` legacy mode is bit-identical (8e-15) to the original fig_3_ci core from
+  git, so it is a faithful extraction, canonical for the lattice. Gate 1b — the factor-of-2 is
+  that Fig 1 is a SEPARATE single-cell model; its own code reproduces the published endpoints
+  (0.13, 2.86) but NOT the intermediate (1.96 vs 1.33), a Fig-1 gap flagged for Bayat. Gate 2 —
+  the chi peak is NOT an I0=1/sqrt(A) artifact (peak stays at alpha=0.120, height −11% when I0
+  held fixed); the 1/sqrt(A) term only inflates the low-alpha tail. I0 form left UNCHANGED;
+  whether 1/sqrt(A) was intended is an email to Bayat, not a decision to make unilaterally.
+- **Phase 0 COMPLETE (validated).** NEXT is **Phase 1 — finite-size scaling** (run the healthy ATP sweep at
   L∈{32,64,128}, extend to 256 only if the χ-peak trend is ambiguous; is the crossover collective
   or a finite-size effect?), then the **pre-registered Phase 2 decisive test** (full ATP sweep vs
   coupling-only sweep reparametrised by D_eff; write the decision rule down BEFORE running). Use
