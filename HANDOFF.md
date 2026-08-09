@@ -208,9 +208,21 @@ and now **CNSNS — rejected without external review** (`SUBMISSIONS.md` row upd
   (that's Phase 2); (b) downstream scripts still hardcode sigma=0.4 and repo figures are still
   old-scheme — regenerate at 0.02332. Surfaced for 0.3: the low-alpha chi outlier is the
   `I0 = 1/sqrt(alpha)` blow-up, not a transition.
-- **NEXT is Phase 0.3/0.4** (audit the I0 sign + enumerate the six ATP channels into CHANNELS.md),
-  then Phase 1 (finite-size scaling), then the pre-registered Phase 2 decisive test. Do NOT write
-  manuscript text before the Phase 2 decision.
+- **Phase 0.3/0.4 DONE (2026-08-09):** `bayat-et-al/CHANNELS.md`. Manuscript text claims 3 ATP
+  channels (γA, σ_eff, D_eff); table + code have **6** (θ, I0, τ_h also A-dependent, undisclosed).
+  **Two of six suppress coupling** (D_eff quartic, θ threshold) + disease hits D0×0.5, κ×1.5 —
+  the mechanical basis of the editor's objection, the Phase 2 target. `I0 = 1/√A` is not a
+  code/table error (they match) but its sign makes baseline drive largest at LOW ATP (→1.55),
+  opposite to γA — a likely-deliberate-but-undisclosed device that may impose the low-ATP active
+  regime (it's the Phase 0.2 α=0.05 χ outlier); added to the Phase 2 leave-one-out. Also: code
+  has an undocumented ×3 on the noise. All logged for the Phase 4 Methods rewrite.
+- **Phase 0 COMPLETE.** NEXT is **Phase 1 — finite-size scaling** (run the healthy ATP sweep at
+  L∈{32,64,128}, extend to 256 only if the χ-peak trend is ambiguous; is the crossover collective
+  or a finite-size effect?), then the **pre-registered Phase 2 decisive test** (full ATP sweep vs
+  coupling-only sweep reparametrised by D_eff; write the decision rule down BEFORE running). Use
+  `core/model.py` and sigma=0.02332. **Do NOT write manuscript text before the Phase 2 decision.**
+  Open pre-registration call: run the Phase-2 coupling-only control at a SECOND alpha_ref (not
+  just 0.10) as insurance against "you rigged the reference point."
 - **Third repo, different bench.** This work is in `bayat-et-al` (simulation/figure code), NOT
   neubrain/neuresearch. Its own git remote (`neurophysiology-expertise-unit/bayat-et-al`).
 
