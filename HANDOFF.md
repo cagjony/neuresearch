@@ -190,9 +190,17 @@ and now **CNSNS — rejected without external review** (`SUBMISSIONS.md` row upd
   constant across dt to 4.9%; old scheme is 264% dt-dependent and ~1000× too small. Runs in
   `/opt/conda/envs/ece` (numba 0.60, numpy 1.26; the `neuresearch` env has no numba). Gate uses
   4000 realizations not the blueprint's 500 — 500 draws can't resolve a 5% variance tolerance.
-- **NOT done:** the nine fig scripts still carry the buggy inline core. Until they are repointed
-  at `core/`, every figure in the repo is a product of the OLD scheme. That migration is the next
-  step and it unblocks Phase 0.2 (recalibrate sigma) → Phase 1.
+- **Migration DONE (2026-08-09):** all ten integration cores (fig_1/2/3/3_ci/4/5/S2/S3/S4 +
+  explore) fixed IN PLACE — noise moved out of the drift into the update as `dt**0.5*noise`,
+  each core's own amplitude preserved. 23 line-pairs, one shape, diff audited; all ten verified
+  to compile and run finite at 3x3/20 steps in `ece`. A shared `core/model.py` was deliberately
+  NOT created: the cores DISAGREE on noise amplitude (`sigma_eff*3` in most, raw normal in fig_4's
+  Lyapunov core, `sigma*(1+4a)` no *3 in fig_4 SC, `sigma*(1+A0)*3` in fig_1) — unifying them is a
+  Phase-0.2 science call, not a mechanical fix. **The repo's figures/caches are still OLD-scheme**
+  until each script is re-run (a Phase-0.2 step, after the amplitude is settled). Also found:
+  `fig_4` has no `__main__` guard (runs its full analysis on import).
+- **NEXT is Phase 0.2** (recalibrate sigma → pick the canonical amplitude → extract `core/model.py`
+  → regenerate figures), then 0.3/0.4, then Phase 1 → the pre-registered Phase 2 test.
 - **Third repo, different bench.** This work is in `bayat-et-al` (simulation/figure code), NOT
   neubrain/neuresearch. Its own git remote (`neurophysiology-expertise-unit/bayat-et-al`).
 
