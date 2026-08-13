@@ -10,6 +10,8 @@ preamble = r"""
 \usepackage{graphicx}
 \usepackage{longtable}
 \usepackage{hyperref}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
 \usepackage[utf8]{inputenc}
 
 \begin{document}

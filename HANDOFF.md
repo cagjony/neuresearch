@@ -165,7 +165,7 @@ view at once.
 
 **`alz-olf` is the active project.**
 - **LaTeX manuscript successfully built:** Addressed layout glitches in the generated PDF. Replaced hardcoded Markdown section numbers to allow LaTeX to manage numbering natively. Re-numbered `Figure S1` to `Figure 2` and bumped subsequent figures. Removed strikethrough formatting (`~~`) and Markdown horizontal rules (`---`) that caused LaTeX compilation errors (`\sout` and `\rule`).
-- **Clean compilation pipeline:** Used `pandoc manuscript.md -o submission/body.tex` followed by `python3 src/build_tex.py --project-dir .` and `pdflatex` to render a perfectly clean PDF in `submission/`.
+- **Clean compilation pipeline:** Used `pandoc manuscript.md -o submission/body.tex` followed by `python3 src/build_tex.py --project-dir .` and `pdflatex` to render a perfectly clean PDF in `submission/`. Added `lmodern` and `fontenc` to fix missing font ligatures (which caused `?` glitches when copying text like "Critically" or "scheff").
 - **Reference reconciliation:** Rebuilt `references.bib` via the vault manifest, significantly reducing the "question mark" unresolved citations. 
 - **Missing Citations (Action Required):** Identified 21 remaining citations (e.g., `arriagada1992`, `braak1991`) present in the text but missing from the library vault.
 
@@ -1016,7 +1016,7 @@ Builds on the 2026-07-08 EVE block below (Chaos supplements + Fig 3 reorder). Th
   real fetches — purge the fakes (entries + by_id + files + nodes) before re-fetching.
 
 ### SESSION LOG  (newest first; agent appends one line per session)
-- 2026-08-13 (LATEST+6) — **alz-olf: LaTeX manuscript glitches fixed, pipeline established, 21 missing citations flagged.** Cleaned markdown artifacts (`---` and `~~`) causing LaTeX compilation errors. Re-numbered sections natively and mapped `Figure S1` to `Figure 2`. PDF builds cleanly with `pandoc` + `build_tex.py`. Identified 21 missing citations to be ingested next. (agent: Antigravity IDE)
+- 2026-08-13 (LATEST+6) — **alz-olf: LaTeX manuscript glitches fixed, pipeline established, 21 missing citations flagged.** Cleaned markdown artifacts (`---` and `~~`) causing LaTeX compilation errors. Re-numbered sections natively and mapped `Figure S1` to `Figure 2`. PDF builds cleanly with `pandoc` + `build_tex.py`. Added `lmodern` package to `build_tex.py` to fix PDF ligature rendering glitches (`Cririty`, `sche?`). Identified 21 missing citations to be ingested next. (agent: Antigravity IDE)
 - 2026-08-09 (LATEST+5) — **astro_atp: both journals desk-rejected → pivot to falsifiable rebuild
   (`new_plan.md`), Phase 0.1 done.** CNSNS rejected without review (SUBMISSIONS.md row corrected).
   User supplied a Revision Blueprint written without seeing the repo; reconciled it to the real
