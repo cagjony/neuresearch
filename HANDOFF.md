@@ -161,6 +161,104 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
+### CURRENT STATE  (as of: 2026-08-20, intellicage: accuracy definition corrected, group stats now reproducible, inputs committed)
+
+**`intellicage` was audited and repaired.** Code: `neu-intellicage` @ `242c78d` on `main` (pushed).
+Vault inputs: `neubrain` branch `intellicage/verstreken-reports` @ `10d4231` (pushed, off `main`).
+
+- **The accuracy bug is the headline.** IntelliCage sets `PlaceError == 0` both for a correct-place
+  visit and for every visit made while no corner condition is active — verified identical to
+  `CornerCondition != -1` in all six sessions. Accuracy was therefore 1.000 for every animal-day of
+  the nose-poke session and for Animals 5–8 in the 11 Aug habituation session, sitting in delivered
+  QC tables next to real 0.19–0.40 values for Animals 1–4. `add_time_fields` now marks conditioned
+  visits and defines `correct` only on those. **Both place sessions contain zero unconditioned
+  visits, so no learning curve, slope or group contrast changed** — confirmed by reproducing the
+  old slopes to the last digit.
+- **Terminal accuracy did change, materially.** It used the trailing block whatever its size:
+  Animal 5 read 0.70 on **10 visits** and topped the August figure; Animal 2 read 0.667 on **3**.
+  On last complete 100-visit blocks the order inverts — Animal 5 is 0.32, the lowest. July likewise
+  (Animal 4 was 16 visits). Partial blocks can no longer satisfy trials-to-criterion either.
+- **`_target_by_day` could crash the whole report.** It kept every corner tied at the daily max,
+  giving duplicate rows and an opaque pivot ValueError. Real data has three multi-target days — all
+  on switch days — with margins 159:1, 110:2 and 96:1, so a quiet mouse on a switch day would have
+  taken the report down. Now one row per animal-day plus an `ambiguous_target` flag.
+- **Group statistics come from code now** (`groups.py`): exact label-permutation tests with
+  bootstrap CIs, plus `min_attainable_p` (0.029 at 4v4) printed so a null is not read as
+  equivalence. Five of Codex's six hand-typed p-values reproduce exactly; acquisition accuracy is
+  0.257 not 0.20 because Codex averaged daily means while the code pools conditioned visits —
+  a definitional choice, not an error, and non-significant either way.
+- **ANSWER to "are Animals 1–4 slower learners?": no, and the point estimates go the other way.**
+  Acquisition slope 6.41 vs 2.32 pp/day (diff +4.09, CI −0.08 to +7.67, p=0.143); accuracy 15–17 Aug
+  0.527 vs 0.471 (p=0.257). Nothing significant, and nothing could be at n=4/group.
+- Also fixed: missing required-column validation, zero-nosepoke animals reading NaN, actograms that
+  dropped gap days and wrapped the last row to day 1, dark-phase shading missing the 23:00 bin,
+  no experiment-level `provenance.json`, and no script for the delivered HTML/PDF
+  (`scripts/render_report.sh`). 14 tests pass.
+- **Library integrity problem found, NOT yet fixed:** 11 of 117 `_library/*.pdf` are HTML landing
+  pages saved with a `.pdf` extension — `cservenk2026` (the one place-learning+reversal worked
+  example) and `kiryk2020` among them, plus `griffiths2023`, which alz-olf used to replace the
+  paywalled `scheff1993`. Full list: choi2014, cservenk2026, devanand2015, griffiths2023,
+  growdon2015, kiryk2020, koenig2005, larsson2009, maheshwar2025, sakai2016, west1994.
+  Only 10 of the 19 `papers.txt` seeds were ever fetched; the entire tau-reduction block
+  (morris2013, ahmed2014, roberson2007, lei2012, sydow2011) is absent.
+
+NEXT ACTION (intellicage)
+1. Add a magic-byte check to `fetch_papers.py`/`ingest.py` and to `reconcile.py`, then re-fetch the
+   11 HTML-stub PDFs and the 9 unfetched seeds.
+2. Regenerate both reports after the hardwired opposite-target session is exported; the reports are
+   deliberately untracked, so `analysis/experiments/README.md` carries the exact commands.
+3. Decide whether `intellicage/verstreken-reports` merges to `main` or stays a topic branch.
+
+### CURRENT STATE  (as of: 2026-08-14, astro_atp: Nonlinear Science resubmission package prepared; not yet submitted)
+
+**astro_atp is the active project.** The falsifiable rebuild in `neubrain/projects/astro_atp/new_plan.md`
+is executed through the figure and text stage. Code: `bayat-et-al` (env `/opt/conda/envs/ece`).
+Manuscript: `neubrain/projects/astro_atp/analysis/manuscript_v2/manuscript.tex`.
+
+- **Negative results are now integrated without carrying the main narrative.** The main text states
+  that only 34.7% of activity comes from units past Hopf and that noisy activation does not support a
+  propagation measurement; detailed activity-decomposition, noisy-focal and short-front-linearity
+  controls are collected in a new Appendix.
+- **Hopf claim is mathematically bounded.** Methods now derives the unique equilibrium, Jacobian,
+  trace and positive determinant. This proves Hopf is the only generic *local* stability loss and
+  excludes SNIC, while explicitly not claiming that equilibrium uniqueness excludes all global
+  periodic-orbit bifurcations. The unsupported word “supercritical” was removed.
+- **Speed framing reduced throughout.** It is gone from the title and central claim and retained only
+  as an uncalibrated descriptive figure quantity. Title/abstract/highlights/Discussion/Conclusion now
+  lead with gating and spatial bounding by refractoriness and decremental transmission.
+- **Discussion now names modelling alternatives:** phenomenological recovery/release gain, an explicit
+  reaction–diffusion ATP field with secretion/degradation/receptor activation, detailed IP3/Ca2+
+  intracellular units, and metabolic ATP models, with the question each alternative answers.
+- **Build verified:** pdflatex + bibtex + two pdflatex passes, 21 pages, no undefined citations or
+  cross-references. The pre-existing 117-pt keyword-line overfull box remains.
+
+- **Four figures rendered, all obeying the locked conventions** (new_plan.md lines 359–375):
+  25 µm/cell primary with the 50 µm value in captions only; every displayed number carries an
+  error bar over the same 10 seeds (11–20); no panel built from a log — each reads a
+  provenance-stamped npz. Fig 1 compute was split out into `figdata_fig1.py`; Fig 4 is new
+  (`fig_4_mechanisms.py`, 5 panels) off the 10-seed `fig4_mechanisms_ens.npz`.
+- **The noisy focal condition carries no speed anywhere in a panel or a Results sentence**
+  (user's decision). The argument is the reproducibility contrast: extent and activated fraction
+  reproduce to 2% in both conditions, the timing fit degrades from 1.0% to 22.5% under noise.
+  The ensemble fit value appears once, in the Fig 3 caption, labelled a regression on
+  noise-nucleated ignition times rather than a propagation speed.
+- **Results written** for all four figures, plus captions. **Methods closed two gaps** found in an
+  audit: the Stochastic Forcing subsection now describes the corrected Euler–Maruyama scheme
+  (σ = 0.4√dt = 0.0233 base, σ_true = 0.0700 with m_σ=3) instead of the pre-fix dt-scaled one, and
+  a new "Focal Initiation and Measured Wave Quantities" subsection defines the protocol and every
+  measured quantity (extent, activated fraction, front speed + its pre-set R²>0.9 criterion,
+  linearity control, nucleation rate, ensembling).
+- **Abstract + highlights rewritten** off the ensemble numbers; the retired zero-lag claim and the
+  "coupling reduction alone" control are gone from abstract, highlights and Discussion.
+- **Graphical abstract rebuilt** from the Fig-3/Fig-4 npz files (`graphical_abstract.py`) and
+  re-enabled in the manuscript; 4252×1512 px, well over the Elsevier minimum.
+- **Compiles clean**: pdflatex + bibtex, 21 pages, 0 undefined citations, all three new figure
+  refs resolve. One cosmetic overfull hbox on the keyword line (pre-existing).
+- **Closed an open question**: the Fig-1 reproducibility gap flagged for Bayat in
+  `PHASE0_VALIDATION.md` was a stale ATP level (script carried A=0.40; the published figure used
+  0.27). At 0.27 the rate reproduces exactly (1.33 ± 0.18). Annotated as RESOLVED in that file.
+
+
 ### CURRENT STATE  (as of: 2026-08-13, alz-olf: LaTeX manuscript glitches fixed, 21 missing citations identified)
 
 **`alz-olf` is the active project.**
@@ -168,7 +266,12 @@ view at once.
 - **Clean compilation pipeline:** Used `pandoc manuscript.md --natbib -o submission/body.tex` followed by `python3 src/build_tex.py --project-dir .` and `pdflatex` to render a perfectly clean PDF in `submission/`. Added `lmodern` and `fontenc` to fix missing font ligatures (which caused `?` glitches when copying text like "Critically" or "scheff"). The `--natbib` flag ensures Markdown citations `[@key]` render correctly as `\citep{key}` instead of raw text.
 - **Figure Captions Fixed:** Merged separated image links and caption text in `manuscript.md` so that pandoc creates true LaTeX `\begin{figure}` blocks with properly bound captions for Figures 1, 2, 3, and 4.
 - **Reference reconciliation:** Rebuilt `references.bib` via the vault manifest, significantly reducing the "question mark" unresolved citations. 
-- **Missing Citations (Action Required):** Identified 21 remaining citations (e.g., `arriagada1992`, `braak1991`) present in the text but missing from the library vault.
+- **Missing Citations (RESOLVED):** Identified and addressed the 21 missing citations. 
+  - 18 were fetched successfully via `fetch_papers.py` and linked.
+  - `scheff1993` was paywalled but substituted with `griffiths2023`.
+  - `dedeciusova2020` was paywalled but retains its citation entry.
+  - Three citations had incorrect citekeys or were cut from the manuscript and were fixed directly in `manuscript.md` (`doorduijn2019` -> `doorduijn2020`, `mantovani2023` -> `mantovani2024`, `leng2020` -> `leng2021`, and the cut `vanderlinden2018` was removed).
+  - The manuscript now builds with **0 undefined citations**!
 
 ### CURRENT STATE  (as of: 2026-08-09, astro_atp: BOTH journals rejected — pivot to a falsifiable rebuild; Phase 0.1 numerics gate DONE)
 
@@ -797,7 +900,17 @@ Builds on the 2026-07-08 EVE block below (Chaos supplements + Fig 3 reorder). Th
   4. Finally, rebuild the manuscript to resolve the final remaining PDF citation '?' marks.
   5. Wait for final approval, then zip/archive the `submission/` folder for the *Turkish Journal of Medical Sciences*.
 
-- **astro_atp (2026-08-09) — ON HOLD.**
+- **astro_atp (2026-08-14) — RESUME HERE.**
+  The canonical baseline rerun at $I_0^{\mathrm{base}}=0.42$ is complete. Figures 2--4,
+  graphical abstract, manuscript, cover letter, highlights and source ZIP have been refreshed in
+  `submissions/2026-08-14-nonlinear-science/`; analysis and submission source checksums match.
+  The package is prepared but not frozen. What is left:
+  1. Author review of the new title, Appendix placement and refreshed old-vs-new values.
+  2. Complete the Editorial Manager upload. When the user says **submitted**, immediately freeze
+     the uploaded artefacts, update `SUBMISSIONS.md`, commit, and tag per `neubrain/AGENTS.md`.
+  3. Optional cosmetic: the keyword line overfulls by 117 pt in the front matter.
+
+- **astro_atp (2026-08-09) — superseded by the block above; kept for the Phase-0 context.**
   Follow `neubrain/projects/astro_atp/new_plan.md` (read its "Bench reality" section first).
   Work is in the **`bayat-et-al`** repo, env `/opt/conda/envs/ece`.
   1. **Finish Phase 0.1: migrate the nine `fig_*.py` scripts off their inline buggy core.**
@@ -1017,6 +1130,56 @@ Builds on the 2026-07-08 EVE block below (Chaos supplements + Fig 3 reorder). Th
   real fetches — purge the fakes (entries + by_id + files + nodes) before re-fetching.
 
 ### SESSION LOG  (newest first; agent appends one line per session)
+- 2026-08-17 (later) — astro_atp post-rerun audit of the 0.42 package against the npz files.
+  Four corrections: the Fig. 3A caption speed was stale at $6.6\pm0.1$ (0.45 value; now
+  $6.3\pm0.1$ / $12.6\pm0.2$ at 50 um), the deterministic activated fraction was $52.2$ against a
+  measured $51.6\pm0.8$, the appendix axial-vs-diagonal split was still the 0.45 measurement under
+  a lost estimator (recomputed on the 0.42 field with the estimator now stated: $+0.60$ vs
+  $-1.63$~s, $9.5\%$ of residual variance at $r\le5$ against $0.1\%$ at $r\le25$), and the
+  Discussion "lattice discreteness dominates" overstated what that $9.5\%$ supports. Added the
+  detector-artifact caveat the rerun directive required (Methods, now three caveats) and replaced
+  Fig. 3E's "silent (0.000)" annotation with "no detected transients" --- the zero rates below
+  $0.38$ are the peak detector, while $\Phi(C)$ occupancy is smooth and monotone throughout.
+  Produced the full old-vs-new headline table from `processed_data/legacy_b0.45/`. Rebuilt: 20
+  pages, 0 undefined citations/references; source ZIP and all checksums re-verified. (agent: Claude)
+- 2026-08-17 — astro_atp canonical-baseline rerun completed at $I_0^{\mathrm{base}}=0.42$.
+  Recomputed provenance-stamped Figures 2--4 controls (10 seeds), updated every headline value,
+  replaced the old 5.2-fold rate discrepancy with 3.6-fold plus the ignition-transition rationale,
+  and wired Fig. 3E to the fine baseline sweep. Fixed its cross-panel text spill and corrected the
+  malformed `jiang2025` editor metadata/month. Rebuilt a clean 20-page manuscript (0 undefined
+  citations/references), refreshed the Kemal PDF, cover letter, highlights, graphical abstract and
+  tested source ZIP. Analysis/submission source and PDF checksums match. Package remains unlocked
+  until the user confirms submission. (agent: Codex)
+- 2026-08-14 — prepared `submissions/2026-08-14-nonlinear-science/` for the existing
+  Editorial Manager record returned to the author (no technical comments). Added a one-page,
+  journal-specific cover letter to EIC Luis Aguirre, separate highlights, upload README/checklist,
+  verified 20-page manuscript PDF, graphical abstract, and tested editable LaTeX source ZIP. Moved
+  the detailed ATP-dependent affine-current Hopf Figure/result to the Appendix as a bounded negative result and left a
+  compact main-text conclusion; main narrative now centers on front initiation, stochastic
+  nucleation, refractoriness and decremental transmission. Package is PREPARED, not submitted, so
+  SUBMISSIONS.md/tag freeze must wait until the actual upload is approved in EM. (agent: Codex)
+- 2026-08-14 — astro_atp Figure 2 model correction: replaced the const-I0 Figure-2 analysis with
+  the actual Bayat form $I_0(A)=0.45+s_I A$, regenerated its provenance-stamped data and figure,
+  and rewrote Results/Discussion/caption to the new values (mean onset 0.553; 71.2% recruited in
+  window; 16.7% no onset on [0,3]; Bayat lattice correlations rho=0.983/r=0.990). Replaced the
+  mislabeled population-mean freeze test with leave-one-ATP-channel-out calculations; both I0(A)
+  and gamma(A) contribute. Old activity decomposition is now explicitly a constant-I0 Appendix
+  control, not a Bayat result. Corrected jiang2025's role to scalable neuron-astrocyte simulation.
+  Rebuilt the 21-page Kemal PDF with no undefined citations/references. (agent: Codex)
+- 2026-08-14 — astro_atp claim-calibration pass: integrated the 34.7% past-Hopf activity
+  decomposition and noisy-front/short-linearity negative controls, moved their detail to a new
+  Appendix, reduced speed from title/central claim to an uncalibrated descriptive quantity, added
+  the fixed-point/Jacobian/trace/determinant derivation that proves Hopf is the only generic local
+  stability loss (without overclaiming about global bifurcations), and added explicit alternative
+  modelling strategies to Discussion. Clean 21-page pdflatex+bibtex build. (agent: Codex)
+- 2026-08-14 — astro_atp: rendered **Figs 1–4** off provenance-stamped npz (10 seeds each), wrote all
+  new **Results text + captions**, closed two **Methods** gaps (corrected-EM stochastic forcing; new
+  focal-protocol/measurement-definitions subsection), rewrote **abstract + highlights** off ensemble
+  numbers, purged the retired zero-lag and coupling-reduction claims, **rebuilt the graphical abstract**
+  from the Fig-3/Fig-4 data and re-enabled it. Manuscript compiles clean (21 pp, 0 undefined citations).
+  Split Fig 1's compute into `figdata_fig1.py` and fixed it running at 17× physical noise (nominal σ=0.4
+  under the corrected √dt scheme → `SIGMA_EM_PREDICTED`). **Resolved the Fig-1 gap** flagged for Bayat:
+  stale ATP level (0.40 vs published 0.27), annotated in `PHASE0_VALIDATION.md`. (agent: Claude)
 - 2026-08-13 (LATEST+6) — **alz-olf: LaTeX manuscript glitches fixed, pipeline established, 21 missing citations flagged.** Cleaned markdown artifacts (`---` and `~~`) causing LaTeX compilation errors. Re-numbered sections natively and mapped `Figure S1` to `Figure 2`. PDF builds cleanly with `pandoc` + `build_tex.py`. Added `lmodern` package to `build_tex.py` to fix PDF ligature rendering glitches (`Cririty`, `sche?`). Fixed figure captions by merging image and text blocks in markdown. Fixed citation rendering by adding `--natbib` to pandoc. Identified 21 missing citations to be ingested next. (agent: Antigravity IDE)
 - 2026-08-09 (LATEST+5) — **astro_atp: both journals desk-rejected → pivot to falsifiable rebuild
   (`new_plan.md`), Phase 0.1 done.** CNSNS rejected without review (SUBMISSIONS.md row corrected).
@@ -1226,6 +1389,45 @@ Builds on the 2026-07-08 EVE block below (Chaos supplements + Fig 3 reorder). Th
 > each repo's AGENTS.md for durable rules. This is a paper-writing system: neubrain
 > = vault/data, neuresearch = builder/tools+skills.
 
+
+## 2026-08-18 — astro_atp: reviewer answers, I0=0.42 audit chain, two baseline defects
+
+**Supersedes the 2026-08-17 entry on three points.** That entry recorded the manuscript at 21 pp and
+said the zero-lag and coupling-reduction claims were "purged". Both have since been **restored** on
+ensemble evidence, and the manuscript is now **23 pp**.
+
+CURRENT STATE
+- Manuscript (`neubrain/projects/astro_atp/analysis/manuscript_v2/manuscript.tex`): 23 pp, 0 undefined
+  citations/references, 1 pre-existing overfull hbox (keyword line). PDF current. Ready for peer read.
+- `bayat-et-al`: committed AND PUSHED, branch `astro-atp/i0-0.42-audit`, HEAD `587a598`.
+  Reviewed by ultrareview: 3 nits, no correctness bugs; all three applied in `587a598`.
+- `neubrain`: **BLOCKED — `.git/HEAD` is missing.** Nothing is committed there. See below.
+
+WHAT THE AUDIT FOUND (all pre-submission, none in review)
+- `phase2_coupling` i0_form=1 fell through to an unrecorded default baseline of **0.2**, and
+  `figdata_fig2.py` read it — so Fig 2C paired a recruited fraction at 0.42 against a sweep at 0.2.
+  Corrected: Spearman 0.983 -> **0.845**, Pearson 0.981 -> **0.632**. Fig 2E unaffected (bit-identical).
+- `figdata_fig1` hand-set I0 to 0.38/0.5/0.62; 0.38 is unreachable under I0(A)=I0_BASE+s_I*A. All three
+  now derive from s_I=0.30. Low-ATP rate 0.13 -> **0.52/min** (no longer reproduces the published value,
+  deliberately). Fig 1's "oscillation onset" label was wrong (tr J = -0.05 at A=0.27; Hopf is at 0.302).
+- `phase3_lagcheck` persisted nothing; the claim lived in a logfile. Now 10 seeds -> `lagcheck.npz`.
+  The ensemble **reverses** the single-seed reading: zero lag is the tau_ref=0 signature (10/10 at d=1),
+  not the refractory one.
+- Coupling control (kappa) reinstated; see `bayat-et-al/KAPPA_CRITERION.md` for the pre-registered
+  criterion, its transcription error, and the corrected one-sided test.
+
+NEXT ACTION
+1. Restore neubrain's HEAD, then commit the manuscript:
+   `printf 'ref: refs/heads/astro-atp/i0-0.42-audit\n' > neubrain/.git/HEAD`
+   then `git reflog && git status && git log -1 && git fsck --connectivity-only`.
+   The name `HEAD` is delete-pending on the CIFS mount; needs a remount or another client.
+   See `neubrain/AGENTS.md` for the diagnosis and the commit-scope rule.
+2. Stage ONLY `projects/astro_atp/analysis/manuscript_v2/` + `AGENTS.md`. Never `git add -A` in
+   neubrain — ~25 unrelated alz-olf and shared-library files are dirty there.
+3. `neuresearch` has uncommitted work not from this session (`src/build_tex.py`, `src/bibliometrics.py`,
+   `src/draw_roadmap.py`) — left untouched, needs its owner to review. Nothing is ahead of origin.
+(agent: Claude)
+
 ---
 
 > **End-of-session checklist (every agent, every time):**
@@ -1284,8 +1486,52 @@ NEXT ACTION
    `projects/intellicage/` paths and commit/push the reports and `protocol.md`.
 
 SESSION LOG
+- 2026-08-20 — Audited neu-intellicage + projects/intellicage. Fixed the PlaceError accuracy
+  definition (neutral visits were scored correct), terminal accuracy on partial blocks, a
+  target-tie crash, and six smaller faults; added reproducible group statistics with CIs and an
+  experiment-level provenance stamp. Regenerated both reports. Answered the Tau-KD question: no
+  evidence Animals 1–4 learn more slowly, point estimates favour them, design floor p=0.029.
+  Found 11 HTML-stub PDFs in _library. Pushed neu-intellicage@242c78d and
+  neubrain@10d4231 (intellicage/verstreken-reports). (agent: Claude)
 - 2026-08-19 — Built and audited July/August IntelliCage reports; fixed missing 5--8 animal panels,
   added nose-poke acquisition and actogram scales, diagnosed the 19 Aug ~00:01 re-return, separated
   early engagement from learning accuracy, recorded Tau-KD/Scramble interim comparisons, and made
   PDF figure explanations stay with their figures. `neubrain` commit remains blocked by missing HEAD.
   (agent: Codex)
+
+---
+
+## 2026-08-20 — alz-olf: bidirectional Phase 2 roadmap revision
+
+CURRENT STATE
+- Revised `neubrain/projects/alz-olf/manuscript.md` in response to collaborator comments about the
+  Discussion's one-sided mouse emphasis and its consistency with Table 1's Phase 2 verdict.
+- Renamed `Redirect mouse work` to `A bidirectional translational roadmap` and changed the opening
+  sentence so the recommendation explicitly aligns preclinical and clinical olfactory assays in
+  both directions. Table 1 remains after the roadmap paragraph as its summary verdict.
+- Extended the clinical-tools paragraph to distinguish strong associations with AD pathology from
+  Phase 2 qualification. The new text identifies the language/semantic-memory demands of B-SIT,
+  contrasts them with mouse detection/discrimination assays, and recommends complementing existing
+  clinical instruments with standardized non-verbal discrimination tasks. Sniffin' Sticks remains
+  described accurately as a threshold/discrimination/identification battery, not solely an
+  identification test.
+- Standardized the sole British spelling in a heading: `Odour` -> `Odor`.
+- Regenerated `submission/body.tex` and `submission/manuscript.tex`. The full pdflatex + bibtex +
+  two-pdflatex-pass build succeeds: 17 pages and no undefined citations or references. Existing
+  non-blocking warnings remain (117-pt keyword-line overfull box, author-name PDF-string warnings,
+  and 19 undefined month-string warnings from the bibliography).
+- No commit or push was performed. The scoped modified files from this task are
+  `projects/alz-olf/manuscript.md`, `projects/alz-olf/submission/body.tex`, and
+  `projects/alz-olf/submission/manuscript.tex`; the generated PDF is gitignored.
+
+NEXT ACTION
+1. Review the revised paragraph and heading in the generated 17-page PDF.
+2. If accepted, stage only the three scoped `projects/alz-olf/` files named above; do not use
+   `git add -A` because `neubrain` contains unrelated dirty work.
+3. Commit and push `neubrain`. Commit and push this `neuresearch/HANDOFF.md` update separately.
+
+SESSION LOG
+- 2026-08-20 — Applied the collaborator-approved bidirectional Phase 2 roadmap revision to alz-olf,
+  added the construct-mismatch limitation to the clinical-tools discussion, standardized
+  `Odour` to `Odor`, regenerated submission LaTeX, and verified a clean 17-page build with no
+  undefined citations or references. Changes remain uncommitted. (agent: Codex)
