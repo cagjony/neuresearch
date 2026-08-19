@@ -1233,3 +1233,56 @@ Builds on the 2026-07-08 EVE block below (Chaos supplements + Fig 3 reorder). Th
 > 2. Append one line to SESSION LOG.
 > 3. Tell the user to `git add -A && commit && push` BOTH repos.
 > 4. Remind: switching tools or machines → pull first, never two agents at once.
+
+---
+
+## 2026-08-19 — IntelliCage July/August reports and reversal audit
+
+CURRENT STATE
+- Reusable analysis code is in `neu-intellicage` on `main`. This session added individual daily
+  nose-poke acquisition (proportion of visits containing >=1 nose-poke plus CSV), shared-scale
+  actogram colorbars, dynamic individual-corner grids (fixes the 4-of-8 truncation), configurable
+  protocol/report text, and PDF layout support that keeps explanations with figures.
+- July report regenerated at
+  `neubrain/projects/intellicage/analysis/experiments/verstreken/` (`report.md`, `.html`, `.pdf`).
+- August interim report created at
+  `neubrain/projects/intellicage/analysis/experiments/verstreken_2026-08/` in all three formats.
+  Short commissioning sessions were excluded. The substantive sessions are 11 Aug habituation,
+  13 Aug nose-poke, and 14--19 Aug place learning/interrupted reversal.
+- Treatment key supplied by the user: Animals 1--4 = Tau KD; Animals 5--8 = Scramble. Do not put
+  RF tags in reports. With n=4/group, current data show no consistent accuracy deficit: mean place
+  accuracy on 15--17 Aug was 0.53 Tau KD vs 0.47 Scramble; 18 Aug opposite-target accuracy was
+  0.42 vs 0.41. Treat as preliminary, not equivalence.
+- The screenshots do show an early engagement difference: first 67 min of place learning averaged
+  1.75 visits/3.25 nose-pokes per Tau-KD mouse vs 5.50/30.75 for Scramble. By ~20 h visit totals
+  were closer (152.0 vs 163.25), while nose-pokes remained lower (330.0 vs 451.5). Keep activity/
+  engagement separate from proportional spatial accuracy.
+- Controller audit: initial targets 14--17 Aug; opposite targets 18 Aug; automatic return to initial
+  at ~00:01 on 19 Aug (bracketed by explicit target visits at 23:59:32 and 00:01:32). The original
+  session ended 15:46. The new hardwired opposite-target session began that afternoon, but the
+  available export contains only one Animal-8 visit. It correctly targets Animal 8's opposite
+  corner (C1 vs initial C3), but is not yet analysable as a phase.
+- Protocol decision: ordinary reversal = one cohort-wide switch to the diagonal opposite corner,
+  preferably at verified lights-off, then HOLD. Do not alternate or return automatically. A 35%
+  criterion crossed once is too weak; if criterion-triggered switching is used later, require
+  sustained performance over pre-specified blocks/days with a minimum visit count.
+- `neubrain` remains Git-blocked because `.git/HEAD` is missing/delete-pending on the CIFS mount.
+  The generated IntelliCage files are present on disk but cannot be committed from this client.
+
+NEXT ACTION
+1. Let the hardwired opposite-target session finish and export it. Confirm all eight animals' target
+   mapping from `CornerCondition` before interpretation.
+2. Concatenate phases by absolute timestamp while retaining three explicit segments: valid opposite
+   exposure on 18 Aug, unintended initial-target exposure on 19 Aug, and sustained hardwired
+   opposite continuation. Never delete the protocol-deviation interval.
+3. Recompute individual and group reversal trajectories, old-corner perseveration, trials to a
+   pre-specified sustained criterion, and terminal accuracy. Use mouse (not visits) as biological n.
+4. Repair `neubrain/.git/HEAD` per the 2026-08-18 recovery instructions, then stage ONLY
+   `projects/intellicage/` paths and commit/push the reports and `protocol.md`.
+
+SESSION LOG
+- 2026-08-19 — Built and audited July/August IntelliCage reports; fixed missing 5--8 animal panels,
+  added nose-poke acquisition and actogram scales, diagnosed the 19 Aug ~00:01 re-return, separated
+  early engagement from learning accuracy, recorded Tau-KD/Scramble interim comparisons, and made
+  PDF figure explanations stay with their figures. `neubrain` commit remains blocked by missing HEAD.
+  (agent: Codex)
