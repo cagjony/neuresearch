@@ -1266,8 +1266,11 @@ CURRENT STATE
   preferably at verified lights-off, then HOLD. Do not alternate or return automatically. A 35%
   criterion crossed once is too weak; if criterion-triggered switching is used later, require
   sustained performance over pre-specified blocks/days with a minimum visit count.
-- `neubrain` remains Git-blocked because `.git/HEAD` is missing/delete-pending on the CIFS mount.
-  The generated IntelliCage files are present on disk but cannot be committed from this client.
+- `neubrain/.git/HEAD` was repaired on 19 Aug by restoring the symbolic ref to
+  `refs/heads/astro-atp/i0-0.42-audit`, as dictated by the reflog. `git status`, `git log`, and
+  `git fsck --connectivity-only` now succeed with no missing/corrupt objects. The generated
+  IntelliCage files remain uncommitted because the recovered active branch is astro-specific;
+  decide whether the vault reports should be committed there or on `main` before staging them.
 
 NEXT ACTION
 1. Let the hardwired opposite-target session finish and export it. Confirm all eight animals' target
@@ -1277,7 +1280,7 @@ NEXT ACTION
    opposite continuation. Never delete the protocol-deviation interval.
 3. Recompute individual and group reversal trajectories, old-corner perseveration, trials to a
    pre-specified sustained criterion, and terminal accuracy. Use mouse (not visits) as biological n.
-4. Repair `neubrain/.git/HEAD` per the 2026-08-18 recovery instructions, then stage ONLY
+4. Choose the appropriate `neubrain` branch for the IntelliCage vault material, then stage ONLY
    `projects/intellicage/` paths and commit/push the reports and `protocol.md`.
 
 SESSION LOG
