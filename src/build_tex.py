@@ -24,26 +24,28 @@ preamble = r"""
 \title [mode = title]{Olfactory testing in Alzheimer's disease: a Phase 2 problem}                      
 
 \author[1,2]{Esra Ayan}[orcid=0000-0001-7906-4426]
-\credit{Placeholder role}
+\fnmark[1]
+\credit{Investigation, Writing - Original Draft, Writing - Review \& Editing, Visualization}
 
-\author[2]{B\"u\c{s}ra Z\"uleyha Do\u{g}an}[orcid=0000-0000-0000-0000]
-\credit{Placeholder role}
+\author[2]{B\"u\c{s}ra Z\"uleyha Do\u{g}an}[orcid=0009-0002-1174-2379]
+\fnmark[1]
+\credit{Investigation, Writing - Original Draft, Writing - Review \& Editing}
 
-\author[2]{Meryem Sinem Uyar}[orcid=0000-0000-0000-0000]
-\credit{Placeholder role}
+\author[2]{Meryem Sinem Uyar}
+\fnmark[1]
+\credit{Investigation, Writing - Original Draft, Writing - Review \& Editing}
 
-\author[2]{Beyza Sevgili}[orcid=0000-0000-0000-0000]
-\credit{Placeholder role}
+\author[2]{Beyza Sevgili}[orcid=0009-0001-0586-230X]
 
 \author[2]{M. \.Ikbal Alp}[orcid=0000-0003-2075-7724]
 \cormark[1]
 \ead{malp@medipol.edu.tr}
-\credit{Placeholder role}
+\credit{Writing - Review \& Editing, Supervision, Project administration, Funding acquisition}
 
 \author[2,3,4]{{\c{C}}a\u{g}atay Ayd{\i}n}[orcid=0000-0002-7216-1079]
 \cormark[2]
 \ead{cagatay.aydin1@medipol.edu.tr} 
-\credit{Placeholder role}
+\credit{Investigation, Writing - Original Draft, Writing - Review \& Editing, Visualization, Supervision, Project administration}
 
 \affiliation[1]{organization={Experimental Medicine Research and Application Center, University of Health Sciences}, city={Istanbul}, country={T\"urkiye}}
 \affiliation[2]{organization={Research Institute for Health Sciences and Technologies (SABITA), Neuroscience Research Center, Istanbul Medipol University}, city={Istanbul}, country={T\"urkiye}}
@@ -52,6 +54,7 @@ preamble = r"""
 
 \cortext[cor1]{Corresponding author}
 \cortext[cor2]{Corresponding author}
+\fntext[fn1]{These authors contributed equally to this work.}
 
 \begin{abstract}
 Sensory impairments are increasingly recognized as early, non-cognitive manifestations of Alzheimer's disease (AD). Among these, olfactory dysfunction is the most robust and appears earliest. However, despite decades of compelling preclinical evidence (Phase 1), olfactory testing has not transitioned into clinical practice (Phase 2). This review argues that the bottleneck is a fundamental construct mismatch between animal models and clinical diagnostics. While mouse paradigms evaluate basic odor detection and discrimination, human tests predominantly measure high-level semantic odor identification. We propose a strategic alignment of olfactory constructs across species to overcome this translational barrier.

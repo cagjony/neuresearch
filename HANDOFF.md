@@ -194,20 +194,45 @@ Vault inputs: `neubrain` branch `intellicage/verstreken-reports` @ `10d4231` (pu
   dropped gap days and wrapped the last row to day 1, dark-phase shading missing the 23:00 bin,
   no experiment-level `provenance.json`, and no script for the delivered HTML/PDF
   (`scripts/render_report.sh`). 14 tests pass.
-- **Library integrity problem found, NOT yet fixed:** 11 of 117 `_library/*.pdf` are HTML landing
-  pages saved with a `.pdf` extension — `cservenk2026` (the one place-learning+reversal worked
-  example) and `kiryk2020` among them, plus `griffiths2023`, which alz-olf used to replace the
-  paywalled `scheff1993`. Full list: choi2014, cservenk2026, devanand2015, griffiths2023,
-  growdon2015, kiryk2020, koenig2005, larsson2009, maheshwar2025, sakai2016, west1994.
-  Only 10 of the 19 `papers.txt` seeds were ever fetched; the entire tau-reduction block
-  (morris2013, ahmed2014, roberson2007, lei2012, sydow2011) is absent.
+- **IntelliCage literature gap fixed on 2026-08-20:** all 11 supplied PDFs were ingested. The
+  `cservenk2026` and `kiryk2020` HTML placeholders were replaced in place; nine missing papers
+  were added; the existing DOI-less `daguano2025` JATS record was merged with its PDF rather than
+  duplicated. The project now has 19 manifest members, nodes, and bibliography entries. Nine
+  unrelated HTML-stub PDFs remain elsewhere in the shared library.
 
 NEXT ACTION (intellicage)
-1. Add a magic-byte check to `fetch_papers.py`/`ingest.py` and to `reconcile.py`, then re-fetch the
-   11 HTML-stub PDFs and the 9 unfetched seeds.
+1. Add a magic-byte check to `fetch_papers.py` and `reconcile.py`; `ingest.py` now has an explicit
+   `--replace-invalid` path, but the fetch and audit routes still need equivalent validation.
 2. Regenerate both reports after the hardwired opposite-target session is exported; the reports are
    deliberately untracked, so `analysis/experiments/README.md` carries the exact commands.
 3. Decide whether `intellicage/verstreken-reports` merges to `main` or stays a topic branch.
+
+### SESSION NOTE — 2026-08-21, private August hourly delivery for Marieke
+
+- Confirmed hourly success as `correct_conditioned_visits / conditioned_visits`.
+- Added reusable code-only exporter `neu-intellicage/scripts/export_hourly_learning.py`;
+  focused analyses, exporter, tests, and public usage documentation were committed
+  and pushed to `neu-intellicage` `main` at `e5a8b23`.
+- Generated the private, gitignored package at
+  `neubrain/projects/intellicage/private_exports/marieke_august_initial_learning/`:
+  CSV, data dictionary README, and provenance metadata. The CSV covers only
+  2026-08-14 16:57:11.459 through 2026-08-17 23:59:49.133, retains zero hours,
+  marks partial hours, contains visits and licks, and omits transponder tags.
+- Added `projects/intellicage/private_exports/` to `neubrain/.gitignore`; animal-level
+  sharing data must remain private and must not be added to GitHub.
+- Added Marieke's matched all-visit/correct-conditioned-visit actogram package at
+  `neubrain/projects/intellicage/private_exports/marieke_august_actograms/` (three
+  CSVs, two PNGs, README, metadata; 8 animals x 6 dates x 24 hours). Source totals
+  reproduce exactly: 6,623 all visits and 2,984 correct conditioned visits. The
+  reusable code-only exporter and public instructions were pushed to
+  `neu-intellicage` `main` at `6f59009`.
+- Marieke clarified that the two requested hourly variables are visit count and
+  success rate, not visit count and correct-visit count. Updated the same private
+  package with `hourly_visits_and_success_rate_per_mouse.csv`, a focused success
+  CSV, and `hourly_success_rate_actograms.png`. Success is correct conditioned
+  visits / conditioned visits; 402/1,152 animal-hours have no denominator and
+  remain blank (blue in the plot), while 750 have a defined rate. The code-only
+  update was pushed to `neu-intellicage` `main` at `c129b6e`.
 
 ### CURRENT STATE  (as of: 2026-08-14, astro_atp: Nonlinear Science resubmission package prepared; not yet submitted)
 
@@ -1485,7 +1510,93 @@ NEXT ACTION
 4. Choose the appropriate `neubrain` branch for the IntelliCage vault material, then stage ONLY
    `projects/intellicage/` paths and commit/push the reports and `protocol.md`.
 
+
+### SESSION NOTE — 2026-08-21, oldenlabs: new study, new package, first six-cage result
+
+**New project `oldenlabs`** (da Cruz lab, Center for Neuroscience KU Leuven; Oldenlabs
+home-cage monitoring, `DaCruz_Epilepsy` Study 2). Six cages, 25 animals, mut n=10 / wt n=15,
+~45 days of continuous recording. Built as a third repo alongside `neu-intellicage`.
+
+- **Code: `neu-oldenlabs`** — new public repo at
+  `github.com/neurophysiology-expertise-unit/neu-oldenlabs`, branch `build/neu-oldenlabs`
+  pushed as `main`. 145 tests. Eleven modules: `io` (xlsx -> tidy long), `animals`, `qc`,
+  `metrics`, `circadian`, `profile`, `groups`, `config`, `pipeline`, `plots`, `report`.
+  Design spec and implementation plan are in `docs/superpowers/`.
+- **Vault: `neubrain/projects/oldenlabs/`** — merged to `main` and pushed. `plan.md`,
+  `protocol.md`, `analysis/experiments/dacruz_study2/study.json`. Outputs are gitignored and
+  regenerable with:
+  `neu-oldenlabs study-report study.json --output outputs --cache cache` then
+  `neu-oldenlabs/scripts/render_report.sh outputs`.
+
+**Five statistical decisions that corrected the original plan** (each caught in review, each
+recorded in the spec):
+1. Smallest attainable two-sided p is **1/4800, not 2/4800** — the 2/n floor needs *every*
+   contributing cage genotype-balanced, and three of five are not.
+2. **Hedges' g** uses the stratified difference as its numerator over contributing cages only;
+   pooling all animals let an all-wildtype cage move the effect size without moving the test.
+3. **RA** uses the mean 24-h profile with circular windows (the whole-series version drifted
+   with recording length); **IV** is gap-safe.
+4. **`acrophase_hour` is excluded from the default scan** — it is circular, real values sit at
+   0.6-1.3 h either side of the 0/24 wrap, and linear differencing flips signs.
+5. The percentile cluster bootstrap is **anti-conservative** at five contributing cages
+   (~91-93% coverage vs nominal 95%). Stated in the report, not silently presented as exact.
+
+**Data decisions by the study owner, encoded in the code and the spec:**
+- The animal CSV is the **sole authority** on which animals exist. An export tag not listed in
+  the CSV is excluded from all analysis and *reported* (three such tags, each ~99.9% empty).
+  A CSV-listed animal missing from an export still fails the run.
+- Everything is **downsampled to hourly** (`resample_bin_s: 3600`): cage 58616 records at
+  10-minute bins, the other five at 60-minute. Minute-level data can be re-downloaded if needed.
+
+**First result (six cages, hourly).** Pre-specified primaries: none survive FDR (best raw
+p = 0.057, `inactive_pct_dark`). Exploratory 70-measure scan, cage-stratified: four survive
+FDR — `L5` (q=0.015), `speed_max_cm_s_dark` (q=0.044), `occupancy_center_pct_dark` (q=0.044),
+`speed_max_cm_s_all` (q=0.044). A secondary pooled (cage-ignoring) analysis was added at the
+owner's request: only the two `speed_max` measures survive there, so **max speed is the finding
+robust to how cage is handled**, while `L5` and centre occupancy are within-cage effects that
+wash out against between-cage variance.
+
+NEXT ACTION (oldenlabs)
+1. Interrogate `L5` before trusting it: g=3.07 is very large, and L5 is the *least* active
+   5 hours, so a resting-detection or floor artefact would look identical. Check it against
+   the actogram and raw traces.
+2. Decide the pre-registered `scan_measures` set. The empty-list fallback scans 73 columns,
+   several near-duplicates (`distance_cm_all`, `mesor`, `M10`, `amplitude` all measure hourly
+   distance), which inflates the multiplicity burden.
+3. `aggression_events_all` flips sign between stratified (+0.007) and pooled (-0.127). Neither
+   is significant, but sign flips on a dyadic measure are what the cage-composition confound
+   predicts — worth understanding before it appears in a figure.
+4. Consider whether the circadian family should honour `window_start`/`window_end`; it now
+   honours habituation and the window, but the study config leaves both windows null although
+   cages start on different dates (07-06 vs 07-11).
+
 SESSION LOG
+- 2026-08-21 — Created the `oldenlabs` project end to end: designed and built `neu-oldenlabs`
+  (145 tests, published public under neurophysiology-expertise-unit), ran the first six-cage
+  mut-vs-wt comparison plus a secondary pooled analysis, merged `oldenlabs/dacruz-study2` to
+  `neubrain` `main`, and committed the long-standing uncommitted work across `neubrain`,
+  `neuresearch`, `bayat-et-al` and `synaptrode`. Five statistical errors in the original plan
+  were caught in review and corrected; see the session note above. (agent: Claude Code)
+- 2026-08-21 — Added an August IntelliCage procedure timeline to the report and generated
+  `procedure_timeline.csv`/`.json`. Exact `Sessions.xml` starts are recorded for habituation,
+  nose-poke, place learning, and the incomplete hardwired continuation. Automatic target changes
+  are conservatively bracketed by the last visit proving the old rule and first visit proving the
+  new rule, with safe analysis windows to prevent phase mixing. Regenerated HTML/PDF; 24 tests
+  pass. No commit or push. (agent: Codex)
+- 2026-08-21 — Extended the August IntelliCage light/dark analysis across all three recorded
+  sessions (11–19 Aug), excluding inter-session gaps and normalizing by each session's recorded
+  illumination exposure. Added daily and combined all-visit figures/CSVs; daily ratios require at
+  least 3 recorded hours in each phase. Animal 4 remains the clearest persistent rest-phase-activity
+  outlier. Regenerated HTML/PDF; 24 tests pass. No commit or push. (agent: Codex)
+- 2026-08-21 — Saved the IntelliCage pilot follow-up meeting summary under
+  `projects/intellicage/meetings/`. Existing outputs provide absolute hourly visit counts and
+  correct-visit heatmap counts, but not the requested share-ready hourly total-lick + success-rate
+  table. The note records the visits-versus-licks wording conflict and the unresolved success-rate
+  denominator rather than guessing. (agent: Codex)
+- 2026-08-20 — Ingested all 11 PDFs deposited for IntelliCage: replaced two invalid HTML stubs,
+  added nine missing papers, merged the IntelliR PDF into its existing JATS record, generated or
+  refreshed 19 literature nodes, backfilled references, and rebuilt the 19-entry project
+  bibliography. Added `ingest.py --replace-invalid`; no commit or push. (agent: Codex)
 - 2026-08-20 — Audited neu-intellicage + projects/intellicage. Fixed the PlaceError accuracy
   definition (neutral visits were scored correct), terminal accuracy on partial blocks, a
   target-tie crash, and six smaller faults; added reproducible group statistics with CIs and an

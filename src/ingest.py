@@ -58,13 +58,22 @@ import requests  # pip install requests
 # import sibling modules regardless of CWD, and reuse their tested helpers
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from fetch_papers import (Record, assign_stem, load_manifest,  # noqa: E402
-                          manifest_lookup, manifest_register, save_manifest)
+                          manifest_lookup, manifest_register, record_project,
+                          save_manifest)
 from log_writer import FetchLog  # noqa: E402
 from refs import crossref_refs, grobid_refs, POLITE_DELAY, DEFAULT_EMAIL  # noqa: E402
 
 CROSSREF = "https://api.crossref.org/works"
 OPENALEX = "https://api.openalex.org/works"
 DOI_RE = re.compile(r"10\.\d{4,9}/[^\s\"'<>]+", re.IGNORECASE)
+
+
+def is_pdf(path: Path) -> bool:
+    """Return True only when a file starts with the PDF magic bytes."""
+    try:
+        return path.read_bytes()[:5] == b"%PDF-"
+    except OSError:
+        return False
 
 
 # --------------------------------------------------------------------------- #
@@ -215,6 +224,23 @@ def ingest_one(pdf: Path, explicit_doi: str | None, args, manifest: dict,
     # dedup: already a citizen? (one copy per paper)
     existing = manifest_lookup(manifest, rec)
     if existing:
+        existing_pdf = library / f"{existing}.pdf"
+        if args.replace_invalid and not is_pdf(existing_pdf):
+            refs, refs_source = recover_refs(rec.doi, existing_pdf, args.grobid,
+                                             session, pdf)
+            shutil.copy2(pdf, existing_pdf)
+            entry = manifest["entries"][existing]
+            entry["files"] = [existing_pdf.name]
+            entry["source_of_fulltext"] = "manual"
+            entry["cited_dois"] = refs
+            entry["refs_source"] = refs_source
+            record_project(manifest, existing, args.project)
+            log.record(stem=existing, source="manual-replacement",
+                       title=rec.title, doi=rec.doi)
+            res["stem"] = existing
+            res["status"] = (f"replaced invalid existing PDF ({how}; refs={len(refs)} "
+                             f"via {refs_source})")
+            return res
         res["stem"] = existing
         res["status"] = f"skip (already in library as {existing})"
         return res
@@ -270,6 +296,8 @@ def main() -> int:
     ap.add_argument("--grobid", default=None, help="GROBID base URL (optional refs fallback)")
     ap.add_argument("--email", default=DEFAULT_EMAIL,
                     help="contact email placed in the polite API User-Agent")
+    ap.add_argument("--replace-invalid", action="store_true",
+                    help="replace an existing DOI's missing/non-PDF file, retaining its stem")
     args = ap.parse_args()
 
     if bool(args.file) == bool(args.dir):
