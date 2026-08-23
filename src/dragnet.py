@@ -19,17 +19,20 @@ def main():
     parser = argparse.ArgumentParser(description="Dragnet: Pull recent DOIs and abstracts for adversarial triaging.")
     parser.add_argument("--email", help="(Ignored for EPMC) Polite pool email")
     parser.add_argument("--out", default="recent_candidates.json", help="Output JSON file path")
+    parser.add_argument("--query", default=None,
+                        help="Europe PMC query string. Defaults to the astro_atp net.")
+    parser.add_argument("--page-size", type=int, default=200, help="Results to request (max 1000)")
     args = parser.parse_args()
 
     # Europe PMC robust query
-    query = '(astrocyte) AND (ATP) AND (model OR simulation) AND (FIRST_PDATE:[2023-01-01 TO 2026-12-31])'
+    query = args.query or '(astrocyte) AND (ATP) AND (model OR simulation) AND (FIRST_PDATE:[2023-01-01 TO 2026-12-31])'
     
     url = "https://www.ebi.ac.uk/europepmc/webservices/rest/search"
     params = {
         "query": query,
         "resultType": "core",
         "format": "json",
-        "pageSize": 200
+        "pageSize": args.page_size
     }
 
     print(f"Executing dragnet search on Europe PMC...")
