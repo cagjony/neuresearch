@@ -207,6 +207,54 @@ NEXT ACTION (intellicage)
    deliberately untracked, so `analysis/experiments/README.md` carries the exact commands.
 3. Decide whether `intellicage/verstreken-reports` merges to `main` or stays a topic branch.
 
+---
+
+### CURRENT STATE (oldenlabs)  (as of: 2026-08-23, six-cage genotype comparison complete)
+
+**New project this cycle.** Code: `neu-oldenlabs` @ `7c990ac` on `main` (pushed).
+Vault: `neubrain` `projects/oldenlabs/`, merged to `main`. Study: da Cruz lab
+(KU Leuven), Oldenlabs home-cage monitoring, `DaCruz_Epilepsy` Study 2 —
+6 cages, 25 animals, mut n=10 vs wt n=15, ~45 days continuous.
+
+- **All six exports have arrived and the comparison has run.** Cage 58616 is
+  10-minute binned, the other five hourly, so `resample_bin_s: 3600` puts every
+  cage on one resolution. Three export tag slots absent from the animal CSV
+  (each ~99.9% empty) are excluded and reported, per the rule that the CSV is
+  the sole authority on which animals exist.
+- **The test is a cage-stratified exact permutation** — labels shuffle only
+  within a cage, so housing, cohort and cage-mate composition cannot masquerade
+  as genotype. The design enumerates exactly 4800 assignments, so the test is
+  exact rather than sampled; the floor is **1/4800**, not 2/4800, because that
+  needs every contributing cage genotype-balanced and three of five are not.
+  All-wildtype cage 58616 has weight zero and drops out by construction.
+- **No pre-specified primary measure survives FDR.** Three sit just above:
+  `inactive_pct_dark` p=0.057, `distance_cm_all` p=0.058,
+  `social_distance_cm_all` p=0.060 (all FDR 0.18).
+- **The cluster-based permutation over the 24-hour profile is where the signal
+  is**, because whole-day averaging cannot resolve time-localised effects:
+  `distance_cm` hours 10–21 (p=0.0004, FDR 0.0037, mut higher), `inactive_pct`
+  hours 23–02 (p=0.0035, FDR 0.016, mut higher), `aggression_events` hours 04–06
+  (p=0.013, FDR 0.038), `social_distance_cm` hours 23–01 (p=0.024, FDR 0.055,
+  mut lower).
+- The 70-measure exploratory scan has four FDR-significant measures (`L5`,
+  `speed_max_cm_s_dark`, `speed_max_cm_s_all`, `occupancy_center_pct_dark`) and
+  is reported as hypothesis-generating, never confirmatory.
+- **Interpretation safeguards carried in the report itself**, generated from the
+  computed values rather than typed: the dyadic caveat for social distance and
+  aggression, the anti-conservative cluster bootstrap at five contributing cages,
+  Hedges' g computed over contributing cages only, and per-cage bin width.
+- 193 tests pass.
+
+NEXT ACTION (oldenlabs)
+1. Obtain the paywalled anchors in `projects/oldenlabs/to-find.md` — `simon1994`
+   and `prut2003` first, since `occupancy_center_pct_dark` is one of the four
+   FDR-significant scan results and its centre-avoidance-as-anxiety reading is
+   currently unsourced.
+2. Decide how the cluster-permutation result is written up relative to the
+   pre-specified primaries: the primaries are the confirmatory test and none
+   reached significance, so the 24-hour cluster findings need framing that does
+   not present them as confirmatory.
+
 ### SESSION NOTE — 2026-08-21, private August hourly delivery for Marieke
 
 - Confirmed hourly success as `correct_conditioned_visits / conditioned_visits`.
@@ -1612,37 +1660,24 @@ SESSION LOG
 
 ---
 
-## 2026-08-20 — alz-olf: bidirectional Phase 2 roadmap revision
+## 2026-08-24 — alz-olf: hallucination cleanup and roadmap streamlining
 
 CURRENT STATE
-- Revised `neubrain/projects/alz-olf/manuscript.md` in response to collaborator comments about the
-  Discussion's one-sided mouse emphasis and its consistency with Table 1's Phase 2 verdict.
-- Renamed `Redirect mouse work` to `A bidirectional translational roadmap` and changed the opening
-  sentence so the recommendation explicitly aligns preclinical and clinical olfactory assays in
-  both directions. Table 1 remains after the roadmap paragraph as its summary verdict.
-- Extended the clinical-tools paragraph to distinguish strong associations with AD pathology from
-  Phase 2 qualification. The new text identifies the language/semantic-memory demands of B-SIT,
-  contrasts them with mouse detection/discrimination assays, and recommends complementing existing
-  clinical instruments with standardized non-verbal discrimination tasks. Sniffin' Sticks remains
-  described accurately as a threshold/discrimination/identification battery, not solely an
-  identification test.
-- Standardized the sole British spelling in a heading: `Odour` -> `Odor`.
-- Regenerated `submission/body.tex` and `submission/manuscript.tex`. The full pdflatex + bibtex +
-  two-pdflatex-pass build succeeds: 17 pages and no undefined citations or references. Existing
-  non-blocking warnings remain (117-pt keyword-line overfull box, author-name PDF-string warnings,
-  and 19 undefined month-string warnings from the bibliography).
-- No commit or push was performed. The scoped modified files from this task are
-  `projects/alz-olf/manuscript.md`, `projects/alz-olf/submission/body.tex`, and
-  `projects/alz-olf/submission/manuscript.tex`; the generated PDF is gitignored.
+- Scanned `projects/alz-olf/manuscript.md` and successfully identified and excised 7 hallucinatory citations that did not support their respective claims.
+- Repaired the literature gap by successfully fetching and citing 4 valid, real-world papers (`@alves2024`, `@alvaradomartnez2013`, `@son2021b`, `@bouchoucha2026`) that correctly support the orphaned claims.
+- Sharpened the Construct Mismatch argument: injected a critical paragraph explicitly asserting that basic perceptual capacity (detection/discrimination) must be established before higher-order semantic memory testing can be reliably interpreted.
+- Removed Table 1 (the 5-phase roadmap table) to save space and tighten the narrative, folding its core Phase 2 bottleneck verdict seamlessly into the text since Phases 3–5 are unattempted and distracting.
+- All changes cleanly committed to `neubrain`.
 
 NEXT ACTION
-1. Review the revised paragraph and heading in the generated 17-page PDF.
-2. If accepted, stage only the three scoped `projects/alz-olf/` files named above; do not use
-   `git add -A` because `neubrain` contains unrelated dirty work.
-3. Commit and push `neubrain`. Commit and push this `neuresearch/HANDOFF.md` update separately.
+1. Re-render the LaTeX manuscript (`submission/body.tex` and `manuscript.tex`) to ensure the newly added citations and paragraph compile flawlessly into the PDF.
+2. Review the final flow of the "Construct Mismatch" section.
 
 SESSION LOG
 - 2026-08-20 — Applied the collaborator-approved bidirectional Phase 2 roadmap revision to alz-olf,
   added the construct-mismatch limitation to the clinical-tools discussion, standardized
   `Odour` to `Odor`, regenerated submission LaTeX, and verified a clean 17-page build with no
   undefined citations or references. Changes remain uncommitted. (agent: Codex)
+- 2026-08-24 — Scanned alz-olf manuscript for hallucinatory citations and removed several mismatched references (@kelly2017, @lazarov2010, @verret2012, @abraham2010, @nunes2015, @geng2025, @beshel2007) that did not support their respective claims. Committed the cleaned manuscript to neubrain. (agent: Antigravity)
+- 2026-08-24 (later) — Handled alz-olf literature gap: found real papers supporting the 4 orphaned claims (Alves et al. 2024 for ORs; Alvarado-Martínez et al. 2013 for theta rhythm; Son et al. 2021 for transgenic OB amyloid; Bouchoucha et al. 2026 for tau correlation), fetched them into the vault, and cited them in the manuscript. Also injected the core conceptual prerequisite paragraph (perceptual capacity must be established before semantic memory testing) into the bidirectional translational roadmap section. Committed all changes. (agent: Antigravity)
+- 2026-08-24 (end) — Removed Table 1 (the 5-phase roadmap verdict) from the alz-olf manuscript to save space and tighten the argument. Folded the core verdict (stalled at Phase 2 bottleneck) directly into the paragraph text, as Phases 3-5 are unattempted and distract from the central construct mismatch claim. Committed to neubrain. (agent: Antigravity)
