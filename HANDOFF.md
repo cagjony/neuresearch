@@ -192,8 +192,9 @@ Code: `neu-intellicage` @ `a560f23` on `main`. Vault inputs: `neubrain` branch
   Tau-KD mice are more active during their rest hours, which flattens the rhythm. NOT significant and
   cannot be at n=4; the hour-by-hour cluster test finds only isolated hours at p=0.14-0.34.
 - **Still true and still blocking interpretation:** the dark phase is the UNVERIFIED nominal
-  19:00-07:00, and Lei 2012 (tau deficiency -> parkinsonism) is still not in the library, so every
-  activity finding has an unexcluded motor reading. See `projects/intellicage/to-find.md`.
+  19:00-07:00, and although Lei 2012 (tau deficiency -> parkinsonism) IS now in the library as
+  `lei2012` — a concurrent session fetched all 19 seeds — its motor confound has not yet been
+  worked through, so every activity finding still has an unexcluded motor reading.
 
 WATCH OUT
 - `GroupName` in the exports is now actively misleading: the 25 Aug patrolling export labels
@@ -1252,7 +1253,15 @@ Builds on the 2026-07-08 EVE block below (Chaos supplements + Fig 3 reorder). Th
   skips re-fetch when a manifest entry's files already exist, so faked entries BLOCK
   real fetches — purge the fakes (entries + by_id + files + nodes) before re-fetching.
 
-### SESSION LOG  (newest first; agent appends one line per session)
+### SESSION LOG
+- 2026-08-25 — Sustained reversal analysed: ALL EIGHT mice above chance (0.45-0.64 vs a 0.35
+  boundary), no Tau-KD difference. Reverse-engineered the patrolling rule from the export
+  (clockwise, target advances only on a hit; chance 1/3 not 1/4) and added `peek` for the daily
+  check. Ported cosinor, Hedges' g and circular cluster permutation from neu-oldenlabs; caught
+  that acrophase averaged linearly gives midday for midnight-peaking mice. Confirmed a concurrent
+  session had already fetched all 19 intellicage seeds, so to-find.md is now a record, not a
+  worklist. (agent: Claude)
+ (newest first; agent appends one line per session)
 - 2026-08-17 (later) — astro_atp post-rerun audit of the 0.42 package against the npz files.
   Four corrections: the Fig. 3A caption speed was stale at $6.6\pm0.1$ (0.45 value; now
   $6.3\pm0.1$ / $12.6\pm0.2$ at 50 um), the deterministic activated fraction was $52.2$ against a
