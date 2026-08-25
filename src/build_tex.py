@@ -31,7 +31,7 @@ preamble = r"""
 \fnmark[1]
 \credit{Investigation, Writing - Original Draft, Writing - Review \& Editing}
 
-\author[2]{Meryem Sinem Uyar}
+\author[2]{Meryem Sinem Uyar}[orcid=0009-0002-0963-0247]
 \fnmark[1]
 \credit{Investigation, Writing - Original Draft, Writing - Review \& Editing}
 
