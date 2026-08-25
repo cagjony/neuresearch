@@ -1684,3 +1684,4 @@ SESSION LOG
 - 2026-08-24 (overnight) — Addressed user's recent comment tags: subagent hunted down 4 specific citations (gamma/beta oscillations, LC-PC communication, semantic memory) and injected them. Applied requested text rewrites (manifests -> presents, split the long construct mismatch sentence, removed "almost exclusively", softened "a stark translational gap emerges" to "a clear disconnect... becomes visible"). Pushed to neubrain. (agent: Antigravity)
 - Updated bibliometrics.py to generate a co-occurrence network graph instead of a stacked bar chart to accurately represent papers with multiple constructs. Rebuilt PDF.
 - Moved results.md from ayan-et-al to neubrain. Initialized ayan-et-al as a local git repository.
+- Updated bibliometrics.py in ayan-et-al to generate a Sankey flow diagram showing the distribution of papers across constructs. Updated manuscript PDF with the new figure.
