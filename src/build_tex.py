@@ -8,6 +8,7 @@ preamble = r"""
 
 \usepackage[numbers]{natbib}
 \usepackage{graphicx}
+\usepackage[labelformat=empty]{caption}
 \usepackage{longtable}
 \usepackage{hyperref}
 \usepackage[T1]{fontenc}
