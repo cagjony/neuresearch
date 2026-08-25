@@ -161,6 +161,56 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
+### CURRENT STATE  (as of: 2026-08-25, intellicage: sustained reversal LEARNED by all 8; patrolling started; peek tool added)
+
+Code: `neu-intellicage` @ `a560f23` on `main`. Vault inputs: `neubrain` branch
+`intellicage/verstreken-reports` @ `edf76cd`. Reports regenerated (July 24 pp, August 43 pp).
+
+- **The sustained reversal worked — this is the project's first clean positive control.** The
+  19-25 Aug hardwired session held ONE target per animal for all seven days, and that target is the
+  correct diagonal opposite of each animal's 14 Aug acquisition corner in all eight cases (verified
+  from `CornerCondition`, not from the filename). **All eight mice are above chance**: terminal
+  complete-block accuracy 0.45-0.64 against a binomial boundary of 0.35 at n=100. Cohort daily mean
+  rose 43.4% -> 52.5% across the week. plan.md section 8 required exactly this before any null could
+  be interpreted; it is now satisfied.
+- **No Tau-KD deficit on the cleanest phase.** Reversal accuracy 0.470 vs 0.489 (p=0.371); reversal
+  slope 0.86 vs 1.31 pp/day (p=0.514). Both groups learned, neither faster.
+- **Patrolling started 25 Aug and the rule was reverse-engineered from the export**: clockwise
+  1->2->3->4, target advancing ONLY on a hit. This reproduces 100% of the 48 rewarded visits in all
+  eight animals. **Chance is 1/3, not 1/4** — the target is never the corner the animal stands in, so
+  "do not re-enter the corner I just left" alone scores 1/3. After 3 h no animal is distinguishable
+  from chance, and `peek` says so.
+- **`neu-intellicage peek <session>`** is the daily tool the user asked for: detects the task, gives
+  one line per mouse with hit rate, the rate that mouse must beat given its own number of choices,
+  and a verdict, plus a cumulative record whose slope is the learning rate.
+- **Ported from `neu-oldenlabs`** (which is well ahead of this repo): cosinor, M10/L5, Hedges' g,
+  and the circular cluster-permutation test over the 24-hour profile. **Acrophase is circular** — the
+  eight S3 acrophases (22.96-0.60) average to 11.85 h by an ordinary mean, i.e. midday, the opposite
+  of the truth. It is excluded from the linear scan and tested by `compare_phase`.
+- **Most consistent group signal so far is L5, the rest phase**: Tau KD 2.12 vs 1.34 (S3) and 1.63 vs
+  1.14 (S4), g=+1.14 and +1.65, p=0.057 both. RA correspondingly lower (g=-1.34, -1.48). Reading:
+  Tau-KD mice are more active during their rest hours, which flattens the rhythm. NOT significant and
+  cannot be at n=4; the hour-by-hour cluster test finds only isolated hours at p=0.14-0.34.
+- **Still true and still blocking interpretation:** the dark phase is the UNVERIFIED nominal
+  19:00-07:00, and Lei 2012 (tau deficiency -> parkinsonism) is still not in the library, so every
+  activity finding has an unexcluded motor reading. See `projects/intellicage/to-find.md`.
+
+WATCH OUT
+- `GroupName` in the exports is now actively misleading: the 25 Aug patrolling export labels
+  Animals 5-8 "Treatment", but the user's key has 5-8 = Scramble. Group membership must come from the
+  `groups` block in `experiment.json`, never from the export.
+- Another agent session was committing alz-olf work to `neubrain` `main` DURING this session, which
+  is what HANDOFF forbids. Nothing was lost (this session worked only in throwaway worktrees), but
+  `neubrain` is now on `main`, not the astro branch it was on before.
+
+NEXT ACTION (intellicage)
+1. Run `neu-intellicage peek '<patrolling session>'` daily. Watch the cumulative record's slope and
+   the running hit rate against the shrinking boundary; expect several days before anything is
+   decidable, and do not read a daily hit rate on <30 moves.
+2. Verify the room light schedule against the nominal 19:00-07:00 before any circadian claim.
+3. Acquire the 11 papers in `to-find.md`, Lei 2012 first.
+4. Pre-specify L5/RA for the next cohort rather than re-testing them here.
+
 ### CURRENT STATE  (as of: 2026-08-20, intellicage: accuracy definition corrected, group stats now reproducible, inputs committed)
 
 **`intellicage` was audited and repaired.** Code: `neu-intellicage` @ `242c78d` on `main` (pushed).
