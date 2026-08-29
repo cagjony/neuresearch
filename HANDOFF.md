@@ -161,6 +161,362 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
+### OPEN — aon-pir-rev Methods + numbers (deferred by author 2026-08-27)
+
+Seven items recorded with evidence in `neubrain/projects/aon-pir-rev/OPEN_ISSUES.md`. Highest
+severity: **MB110 and MB118 are swapped between manuscript_v12 Methods and exp_info.csv**, which
+gates every Figure 4 panel. Also: aPCx firing rate is 4.1 (median 1.5) in the response letter but
+4.4 (median 1.8) in the internal tracker; the sparseness equation is not stated in Methods although
+R3.6 attacks the estimates directly. **The vault `manuscript.md` is STALE** — migrated from
+paper.md, superseded by `archive/docs/manuscript_v12.docx`; citation and claim reports are reading
+old text until it is refreshed.
+
+### SESSION NOTE — 2026-08-27, aon-pir-rev Lanes B/C + a latent contamination gap
+
+- **Lane C delivered** `projects/aon-pir-rev/claim_evidence_dossier.md`: 40 entries, 40
+  structurally empty VERDICT cells, per-paper discard table for all 14 papers, R1.8 and R2.9
+  marked CONTESTED with no figure provenance. All 13 absolute paths it cites were verified to
+  exist. It declines to quote where the text does not support a claim rather than reaching
+  (e.g. "schoonover2021 contains no contamination-safe ~2-Hz sentence"). No other file changed.
+
+- **LATENT GAP in `coding_dossier.py` — first exposed by a PDF-derived project.**
+  `REFERENCE_HEADING_RE` (src/coding_dossier.py:29) matches an ANCHORED
+  `references|bibliography|literature cited` line. That shape exists in JATS-derived text
+  (alz-olf was 52 XML / 35 txt) but frequently does NOT survive `pdftotext -layout` on a
+  two-column publisher PDF — the heading comes through letter-spaced, inline with column
+  text, or absent. Checked directly: `marks2021`, `schoonover2021`, `ziv2013`, `iurilli2017`
+  have NO anchored heading line, so `split_plain_references` returns no match and the whole
+  reference list stays in the candidate pool. Their "0 reference-list discards" therefore means
+  "the stripper never found the section", NOT "the text was clean".
+  **No contamination reached this dossier** — the citation-bearing-sentence rejection plus a
+  conservative agent covered it — but that is defence in depth doing the work of a broken first
+  layer. aon-pir-rev is the first project built mostly from ingested PDFs (12 of 14); every
+  future PDF-heavy project has this hole.
+  FIX (not applied, needs a decision): loosen the heading regex to tolerate letter-spacing and
+  non-anchored placement, and/or make a zero-discard result on a `.txt` source report as
+  UNVERIFIED rather than clean, so the two cases are distinguishable in the table.
+
+
+### CURRENT STATE (2026-08-27) — aon-pir-rev ONBOARDED; Lane A BLOCKED on Unpaywall
+
+New project `aon-pir-rev` (the AON/aPCx novelty paper, in revision with 4 referees) is now a
+pipeline project. Design + all three agent briefs: `docs/specs/2026-08-27-aon-pir-rev-onboarding.md`.
+Decisions locked there: vault-canonical text, serialized lanes (never two agents on one tree),
+skills home = `neuresearch/skills/`.
+
+**DONE (Lane A, steps 1–4):**
+- `ephys-pipeline-invariants` moved from `aon_pir_rev/.claude/skills/` to `neuresearch/skills/`;
+  `sync_skills.py --check` reports both skills in-sync. Pointer left in `aon_pir_rev/AGENTS.md`.
+- `new_project.py` scaffolded `neubrain/projects/aon-pir-rev/`.
+- `reviewer_responses.md` and `paper.md` → `manuscript.md` migrated VERBATIM (cmp-verified).
+- `plan.md` written from the manuscript + reviewer file only — nothing invented. It records the
+  question, the five contributions, and the five argument fronts the revision must defend.
+- Derived read-only copy-back at `aon_pir_rev/reviewer_responses.md` with a DO-NOT-EDIT header,
+  so SH/RDP/ES still see it through Bitbucket.
+- `papers.txt`: 14 referee-named DOIs, each resolved by Europe PMC search and verified on first
+  author + year + title. Sokolov 1963 is a BOOK — recorded as not fetchable, no DOI invented.
+
+**BLOCKED (Lane A, step 5) — `api.unpaywall.org` is unreachable from this machine.**
+3/3 curl attempts return http=000 after 20 s; Europe PMC answers in 0.1 s and NCBI eutils in 0.4 s
+from the same shell. So it is a network/firewall block on that host, not a code fault.
+`fetch_papers.py` route 2 raises `requests.exceptions.ReadTimeout` and the run dies at
+`main()` line 407 — **before route 3 (NCBI PMC efetch) is ever tried.**
+
+This contradicts the documented route design: HANDOFF already records that "a route-2 403 now
+falls through to route 3 instead of abandoning the paper". A route-2 *timeout* is the same class
+of route-2 failure but is not caught, so one unreachable third-party host aborts the whole run.
+
+Impact is large and avoidable: **12 of the 14 papers have a PMCID and inEPMC=Y**, i.e. route 3
+could fetch them. Only 2 lack a PMC record — `schoonover2021` (10.1038/s41586-021-03628-7, Nature)
+and `jacobson2018` (10.1016/j.cub.2017.11.007, Curr Biol) — those two genuinely need `ingest.py`
+with institutional access. Currently held: `bolding2017.xml`, `bolding2020.xml` (route 1 only).
+
+**Two further findings from this session:**
+- `conda activate neuresearch` does NOT change `python3` on this machine — the profile's PATH keeps
+  `/opt/conda/envs/ece/bin/python3` (3.9) in front. Call the interpreter by absolute path:
+  `/home/mouselab/.conda/envs/neuresearch/bin/python`. The first fetch attempt silently ran on 3.9.
+- `fetch_papers.py` strips WHOLE-LINE `#` comments only (src/fetch_papers.py:343). A trailing
+  comment on a DOI line becomes part of the identifier; that produced 14 bogus "unresolved"
+  entries in `logs/fetch-log.md` on the first run — those log lines are junk, ignore them.
+  `papers.txt` has been rewritten with comments on their own lines.
+- `reconcile_citations.py --manuscript-md` found **0 citations** in `manuscript.md`. The manuscript
+  uses `(Author et al., 2020)` parenthetical style — 35 distinct — not the `[Author Year]` token the
+  reconciler expects, and it has no `## References` section. A style conversion is required before
+  any citation wiring can work. Report written but empty; do not read it as "no citations".
+- The manifest shows 0 papers tagged `aon-pir-rev` even though two .xml files landed. Verify the
+  project tag on resume — the fetch crashed mid-run and may not have written it.
+
+NEXT ACTION (aon-pir-rev)
+1. **Decide the Unpaywall question — this is a user call, it changes a shared tool.** Either
+   (a) make a route-2 connection error fall through to route 3 the way a 403 already does, or
+   (b) add a `--skip-unpaywall` flag, or (c) leave the tool alone and accept that fetching needs a
+   machine that can reach api.unpaywall.org. Option (a) matches the documented design intent.
+2. Then re-run the fetch chain; expect 12/14, then refs.py --only-empty → make_nodes.py propose →
+   (user curates concepts/_proposed.md) → wire → relate.py → build_bib.py.
+3. `ingest.py` for schoonover2021 and jacobson2018 via institutional access.
+4. Convert manuscript.md citation style before attempting reconcile --apply.
+5. Lanes B (agy, aon_pir_rev) and C (codex, neubrain) do NOT open until Lane A finishes.
+
+### CURRENT STATE (2026-08-26 late) — alz-olf RE-SPINED AGAIN: the spine is the PSYCHOMETRIC CURVE
+
+Title: "Olfactory testing in Alzheimer's disease: from score to psychometric curve".
+Builds clean: 18 pp, 91 references, 0 undefined citations.
+
+**Third framing, and the best one.** (1) behavioural construct mismatch -> (2) odour-evoked neural
+response -> (3) **olfactory capacity reported as a psychometric curve**. Each change came from the
+author, not from me, and each defeated an objection the previous one could not.
+
+- **Why (3) beats (2).** Framing (2) never survived two objections: a bulbar LFP and a scalp OERP
+  are not the same signal (only "the same kind, at very different spatial scale"), and OERPs need an
+  olfactometer + EEG so they do not scale to screening. **Neither lands on the curve.** Accuracy
+  against concentration in a mouse and in a patient is genuinely the SAME object, and a dilution
+  series plus a button press needs no equipment a clinic lacks.
+- **The load-bearing find is in [@wolfensberger2000]**, the Sniffin' Sticks validation paper: the
+  threshold subtest IS a single-staircase, triple-forced-choice procedure over an n-butanol dilution
+  series — so the psychophysics is already acquired at the bedside — AND that same paper says
+  "critical mention must be made of the overly complex determination of the olfactory threshold".
+  The field built a proper staircase, found it burdensome, and compressed it into one number inside
+  TDI. That is "used but not properly", sourced to the instrument's own authors.
+- **CHECK BEFORE BUILDING paid off.** I proposed the curve spine assuming abraham2010/nunes2015 were
+  threshold-curve psychophysics. They are NOT: neither contains the words "psychometric" or
+  "psychophysics". They are go/no-go **discrimination-time** studies across graded difficulty;
+  nunes2015 does run dilution series, abraham2010 does not. Section 4.2 was written to what they
+  actually contain — graded difficulty, accuracy AND speed — which is a better fit anyway, because
+  discrimination time is a rodent standard that clinical olfactometry never collects.
+- **Section 4 rewritten** (731 w): 4.1 the clinical staircase already produces a curve and practice
+  discards it; 4.2 rodent olfaction keeps the function; 4.3 what the curve supports and where the
+  evoked response fits. The evoked response is DEMOTED to localising a change the curve detects —
+  a narrower and far more defensible role.
+- §6.1 layer order swapped: curve first, evoked response second, verbal report third.
+- Abstract rewritten (203 w). Pre-submission letter + email rewritten to match.
+
+**Also this session:** ~19 more citation-to-claim errors repaired (li2019 cited 5x for oscillations
+though it ran NO electrophysiology, incl. two rodent papers cited for a human EEG/MEG/fMRI claim;
+dan2023+son2021a for gamma/beta with zero oscillation content; geng2025+rajani2022+rey2012 for
+beta-band, none of which contains beta; wu2013/yu2024/dibattista2020/diez2024 for measurements they
+never made; wheeler2021 for therapeutics; klein2021+wang2023 for "CSF" when both used PET).
+**Panel B of Figure 2 is HELD** — the odour-evoked count moved 12->9->7 under three successive
+full-text passes; draw_panel_b() and the `neural` column are retained for restoration after re-coding.
+
+NEXT ACTION (alz-olf)
+1. Co-author read. Sections 4 and 6.1 are AI-drafted prose and have now been rewritten twice.
+2. TJMS pre-submission inquiry is drafted and ready at projects/alz-olf/submission/presubmission/
+   (email_to_editor.txt + presubmission_inquiry.pdf + 2 figures). TJMS reviews are INVITATION ONLY;
+   its board is a rheumatologist, endocrinologist, pharmacologist, haematologist and orthopaedic
+   surgeon — no neuroscientist. Archives of Neuropsychiatry takes UNINVITED reviews (SCI-E + TR Dizin)
+   but caps at 5000 words / 50 refs. Turkish J Geriatrics is SCI-E + SSCI + TR Dizin with unlimited
+   refs for invited reviews — best index and topic fit, also invitation only. Send both enquiries.
+3. 41 papers / 51 citation instances still never claim-checked. Codex brief written for a
+   claim-evidence dossier (evidence assembly only, NO verdicts).
+4. Second coder on tools/construct_coding.tsv — must be a human.
+
+
+### CURRENT STATE  (as of: 2026-08-26 late, alz-olf: RE-SPINED around the odour-evoked response)
+
+Builds clean: 18 pp, 95 references, 0 undefined citations. Manuscript backed up pre-respine at
+`/tmp/.../scratchpad/manuscript_pre_respine.md`; `manuscript.md` is committed at 7019612 so
+`git checkout --` still reverts everything.
+
+**The paper's thesis changed, at the author's direction.** It was "human and mouse tests measure
+different behavioural constructs". It is now: **a behavioural score is a report, and a report is
+species-bound by construction; the odour-evoked neural response is not, and it is already routine
+preclinically while nearly absent clinically.** Title is now "Olfactory testing in Alzheimer's
+disease: from report to odour-evoked response".
+
+- **What forced the change.** [@hedner2010] (n=170, all three tasks + cognitive battery) found
+  executive function and semantic memory predict BOTH discrimination and identification, and
+  neither predicts threshold. The old remedy — "align on non-verbal discrimination tasks" — therefore
+  did not follow from its own source. Re-spining dissolved the problem instead of working around it,
+  because the objection was always about reports, and no choice among report-based constructs escapes it.
+- **CORRECTION worth recording.** An early cut of the modality analysis said human and rodent were
+  near-balanced on "neural response" (14 vs 11). That was a loose regex counting RESTING EEG,
+  structural MRI and FDG PET. Coded properly — neural activity time-locked to an odour — it is
+  **3 of 49 human vs 12 of 26 rodent**. The corrected number is what the paper now argues from, and
+  it is a better gap statement: the assay exists, on the wrong side of the translational gap.
+- **Figure 2 is now two panels** from `tools/construct_coding.tsv` (new `neural` column:
+  evoked / resting / none). A: behavioural construct by species (27/29 human identification,
+  0/17 rodent). B: odour-evoked recording by species (3/49 vs 12/26). The contrast between panels
+  IS the argument.
+- **New section 4**, "The odour-evoked response is the measurement both species share" (~680 words,
+  three subsections): preclinical work records it routinely; it resolves into an early sensory and a
+  late associative component in BOTH species ([@martin2014] beta/gamma; [@invitto2018] N1/LPC); the
+  clinical measurement exists and is pointed elsewhere (the abundant human electrophysiology is
+  RESTING EEG, which has no counterpart in a mouse bulb recording).
+- **New section 6.1**, the layered assay: odour-evoked response (shared layer) + psychometric curve
+  (calibration; threshold is the one cognitively clean human construct, per Hedner) + verbal report
+  (retained, because it carries the cohort-scale predictive evidence). Reported separately, never
+  summed into a TDI total. Two limits stated in-text: evoked response has no cohort predictive
+  validity yet (that is Phase 3), and the psychophysical layer is exposed to peripheral confounds.
+- **[@wilson2007] flipped from problem to evidence.** Identification's association with tangle density
+  survives controlling for semantic memory because the score contains a sensory component it does not
+  report separately — which is now the paper's argument rather than a contradiction of it.
+- `abraham2010` and `nunes2015` — both in the library, both previously uncited — now carry the
+  rodent-psychophysics claim. 93 → 95 cited citekeys.
+- The `co:hedner` thread is marked RESOLVED with the reasoning and the three rejected options recorded.
+
+**FULL-TEXT VERIFICATION PASS (after Codex's sidecars landed).** The construct table was originally
+coded from titles and abstracts. Once 35 `.txt` sidecars existed, the 13 rows that are load-bearing in
+§4/§6.1 or marked medium-confidence were re-checked against full text. **Four errors were found, three
+of them coding errors of the exact kind this table exists to prevent:**
+- `lu2021` was coded detection+discrimination+identification from a Sniffin' Sticks keyword hit that was
+  in its REFERENCE LIST. Full text: "Performance on the 12-item smell identification test (SIT-12) was
+  used as a proxy for olfactory function." Corrected to identification.
+- `manabe2013` was coded discrimination. Its only mention of odour discrimination is a CITATION of
+  Beshel 2007; its own recordings are across behavioural STATES (waking/SWS/REM). Corrected to none.
+- `narukawa2022`, `liu2013`, `olcay2025` confirmed and raised medium -> high.
+- `lepousez2013` was overstated in §4 as "prevents mice from discriminating odorants at all". Full text:
+  reducing gamma "impairs odor mixture discrimination and slows the time required to discriminate
+  between related odors". Softened in both places it appears.
+
+Counts changed accordingly and were propagated to prose, caption and abstract: studies scoring a
+construct **46 -> 45**, rodent studies scoring a construct **17 -> 16**. The headline numbers are
+unchanged: 27 of 29 human studies score identification, 0 of 16 rodent studies do, 3 of 49 human vs
+12 of 26 rodent record an odour-evoked response.
+
+LESSON: a coding table built from abstracts is not safe just because a human built it. Keyword hits in
+reference lists are exactly how the retired `bibliometrics.py` classifier failed, and the same trap
+caught a hand-coded row. Code from full text where full text exists.
+
+NEXT ACTION (alz-olf)
+1. Co-author read of the re-spine. The prose in sections 4 and 6.1 is NEW and mine, not the students' —
+   it needs their voice and their sign-off before this goes anywhere.
+2. Second coder on `tools/construct_coding.tsv`, now including the `neural` column. Single-coder
+   still; 14 rows marked confidence: medium.
+3. Sections 5.1–5.3 still argue from "construct"; they are consistent with the new spine but were
+   written for the old one and would read better re-pointed at "choice of measure".
+4. Ship `construct_coding.tsv` as supplementary — both figure panels promise it.
+5. Five paywalled gaps still open (devanand2015, growdon2015, koenig2005, larsson2009, griffiths2023);
+   `to-find.md` is stale (2026-07-23) and lists none of them — regenerate only after re-tiering
+   `refs-triage.tsv`, which also predates the manifest repair.
+
+### SESSION NOTE — 2026-08-26, alz-olf coding-verification dossier
+
+- Added report-only `src/coding_dossier.py` and eight tmp-vault tests. It reads `.txt` before `.xml`,
+  removes plain-text References/Bibliography/Literature Cited sections, removes exact JATS
+  `<ref-list>` elements, and rejects whole citation-bearing candidate sentences so another paper's
+  result is never presented as evidence for the coded paper. It writes only the requested output and
+  never proposes or applies a code.
+- Generated `projects/alz-olf/tools/coding_dossier.md` for all 93 coding rows: 35 `.txt`, 52 XML, and
+  six expected `NO TEXT` results (`devanand2015`, `griffiths2023`, `growdon2015`, `hsiao1996`,
+  `koenig2005`, `larsson2009`). The review queues contain 18 rows with no body support for at least
+  one non-`none` dimension (including all no-text rows) and 28 conservative mechanical disagreement
+  flags. These are second-coder prompts, not validated errors or proposed recodes.
+- The dossier reports reference-list and citation-bearing discard counts for every paper: 3,274
+  candidate-pattern matches discarded in total (1,495 reference-list; 1,779 citation-bearing body),
+  with nonzero discards in 85/93 rows. The known traps are visible: `lu2021` has 15 discarded matches
+  while its SIT-12 body evidence remains; `manabe2013` has 27 discarded matches and retains its real
+  odour-evoked evidence. No coding, manuscript, manifest, references, figure, or submission file was
+  changed by this task.
+
+### SESSION NOTE — 2026-08-26, alz-olf claim–evidence dossier
+
+- Added report-only `src/claim_dossier.py` and six tmp-vault tests. It removes manuscript HTML
+  comment threads before counting citations, validates every target count, preserves manuscript and
+  section order, and emits one dossier entry per citation occurrence. Source loading, exact JATS
+  `<ref-list>` removal, plain-text reference-heading removal, citation-bearing-sentence rejection,
+  and discard counts are imported directly from `coding_dossier.py`, not reimplemented.
+- Generated `projects/alz-olf/tools/claim_dossier.md`: all 41 targets, exactly 51 citation-instance
+  entries, and 51 structurally empty VERDICT columns. `franco2024` and `zhang2022` have three entries
+  each; `chen2021`, `doty2008`, `lafaillemagnan2017`, `oltra2026`, `pacyna2023`, and `tan2024` have
+  two each; the other 33 targets have one each. Entries contain the full manuscript claim and section,
+  manifest title, JATS abstract or 250-word text opening, methods/fallback excerpt capped at 400 words,
+  and up to three citation-free body sentences selected by claim-term overlap with terms shown.
+- `hsiao1996` is the only no-text paper and the only citekey with fewer than three evidence sentences
+  (instance 1: zero); it is retained with the explicit reason that its PDF exists but no `.txt`/`.xml`
+  text is held. Across the 41 papers, 1,375 contaminated coding-pattern matches were discarded
+  (630 reference-list; 745 citation-bearing body), with nonzero discards in 39/41; the complete
+  per-paper table is in the dossier. These are evidence packets for human adjudication only: no
+  verdict was inferred, and no manuscript, target table, manifest, coding, references, figure, or
+  submission file was changed by this task.
+
+
+### CURRENT STATE  (as of: 2026-08-26, alz-olf: citation audit + repair; Figure 2 rebuilt from hand-coding)
+
+**`alz-olf` is the active project.** Manuscript `neubrain/projects/alz-olf/manuscript.md`,
+submission builds clean at 16 pp, 93 references, **0 undefined citations**.
+
+- **No fabricated references.** All 97 prose citekeys were resolved via their manifest DOI against
+  Crossref: 95 matched exactly on title, first author and year. Agy's earlier hallucination sweep had
+  worked. The two that did not resolve (`larsson2016`, `martin2014`) were real papers never fetched,
+  printing as `[9? ]` and `[? ]` on page 2. `martin2014` is now in the library; `larsson2016` is
+  paywalled and its sentence was re-sourced, so it is no longer cited.
+- **The real defect was citation-to-claim, not citation existence.** `narukawa2022` — a mouse
+  olfactory-epithelium qPCR study with no humans, no electrophysiology, no oscillation recording, and
+  a NEGATIVE headline result — was cited 6× for OEP latencies, gamma attenuation and human
+  identification/amyloid correlations. Five of the six were repaired. `yu2018` was cited twice in one
+  paragraph with BOTH citations reversed: Yu found threshold impaired FIRST (at MCI) with
+  identification falling only at dementia, and the "80%" is a false-POSITIVE rate for self-report.
+  Both sentences now state what Yu reports. Also repaired: `kareken2003` (the anatomy was inverted —
+  hippocampus is discrimination, not identification; and the "compensatory recruitment" reading is
+  ours, not Kareken's, who offers a threshold account), `audronyte2023` (a discrimination study cited
+  for an age-related threshold claim; `kondo2020` now carries that), `larsson2009` (the
+  "absent in rodents" half was unsourced), and the Sniffin' Sticks TDI weighting claim (TDI is the
+  unweighted sum of three equal subscores; only UPSIT/B-SIT are identification-only).
+- **Figure 2 was rebuilt from scratch and the thesis got STRONGER.** The old `bibliometrics.py`
+  decided each paper's construct by counting words, with `semantic` inside the Identification pattern
+  (circular) and `sensitivity|threshold` inside Detection (so `pepe2001`, a cancer-biomarker methods
+  paper, was classified Detection). It silently dropped 66 of 143 papers — every foundational human
+  identification paper among them — and classified `kareken2003` and `hedner2010` as Discrimination
+  because their node titles are TRUNCATED before the word "identification". Replaced by
+  `projects/alz-olf/tools/construct_coding.tsv` (one row per cited paper: species, construct,
+  instrument, evidence, confidence) plus `tools/construct_figure.py`. Result: of 93 cited studies 46
+  scored an olfactory construct; **27 of 29 human studies score identification, and 0 of 17 rodent
+  studies do.** That is a categorical claim the word-count version could not make.
+- **Library repairs.** Five cited "PDFs" were HTML interstitials (devanand2015, growdon2015,
+  koenig2005, larsson2009, griffiths2023) — quarantined; all five are genuinely paywalled and now show
+  honestly as missing rather than as stubs. `son2021` (author-less duplicate of `son2021a`) was MERGED
+  into `son2021a`, carrying its JATS XML and 77 `cited_dois`, not deleted.
+- **Tooling.** `fetch_papers.py`'s magic-byte check (uncommitted from the prior session) is verified
+  working — it caught three interstitials during this repair. The equivalent check is now in
+  `reconcile.py` as a `corrupt_files` finding; it immediately found 4 more stubs elsewhere in the
+  shared library (choi2014, maheshwar2025, sakai2016, west1994 — none cited by alz-olf).
+  `build_tex.py` gained: the correct title, `sort&compress` on natbib, a one-pass heading lift that
+  removes the duplicated H1 title section (headings were nesting to `1.5.2.`), and an override of
+  `\__make_fig_caption:nn` — cas-common.sty hardcodes `\textbf{#1:}~#2` and ignores the caption
+  package, which is why `labelformat=empty` left a bare ": " on every caption.
+- **Citation economy.** 97 → 93 unique citekeys, 186 → 174 instances. A 9-reference pile on a
+  forward-looking recommendation went to 3; an 8-reference pile containing a literal
+  `[@li2019; @li2019]` went to 4; `lepousez2013` and `manabe2013` were PROMOTED out of a tau pile
+  (neither is an AD paper) into their own sentence establishing the normal bulbar timing mechanism.
+
+**OPEN — needs an author decision, flagged in the manuscript as comment thread `co:hedner`:**
+`hedner2010` (n=170, all three tasks + cognitive battery) found that executive function and semantic
+memory predict BOTH discrimination and identification, and neither predicts threshold. So the clean
+dissociation is threshold vs. everything above it, NOT identification vs. discrimination — which means
+the review's proposed remedy ("complement clinical instruments with non-verbal psychophysical
+discrimination tasks") does not follow from its own source: a human discrimination task inherits the
+same semantic loading. Three ways out are written into the thread. Related: `wilson2007` found the
+B-SIT/tangle association survived controlling for semantic memory, so identification is not reducible
+to semantic memory either; answering that head-on would strengthen the section.
+
+NEXT ACTION (alz-olf)
+1. Resolve the `co:hedner` thread — it is the last thing standing between this draft and submission.
+2. Have a second author verify `tools/construct_coding.tsv` and report agreement; it is currently a
+   single-coder pass. 14 rows are marked `confidence: medium`.
+3. Acquire the five paywalled gaps by institutional access, `devanand2015` and `growdon2015` first
+   (both are cited for load-bearing cohort results).
+4. Ship `tools/construct_coding.tsv` as supplementary material — the Figure 2 caption promises it.
+5. Clean the 4 remaining HTML stubs elsewhere in the shared library.
+
+### SESSION NOTE — 2026-08-26, alz-olf PDF text sidecars
+
+- Added `src/extract_text.py` plus five tmp-vault tests. It extracts PDF-only manifest citizens with
+  `pdftotext -layout`, never overwrites text by default, supports force/dry-run/project filters, and
+  reports a PDF with fewer than 600 non-whitespace characters over its first three pages as needing
+  OCR without writing a near-empty sidecar.
+- The live `alz-olf` project tag contains 61 PDF-only entries, not only the 36 cited by the manuscript;
+  four of the additional 25 are the known HTML stubs. The unqualified project dry-run therefore
+  failed loudly at `choi2014`, as required for a real corrupt-file error. Added and used the explicit
+  `--cited-only` safety filter to keep this task to the cited set without changing project membership.
+- Extracted and manifest-registered 35 non-trivial `.txt` sidecars. `hsiao1996` alone yielded zero
+  text over the first three pages and is reported as needing OCR; it has no `.txt` file or manifest
+  claim. The smallest extracted sidecar has 14,691 non-whitespace characters.
+- Reconciliation shows no new drift: missing files remain exactly `devanand2015`, `griffiths2023`,
+  `growdon2015`, `koenig2005`, and `larsson2009`; corrupt files remain exactly `choi2014`,
+  `maheshwar2025`, `sakai2016`, and `west1994`. No fetch, re-ingest, manuscript/build, bibliography,
+  coding-table, or archive changes were made by this task.
+
+
 ### CURRENT STATE  (as of: 2026-08-25, intellicage: sustained reversal LEARNED by all 8; patrolling started; peek tool added)
 
 Code: `neu-intellicage` @ `a560f23` on `main`. Vault inputs: `neubrain` branch
@@ -1254,6 +1610,13 @@ Builds on the 2026-07-08 EVE block below (Chaos supplements + Fig 3 reorder). Th
   real fetches — purge the fakes (entries + by_id + files + nodes) before re-fetching.
 
 ### SESSION LOG
+- 2026-08-29 — aon-pir-rev: Figure 4b/4c regenerated (report-only script pairs in aon_pir_rev/paper/).
+  4c settled on `Sparseness.m` = Bolding & Franks 2017's published equation, verified from
+  `_library/bolding2017.xml`; the submitted panel used a different measure. Corrected an earlier
+  wrong claim of mine that Figure 4 uses atlas-corrected data — it does not. Validated the current
+  pipeline against the Feb-2025 legacy structs: chain detection reproduces 6/7 exactly; response
+  values diverge, isolated to the July-2026 realignment. Deferred Methods/number issues collected in
+  `neubrain/projects/aon-pir-rev/OPEN_ISSUES.md` (now includes Figure 4b, provenance, validation).
 - 2026-08-25 — Sustained reversal analysed: ALL EIGHT mice above chance (0.45-0.64 vs a 0.35
   boundary), no Tau-KD difference. Reverse-engineered the patrolling rule from the export
   (clockwise, target advances only on a hit; chance 1/3 not 1/4) and added `peek` for the daily
@@ -1561,6 +1924,48 @@ NEXT ACTION
 (agent: Claude)
 
 ---
+
+### Later the same day — citation audit, agent rules, intellicage scoping
+
+**Citations verified against source full text** (not just metadata). All four load-bearing numbers
+are exact: Hirase 0.121±0.098/min; Stobart 0.65±0.02 signals/min (process ROIs); MacDonald 2.8%
+(k2/k1=0.028) and "extended the ICW from 21 to 69 cells"; Bowser "~100 and 250 um".
+- Fixed: `stobart2018a` had `year={2016}` (the advance-access date). The paper is Cereb Cortex
+  **2018**;28:184-198. Both Stobart papers are 2018, so the `a` suffix was correct all along --
+  an earlier rename to `stobart2016` was WRONG and has been reverted. Volume/pages now present.
+- Fixed: 4 invalid BibTeX month strings (`Sept`/`July`/`June`) that rendered as no month at all --
+  `fellin2004`, `maly2022`, `nimmerjahn2015`, `scemes2006`.
+- Removed 26 never-cited bib entries (54 -> 28, exactly the cited set), killing the
+  `zonca2024`/`zonca2025` and `maly2021`/`maly2022` near-duplicate traps.
+- Added: Hirase's rate is conditional on cells with >=1 event; stated in Methods.
+- **Backup of references.bib at `~/.claude/jobs/12b6b567/tmp/references.bib.bak`** -- the only undo
+  while neubrain git is down.
+- Open, not fixed: Bowser's wave stops at ~200 um in ~15 s; our bounded front reaches 111 um over
+  120 s. Distance agrees, timescale is ~8x slower. Likely reviewer question.
+
+**Agent rules written** (this is why Codex retitled the paper last time -- there were no rules where
+it looks): `code/AGENTS.md` gained a scope section, and `bayat-et-al/AGENTS.md` was created (it had
+none). Core rule: *if it contradicts the code or data, fix it; if it is merely worse than you would
+have written it, leave it.* Also recorded: Codex/Gemini cannot invoke Claude Code skills and do not
+read CLAUDE.md -- point them at `~/.claude/skills/scientific-writing/SKILL.md` by path.
+
+**bayat-et-al PUSHED** -- `587a598` on `astro-atp/i0-0.42-audit`, tracking origin. Includes the three
+ultrareview nits (dead code, an always-falsy `str(x)[:0] or ...` fallback, 23 hardcoded sys.path
+inserts). Note 5 of those 23 lack pathlib, so the `Path(__file__)` idiom used elsewhere would have
+broken them; a self-contained inline import was used instead.
+
+**intellicage scoping (new).** `neubrain/projects/intellicage/` is a design doc with NO data. The
+actual data is `external/verstreken/` -- 42 sessions Jan-Jul 2026, but 39 are commissioning runs
+(n=1, 0 visits). Three are usable; the best is **2026-07-13 13.13.43**: 4 animals, 7 days
+(13-20 Jul), 7,979 visits, 12,609 nosepokes, `CornerCondition=+/-1` (a real conditioning protocol),
+all labelled group `Control`, Sex=Unknown. Enough for per-animal and cohort learning curves, not for
+a group contrast.
+- Recommended repo name: **`neu-intellicage`** (a reusable pipeline), not `hoekstra-et-al` -- the
+  plan says this is not a paper, and the pipeline will outlive any one client.
+- Use **PyMICE** (Dzik et al. 2018, `10.3758/s13428-017-0907-5`) -- Python, reads this exact
+  Visits/Nosepokes format. IntelliR is R, so it does not fit the stated Python requirement.
+- Unanswered: is Verstreken the target, or the test bed for the Tau cohort? Did the Tau study run?
+  (The 13 Jul session is 4 animals, suspiciously close to the planned mid-July test window.)
 
 > **End-of-session checklist (every agent, every time):**
 > 1. Update CURRENT STATE / IN PROGRESS / NEXT ACTION above.
