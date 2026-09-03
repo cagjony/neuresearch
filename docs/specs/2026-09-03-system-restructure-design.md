@@ -20,7 +20,7 @@ on disk 2026-09-02:
 | A | Project type is undeclared; nothing can validate shape | `neubrain/projects/` holds 8 projects of two kinds, no marker |
 | A2 | The two pipeline projects disagree with each other | `intellicage` uses `experiment.json` + `sessions/`; `oldenlabs` uses `study.json` + `cache/` + `outputs/` |
 | A3 | One-off agent scripts become permanent repo content | `projects/alz-olf/` has 9 loose `.py` at root (`patch.py`, `patch_s1.py`, `fix_figures.py`, `remove_fig5.py`, …) + `texput.log`; every other vault project has 0. Mirrored in `bayat-et-al/` (`explore_*.py`, `fig3_recompute.log`) |
-| B | Derived data lives inside the Obsidian-synced git vault | six `.parquet` in `projects/oldenlabs/analysis/experiments/dacruz_combined/cache/`; no external raw location exists at all |
+| B | Derived data lives inside the Obsidian-synced git vault, and the raw location is undeclared | six `.parquet` in `projects/oldenlabs/analysis/experiments/dacruz_combined/cache/`. Raw data *does* live outside the vault at `/mnt/sysfs01/users/cagatay/external/{cruz,verstreken}/`, reached by absolute path from `experiment.json` — but nothing declares it, it is group-writable, and it has no `derived/`/`results/` siblings |
 | C | Parallelism happens but is undocumented | `neubrain-oldenlabs/` is a second clone of the same remote on branch `oldenlabs/dacruz-study2`, while `AGENTS.md` says "never run two agents on these repos at once" |
 | D | `HANDOFF.md` is a 2151-line global bottleneck | all projects interleaved in one file, rewritten every session |
 | E | Submission freeze is prose, not a tool | `alz-olf` has both `submission/` and `submissions/`, no `SUBMISSIONS.md`, no tag. `astro_atp` follows the rule, but its `submissions/` also holds an unsent bundle, so the folder does not mean one thing |
@@ -114,7 +114,17 @@ Values for the projects that exist today:
 | `aon-pir-rev` | paper | null | null | `bitbucket.org/cagatay_aydin/aon-priform-repo` |
 | `intellicage` | pipeline | intellicage | `neu-intellicage` | null |
 | `oldenlabs` | pipeline | oldenlabs | `neu-oldenlabs` | null |
-| `compare-svm`, `theta-pac`, `writing` | to be classified during migration | | | |
+| `compare-svm` | paper | null | null | none yet |
+| `theta-pac` | paper | null | null | none yet |
+| `writing` | — see below | | | |
+
+`compare-svm` and `theta-pac` both carry the full paper shape (`plan.md`,
+`manuscript.md`, `references.bib`, `papers.txt`, `archive/`) and classify cleanly.
+
+**OPEN — `writing` is not a project.** It contains one file, `papers.txt`, and
+nothing else. It is either a literature holding pen that should not sit under
+`projects/` at all, or an abandoned scaffold to retire. The author decides; it is
+the only project that cannot be classified from its contents.
 
 `astro_atp` and `aon-pir-rev` both have substantial analysis pipelines, but those
 pipelines live in their **paper repos**, not in the vault — so the *vault
@@ -279,15 +289,15 @@ Existing content maps as:
 | `intellicage/analysis/experiments/verstreken` | `intellicage/studies/verstreken/2026-07` |
 | `intellicage/analysis/experiments/verstreken_2026-08` | `intellicage/studies/verstreken/2026-08` |
 
-The `verstreken` → `verstreken/2026-07` mapping is proposed from its session dates
-(`2026-07-10_baseline`, `2026-07-12_nosepoke1`, `2026-07-13_place_learning`) and
-needs the author's confirmation before the rename, since the existing folder name
-carries no date.
+The `verstreken` → `verstreken/2026-07` mapping is **confirmed** by the study's own
+metadata: `experiment.json` describes it as "Generated from the three substantive
+July 2026 IntelliCage sessions", and `verstreken_2026-08` is titled "August 2026
+interim report".
 
 ### Enforcement
 
-- `neuresearch/src/check_project.py` — **report-only**, validating each project's
-  shape against its declared type, matching `reconcile.py`'s existing philosophy.
+- `neuresearch/src/check_vault.py` — validates each project's shape against its
+  declared type. Specified in full in §6.
 - `new_project.py --type <paper|pipeline>` scaffolds the correct skeleton and
   writes `project.yml` and `STATE.md`. For a pipeline unit it also takes
   `--client` / `--study` to add a study to an existing unit.
@@ -320,6 +330,36 @@ Under each project's `data_root`:
     <client>/<study>/
 ```
 
+### The raw stage already exists
+
+`/mnt/sysfs01/users/cagatay/external/` holds `cruz/` and `verstreken/` — already
+nested by client, which is the shape this section proposes. `intellicage`'s
+`experiment.json` reaches into it by absolute path
+(`external/verstreken/Sessions/2026-07-10 18.38.52`). So the raw stage is not
+missing; it is **undeclared, unprotected, and unaccompanied**:
+
+- no `project.yml` names it, so nothing can check it;
+- it is `drwxrwx---`, so any agent can write into it;
+- there is no `MANIFEST.sha256`, so a change would leave no trace;
+- there are no `derived/` or `results/` siblings.
+
+**Migration is therefore one rename plus two new directories**, not a data move:
+
+```
+/mnt/sysfs01/users/cagatay/data/     <- data_root, shared by both units
+  raw/        <- the current .../external/ , renamed
+    cruz/, verstreken/
+  derived/    <- new
+  results/    <- new
+```
+
+The absolute paths inside each `study.json` are updated to match. The paths inside
+existing `provenance.json` files are **not** rewritten: a provenance record states
+where data was read at the time of the run, and editing it would make it a lie.
+Lower-churn alternative if the rename proves disruptive: leave `external/` where it
+is, declare it as the raw stage, and create `derived/`/`results/` beside it — the
+structure matters, the name does not.
+
 **The three stages sit above client and study, not inside them.** This is forced
 by real usage rather than taste: `oldenlabs/studies/dacruz/combined` pools cages
 58597, 58616, 58623, 58627, 62923 and 66336 across the client's separate studies,
@@ -345,7 +385,7 @@ machine-readable table — the table stays with the report; the bulk does not.
 `chmod a-w` is enforced from this client, so it stops an agent writing to `raw/`
 here. It may not hold from a machine that mounts the share with different
 `file_mode`/`forceuid` options. `MANIFEST.sha256`, verified by
-`check_project.py`, is therefore the mechanism that actually **detects** a
+`check_vault.py`, is therefore the mechanism that actually **detects** a
 violation; the mode bits only make one inconvenient.
 
 ### Migration
@@ -486,11 +526,86 @@ protocol for a project that also has vault state.
 
 ---
 
+## §6 — Vault integrity check
+
+The structure this spec defines is worth nothing if it decays the first time an
+agent improvises. Finding A3 is what decay looks like: nine one-off `patch*.py`
+scripts in `alz-olf`, none of them ever decided on. So the structure needs a check
+that is **run repeatedly over time**, reports what has drifted, and repairs the
+part that is safe to repair.
+
+### `neuresearch/src/check_vault.py`
+
+Default mode is **report-only** and genuinely read-only, writing
+`neubrain/logs/vault-status.md` — the same pattern `reconcile.py` already uses for
+`logs/library-status.md`. `--fix` is a separate, announced mode.
+
+The findings split in two, and the split is the important part of the design:
+
+**AUTO-FIXABLE — no judgement required, `--fix` repairs these:**
+
+- a missing `project.yml` or `STATE.md` (scaffolded from template, fields blank
+  and flagged rather than guessed);
+- regenerable derived files that are stale or absent — `logs/`, `references.bib`,
+  `to-find.md` — which `neubrain/AGENTS.md` already declares are generated, never
+  hand-maintained;
+- a file sitting at a known-wrong canonical path (`submission/` → `draft/`);
+- `chmod a-w` not applied to `raw/`;
+- missing `.gitignore` entries for build artefacts.
+
+**REPORT-ONLY — needs a human, never auto-resolved:**
+
+- anything touching manuscript content;
+- a second live manuscript appearing anywhere in a paper project;
+- a folder under `submissions/` with no `SUBMISSIONS.md` row or no tag;
+- a file under `raw/` whose hash no longer matches `MANIFEST.sha256`;
+- a study with no `provenance.json`, or a `provenance.json` with no code commit;
+- loose `.py` at a project root;
+- a project whose `type` and contents disagree.
+
+**It never deletes.** A drifted file that must move out of the way goes to
+`neubrain/_quarantine/<date>/` with a line in the report. Exit codes: `0` clean,
+`1` drift found, `2` tool error — so it can gate a commit or run on a schedule.
+
+This respects the two invariants already in force: report-only tools never modify
+inputs, and real errors crash loudly while "nothing to do" is an expected result,
+logged.
+
+### Where the rules live — and why not only in a skill
+
+A skill alone would break the property decision 4 called binding.
+`neuresearch/AGENTS.md` states it plainly: *"Claude Code skills under
+`~/.claude/skills/` cannot be invoked by Codex or Gemini."* Vault rules that only
+exist as a skill would be invisible to two of the three agents doing the work —
+and those are the agents whose improvisation this check exists to catch.
+
+So the rules are layered, with exactly one normative source:
+
+| layer | artefact | audience |
+|---|---|---|
+| **rules** | `neubrain/AGENTS.md` | all agents. Normative. The single source of truth. |
+| **enforcement** | `check_vault.py` | all agents. The executable form of those rules. |
+| **workflow** | `neuresearch/skills/neubrain-vault/` | Claude. When to run it, how to triage each finding class, what never to auto-fix. |
+
+The skill **points at `AGENTS.md` rather than restating it**, so the rules cannot
+drift between the two. This is the layering already proven with
+`ephys-pipeline-invariants`: the skill lives in `neuresearch/skills/`, is deployed
+by `sync_skills.py`, and `aon_pir_rev/AGENTS.md` carries a pointer telling
+non-Claude agents to read the file directly.
+
+**Running it.** The check is cheap and read-only, so the default is to run it at
+the start and end of any session that touched the vault, and after any multi-agent
+work. `STATE.md`'s definition-of-done includes a clean run.
+
+---
+
 ## Migration order
 
 1. Write `project.yml` for all 8 vault projects; classify `compare-svm`,
    `theta-pac`, `writing`.
-2. Build `check_project.py`; run it and record the failures without fixing them.
+2. Build `check_vault.py` in report-only mode; run it and record the failures
+   without fixing them. `--fix` and the skill come after the migration, so the
+   check is written against the structure the migration produces.
 3. Confirm the `verstreken` → `verstreken/2026-07` study name. **Blocks step 4.**
 4. Restructure the two units to `studies/<client>/<study>/`; rename
    `experiment.json` → `study.json` and update `neu-intellicage` to match; move
@@ -510,6 +625,8 @@ protocol for a project that also has vault state.
     the first worktree lane; add `merge_manifest.py`.
 11. Update `neubrain/AGENTS.md` and `neuresearch/AGENTS.md` with the new rules; fix
     the NFS/CIFS wording while there.
+12. Add `--fix` to `check_vault.py`, then write the `neubrain-vault` skill against
+    the finished rules and deploy it with `sync_skills.py`.
 
 Steps 1–2 are non-destructive and can proceed immediately. Steps 4, 5 and 8 move
 files and should each be done on their own branch, with the vault clean before
