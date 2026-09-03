@@ -23,7 +23,7 @@ on disk 2026-09-02:
 | B | Derived data lives inside the Obsidian-synced git vault | six `.parquet` in `projects/oldenlabs/analysis/experiments/dacruz_combined/cache/`; no external raw location exists at all |
 | C | Parallelism happens but is undocumented | `neubrain-oldenlabs/` is a second clone of the same remote on branch `oldenlabs/dacruz-study2`, while `AGENTS.md` says "never run two agents on these repos at once" |
 | D | `HANDOFF.md` is a 2151-line global bottleneck | all projects interleaved in one file, rewritten every session |
-| E | Submission freeze is prose, and compliance is already split | `astro_atp` has `SUBMISSIONS.md` + `submissions/` + 2 tags; `alz-olf` has both `submission/` and `submissions/`, no `SUBMISSIONS.md`, no tag |
+| E | Submission freeze is prose, not a tool | `alz-olf` has both `submission/` and `submissions/`, no `SUBMISSIONS.md`, no tag. `astro_atp` follows the rule, but its `submissions/` also holds an unsent bundle, so the folder does not mean one thing |
 | F | No method index | the library is keyed for citation (stem = citekey = bib key); nothing links a published method to the code implementing it |
 | G | Code↔result binding is by convention only | `provenance.json` exists but nothing validates that a result names the code commit that produced it |
 
@@ -77,15 +77,28 @@ provenance hardening for G.
 Every project gets `neubrain/projects/<name>/project.yml`:
 
 ```yaml
+# a pipeline project = an expertise-unit service
 schema: 1
 name: oldenlabs
-type: pipeline              # paper | pipeline | pipeline+paper
-unit: oldenlabs             # instrument / expertise unit; null for a pure paper
-code_repo: neu-oldenlabs    # reusable analysis code; null if none
-paper_repo: null            # URL of the per-paper repo; null if none
-data_root: /mnt/sysfs01/.../oldenlabs-data   # null for a pure paper
-lane: oldenlabs/dacruz-study2                # branch owning this project
+type: pipeline              # paper | pipeline
+unit: oldenlabs             # the instrument / expertise unit this serves
+code_repo: neu-oldenlabs    # reusable analysis code
+data_root: /mnt/sysfs01/.../oldenlabs-data
+lane: oldenlabs/dacruz-study2
 status: active              # active | frozen | archived
+```
+
+```yaml
+# a paper project
+schema: 1
+name: astro_atp
+type: paper
+paper_repo: https://github.com/neurophysiology-expertise-unit/bayat-et-al
+data_root: /mnt/sysfs01/.../astro-atp-data   # null if the paper has no data of its own
+source_studies:             # unit studies this paper draws on; [] if none
+  - oldenlabs/dacruz/study2
+lane: astro-atp/manuscript-v2-verified
+status: active
 ```
 
 `paper_repo` is a **URL, not a repo name** — `aon-pir-rev`'s repo is on Bitbucket
@@ -106,54 +119,178 @@ Values for the projects that exist today:
 `astro_atp` and `aon-pir-rev` both have substantial analysis pipelines, but those
 pipelines live in their **paper repos**, not in the vault — so the *vault
 project's* required shape is `paper`. The type declares what the vault directory
-must contain, not whether the science involved an analysis. `pipeline+paper` is
-therefore reserved for a project whose experiments live in the vault *and* which
-grows a manuscript there — the state `oldenlabs` reaches when its manuscript
-starts.
+must contain, not whether the science involved an analysis.
+
+### A pipeline project is a service, not a paper-in-waiting
+
+`oldenlabs` and `intellicage` are the same kind of thing: an **expertise-unit
+service** that runs analyses for client labs, and keeps accumulating them. They do
+not converge on a single manuscript. That is already visible on disk —
+`oldenlabs` holds `dacruz_combined`, `dacruz_study1`, `dacruz_study2`;
+`intellicage` holds `verstreken` and `verstreken_2026-08`. Client, then study.
+
+So there are exactly **two types**, not three. `pipeline+paper` is removed. A
+pipeline project's contents are *studies*, one per client engagement, and when a
+study yields a paper the paper becomes its **own `paper` project** that names the
+studies it draws on in `source_studies`. The unit is never converted; it keeps
+serving.
+
+This also settles the open `study.json` / `experiment.json` question below: the
+unit's unit-of-work is a **study**, so `study.json` is the right name and
+`intellicage` renames.
 
 `data_root` is **independent of type**: any project with data declares one,
 including a `paper` project whose figure code lives in its paper repo and reads
 from that root.
 
-**Minor open item — the meaning of `analysis/`.** In pipeline projects
-`analysis/experiments/` holds experiment runs. In `astro_atp` the same directory
-name, `analysis/manuscript_v2/`, holds a LaTeX build (`.aux`, `.bbl`, `.cls`,
-figures, `manuscript.pdf`). One name, two meanings. The recommendation is to
-rename the paper-project use to `build/` during migration so `analysis/` means
-exactly one thing; deferred to the author because it changes paths co-authors may
-have bookmarked.
+### RESOLVED — `analysis/` means experiments only; the manuscript lives in `draft/`
+
+`astro_atp/analysis/manuscript_v2/` was never meant to be under `analysis/`. The
+author's model is a two-state lifecycle: **a draft moves, a submission is locked.**
+`analysis/` is therefore reserved for pipeline experiment runs, and a paper
+project's working manuscript lives in `draft/`.
+
+The current state of `astro_atp` shows why this needs fixing — the manuscript
+exists in three places at once:
+
+| path | size | last touched | what it is |
+|---|---|---|---|
+| `manuscript.tex` | 60 KB | 2026-07-21 | the version the two submissions were built from |
+| `analysis/manuscript_v2/manuscript.tex` | 89 KB | 2026-09-01 | the actually-live draft |
+| `manuscript.tex.bak-preKemal` | 50 KB | 2026-07-06 | a hand-made backup |
+
+Two rules follow, and both are already implied by conventions the vault states
+elsewhere:
+
+- **A version never goes in a name.** `manuscript_v2` and `.bak-preKemal` both
+  encode history in a filename. History belongs in git tags and in
+  `submissions/`, which is the entire point of the freeze mechanism.
+  `neubrain/AGENTS.md` already makes this argument for `plan.md` ("git is the
+  backup; no `.bak` kept") — it applies to the manuscript identically.
+- **There is exactly one live draft per project.** Anything else is a frozen
+  submission or git history.
+
+### Canonical paper-project layout
+
+```
+projects/<name>/
+  project.yml
+  STATE.md
+  plan.md
+  papers.txt, references.bib, archive/    # literature side
+  draft/                                   # THE working manuscript. One. Moving.
+    manuscript.{tex,md}
+    references.bib                         # derived by build_bib.py
+    cover_letter.tex, highlights.tex
+    figs/, *.cls, *.sty                    # assembly assets
+    build/<journal>/                       # a bundle being assembled, not yet sent
+    (build artefacts gitignored)
+  submissions/<date>-<journal>/            # SENT work only. Created at the moment
+                                           # of sending. Never edited afterwards.
+  SUBMISSIONS.md
+```
+
+`submission/` (singular) in `astro_atp` is **not** a stray duplicate of
+`submissions/` — it is the assembly staging area holding `cas-sc.cls`,
+`cas-common.sty`, `cover_letter_cnsns.tex` and `figs/`. It folds into `draft/`,
+since building the submission bundle is what a draft directory is for. The
+`alz-olf` `submission/` folder is resolved the same way.
+
+### `submissions/` holds sent work only
+
+`astro_atp/submissions/` currently holds three folders, but only two submissions
+happened. `2026-08-14-nonlinear-science` is a **prepared bundle that was never
+sent** — the author has still to read it. `SUBMISSIONS.md`'s two rows and the two
+`submitted/*` tags are correct; the folder is the thing that is out of place.
+
+So `submissions/` is redefined as **sent work only**, and the rule is:
+
+> A folder appears under `submissions/` at the moment of sending, never before.
+> Creating it *is* the lock: snapshot the PDFs, add the `SUBMISSIONS.md` row, tag
+> the commit. Nothing under `submissions/` is ever edited afterwards.
+
+A bundle being assembled for a journal lives in `draft/build/<journal>/` until it
+is sent. Two reasons this is the right split rather than a status column:
+
+- The folder name carries the **submission date**, which is unknowable until the
+  thing is sent. `2026-08-14` is an assembly date wearing a submission date's
+  name — the folder is already lying about itself.
+- The author's workflow is "go to the most updated work, convert, and lock". Lock
+  is a single event with a single output. If unsent bundles can also live there,
+  "is this version the one they have?" stops having a one-line answer, which is
+  the entire purpose `SUBMISSIONS.md` states for itself.
+
+With one live `draft/`, "the most updated work" needs no hunting: it is always
+`draft/`, and freezing copies out of it.
+
+**Migration:** move `submissions/2026-08-14-nonlinear-science/` to
+`draft/build/nonlinear-science/`. It gets a `submissions/` folder, a row and a tag
+if and when it is actually sent.
+
+**Migration note.** `SUBMISSIONS.md`'s documented recovery commands reference
+`projects/astro_atp/manuscript.tex`. Existing tags keep working unchanged, because
+`git show <tag>:<path>` resolves the path as it was at that tag. But the
+instructions must gain a line stating that tags from before this migration use the
+old root path and tags after it use `draft/manuscript.tex`.
 
 ### Required shape per type
 
 | type | must contain |
 |---|---|
-| `paper` | `plan.md`, `manuscript.{md,tex}`, `references.bib`, `papers.txt`, `archive/` |
-| `pipeline` | `plan.md`, `protocol.md`, `analysis/experiments/<exp>/{study.json, provenance.json, outputs/}` |
-| `pipeline+paper` | the union of both |
+| `paper` | `plan.md`, `papers.txt`, `archive/`, `draft/manuscript.{md,tex}`, `draft/references.bib` |
+| `pipeline` | `plan.md`, `protocol.md`, `studies/<client>/<study>/{study.json, provenance.json, outputs/}` |
+
+A `paper` project that has submitted anything additionally requires
+`SUBMISSIONS.md` and at least one `submissions/<date>-<journal>/`.
 
 All types additionally require `project.yml` and `STATE.md`.
 
-### Canonical experiment shape
+### Canonical study shape
 
-`study.json` (run configuration) + `provenance.json` (run record: input hashes,
-parameters, code commit) + `outputs/` (results). Session-structured studies nest
-by session **inside** `outputs/`.
+```
+projects/<unit>/
+  project.yml, STATE.md, plan.md, protocol.md
+  studies/
+    <client>/                     # the client lab, e.g. dacruz, verstreken
+      <study>/                    # one engagement, e.g. study1, study2, combined
+        study.json                # configuration
+        provenance.json           # input hashes, parameters, code commit
+        outputs/                  # results + machine-readable tables
+        report.md
+```
 
-**OPEN DECISION — requires the author.** This names `oldenlabs`' convention as
-canonical, which costs `intellicage` a rename of `experiment.json` → `study.json`
-plus a matching change in `neu-intellicage`. Adopting `intellicage`'s names
-instead costs the same work on the `oldenlabs` side. The recommendation is
-`study.json`, on the grounds that the file configures a study/run rather than
-describing an experiment, and that `oldenlabs` already pairs it with the
-`outputs/` name this spec adopts — but the author has not yet ruled, and the
-migration must not start on this item until they do.
+`analysis/experiments/` is replaced by `studies/<client>/<study>/`. Nesting by
+client is what makes "more and more analyses for other labs" scale — it keeps one
+lab's engagements together, and a client folder is the natural unit to hand back
+to that lab. Session-structured studies nest by session **inside** `outputs/`,
+which is where `intellicage`'s current `sessions/` goes.
+
+`study.json` is canonical over `experiment.json`, resolved by the unit's own
+vocabulary: the thing a unit does for a lab is a study. `intellicage` renames, and
+`neu-intellicage` changes with it.
+
+Existing content maps as:
+
+| now | becomes |
+|---|---|
+| `oldenlabs/analysis/experiments/dacruz_study1` | `oldenlabs/studies/dacruz/study1` |
+| `oldenlabs/analysis/experiments/dacruz_study2` | `oldenlabs/studies/dacruz/study2` |
+| `oldenlabs/analysis/experiments/dacruz_combined` | `oldenlabs/studies/dacruz/combined` |
+| `intellicage/analysis/experiments/verstreken` | `intellicage/studies/verstreken/2026-07` |
+| `intellicage/analysis/experiments/verstreken_2026-08` | `intellicage/studies/verstreken/2026-08` |
+
+The `verstreken` → `verstreken/2026-07` mapping is proposed from its session dates
+(`2026-07-10_baseline`, `2026-07-12_nosepoke1`, `2026-07-13_place_learning`) and
+needs the author's confirmation before the rename, since the existing folder name
+carries no date.
 
 ### Enforcement
 
 - `neuresearch/src/check_project.py` — **report-only**, validating each project's
   shape against its declared type, matching `reconcile.py`'s existing philosophy.
-- `new_project.py --type <paper|pipeline|pipeline+paper>` scaffolds the correct
-  skeleton and writes `project.yml` and `STATE.md`.
+- `new_project.py --type <paper|pipeline>` scaffolds the correct skeleton and
+  writes `project.yml` and `STATE.md`. For a pipeline unit it also takes
+  `--client` / `--study` to add a study to an existing unit.
 - The schema is documented in `neubrain/AGENTS.md`, not `CLAUDE.md`, so Codex and
   agy see it.
 
@@ -175,10 +312,19 @@ Under each project's `data_root`:
 <data_root>/
   raw/        immutable. chmod a-w + MANIFEST.sha256 written at landing.
               No agent writes here, ever.
+    <client>/<export>/
   derived/    preprocessed intermediates. Fully regenerable.
               Safe to delete wholesale.
+    <client>/<study>/
   results/    tables + figures. The only stage the vault sees.
+    <client>/<study>/
 ```
+
+**The three stages sit above client and study, not inside them.** This is forced
+by real usage rather than taste: `oldenlabs/studies/dacruz/combined` pools cages
+58597, 58616, 58623, 58627, 62923 and 66336 across the client's separate studies,
+so a raw export cannot belong to one study. Raw is owned by the client; derived
+and results are owned by a study.
 
 ### The invariant
 
@@ -188,7 +334,7 @@ rebuild, and get the same hashes.
 
 ### Vault contract
 
-`projects/<name>/analysis/experiments/<exp>/` keeps only `study.json`,
+`projects/<unit>/studies/<client>/<study>/` keeps only `study.json`,
 `provenance.json`, `report.md`, and the small machine-readable tables the
 manuscript actually cites. Anything large is referenced by path into `results/`.
 This preserves the existing rule that every plotted quantity is also written as a
@@ -205,9 +351,9 @@ violation; the mode bits only make one inconvenient.
 ### Migration
 
 The six `.parquet` files in
-`projects/oldenlabs/analysis/experiments/dacruz_combined/cache/` move to that
-project's `derived/`. The vault retains `study.json`, `provenance.json`,
-`outputs/*.csv` and the figures.
+`projects/oldenlabs/analysis/experiments/dacruz_combined/cache/` move to
+`<data_root>/derived/dacruz/combined/`. The vault retains `study.json`,
+`provenance.json`, `outputs/*.csv` and the figures.
 
 ---
 
@@ -316,7 +462,7 @@ migration splits it:
 
 | owner | holds |
 |---|---|
-| **vault** (`neubrain/projects/<name>/`) | `plan.md`, manuscript, `references.bib`, `papers.txt`, `archive/`, `submissions/`, `SUBMISSIONS.md`, `STATE.md`, `project.yml` |
+| **vault** (`neubrain/projects/<name>/`) | `plan.md`, `draft/` (the live manuscript + assembly assets), `papers.txt`, `archive/`, `submissions/`, `SUBMISSIONS.md`, `STATE.md`, `project.yml` |
 | **paper repo** | figure and analysis code, `environment.yml`, generated figures, repo-specific `AGENTS.md` |
 
 Either side may hold a **read-only derived copy** of a file the other owns. Every
@@ -345,22 +491,29 @@ protocol for a project that also has vault state.
 1. Write `project.yml` for all 8 vault projects; classify `compare-svm`,
    `theta-pac`, `writing`.
 2. Build `check_project.py`; run it and record the failures without fixing them.
-3. Resolve the `study.json` / `experiment.json` open decision. **Blocks step 4.**
-4. Normalise the two pipeline projects to the canonical experiment shape.
-5. Split `HANDOFF.md`: extract durable findings, distribute per-project state,
+3. Confirm the `verstreken` → `verstreken/2026-07` study name. **Blocks step 4.**
+4. Restructure the two units to `studies/<client>/<study>/`; rename
+   `experiment.json` → `study.json` and update `neu-intellicage` to match; move
+   `sessions/` under `outputs/`.
+5. Restructure the paper projects to `draft/`: fold `submission/` into it, retire
+   `analysis/manuscript_v2/` and the root `manuscript.tex` down to one live draft,
+   delete `manuscript.tex.bak-preKemal` (git holds it), move the unsent
+   `submissions/2026-08-14-nonlinear-science/` to `draft/build/nonlinear-science/`,
+   and add the path-change note to `SUBMISSIONS.md`.
+6. Split `HANDOFF.md`: extract durable findings, distribute per-project state,
    archive the remainder.
-6. Create `STATE.md` for every project from the distributed content.
-7. Establish `data_root` for `oldenlabs` and `intellicage`; move `cache/` to
-   `derived/`; write `MANIFEST.sha256` and `chmod a-w` on `raw/`.
-8. Convert paper-repo `HANDOFF.md`/`CLAUDE.md`/`GEMINI.md` to pointer stubs.
-9. Merge `oldenlabs/dacruz-study2`, retire the `neubrain-oldenlabs` clone, create
-   the first worktree lane; add `merge_manifest.py`.
-10. Update `neubrain/AGENTS.md` and `neuresearch/AGENTS.md` with the new rules; fix
+7. Create `STATE.md` for every project from the distributed content.
+8. Establish `data_root` for `oldenlabs` and `intellicage`; move `cache/` to
+   `derived/<client>/<study>/`; write `MANIFEST.sha256` and `chmod a-w` on `raw/`.
+9. Convert paper-repo `HANDOFF.md`/`CLAUDE.md`/`GEMINI.md` to pointer stubs.
+10. Merge `oldenlabs/dacruz-study2`, retire the `neubrain-oldenlabs` clone, create
+    the first worktree lane; add `merge_manifest.py`.
+11. Update `neubrain/AGENTS.md` and `neuresearch/AGENTS.md` with the new rules; fix
     the NFS/CIFS wording while there.
 
-Steps 1–2 are non-destructive and can proceed immediately. Steps 4 and 7 move
+Steps 1–2 are non-destructive and can proceed immediately. Steps 4, 5 and 8 move
 files and should each be done on their own branch, with the vault clean before
-starting.
+starting. Step 5 must not run while a submission is in preparation.
 
 ---
 
@@ -371,7 +524,8 @@ Not addressed by this design, deliberately:
 - `freeze_submission.py` and the reconcile check for submission freezes (finding E).
 - The method index linking published method → paper → code → project (finding F).
 - Environment locking and provenance hardening (finding G).
-- The `submission/` vs `submissions/` naming collision in `alz-olf` — resolved as
-  part of finding E's round, not this one.
+- Enforcement of the freeze: `freeze_submission.py` and the reconcile check that
+  every `submissions/` folder has a matching row and tag. This round defines what
+  `submissions/` means; the next round makes a tool do it.
 - Any change to the literature subsystem: `_library/`, `lit/`, `concepts/` and the
   manifest keep their current structure and stay whole in the vault.
