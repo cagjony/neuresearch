@@ -72,34 +72,44 @@ provenance hardening for G.
 
 ## §1 — Project typing
 
-### `project.yml`
+### `project.json`
 
-Every project gets `neubrain/projects/<name>/project.yml`:
+Every project gets `neubrain/projects/<name>/project.json`:
 
-```yaml
-# a pipeline project = an expertise-unit service
-schema: 1
-name: oldenlabs
-type: pipeline              # paper | pipeline
-unit: oldenlabs             # the instrument / expertise unit this serves
-code_repo: neu-oldenlabs    # reusable analysis code
-data_root: /mnt/sysfs01/.../oldenlabs-data
-lane: oldenlabs/dacruz-study2
-status: active              # active | frozen | archived
+```json
+// a pipeline project = an expertise-unit service
+{
+  "schema": 1,
+  "name": "oldenlabs",
+  "type": "pipeline",
+  "unit": "oldenlabs",
+  "code_repo": "neu-oldenlabs",
+  "data_root": "/mnt/sysfs01/users/cagatay/data",
+  "lane": "oldenlabs/dacruz-study2",
+  "status": "active"
+}
 ```
 
-```yaml
-# a paper project
-schema: 1
-name: astro_atp
-type: paper
-paper_repo: https://github.com/neurophysiology-expertise-unit/bayat-et-al
-data_root: /mnt/sysfs01/.../astro-atp-data   # null if the paper has no data of its own
-source_studies:             # unit studies this paper draws on; [] if none
-  - oldenlabs/dacruz/study2
-lane: astro-atp/manuscript-v2-verified
-status: active
+```json
+// a paper project
+{
+  "schema": 1,
+  "name": "astro_atp",
+  "type": "paper",
+  "paper_repo": "https://github.com/neurophysiology-expertise-unit/bayat-et-al",
+  "data_root": null,
+  "source_studies": ["oldenlabs/dacruz/study2"],
+  "lane": "astro-atp/manuscript-v2-verified",
+  "status": "active"
+}
 ```
+
+**JSON, not YAML.** Every tool in `neuresearch/src/` is stdlib-only —
+`reconcile.py` states it explicitly — and the vault's existing configs
+(`manifest.json`, `study.json`, `provenance.json`) are all JSON. YAML would add
+the codebase's first runtime dependency to buy comment support. The `//` lines
+above are illustrative only and are not written to disk; the schema is documented
+in `neubrain/AGENTS.md` instead.
 
 `paper_repo` is a **URL, not a repo name** — `aon-pir-rev`'s repo is on Bitbucket
 because its co-authors read it there, while `astro_atp`'s and `alz-olf`'s are on
@@ -184,7 +194,7 @@ elsewhere:
 
 ```
 projects/<name>/
-  project.yml
+  project.json
   STATE.md
   plan.md
   papers.txt, references.bib, archive/    # literature side
@@ -253,13 +263,13 @@ old root path and tags after it use `draft/manuscript.tex`.
 A `paper` project that has submitted anything additionally requires
 `SUBMISSIONS.md` and at least one `submissions/<date>-<journal>/`.
 
-All types additionally require `project.yml` and `STATE.md`.
+All types additionally require `project.json` and `STATE.md`.
 
 ### Canonical study shape
 
 ```
 projects/<unit>/
-  project.yml, STATE.md, plan.md, protocol.md
+  project.json, STATE.md, plan.md, protocol.md
   studies/
     <client>/                     # the client lab, e.g. dacruz, verstreken
       <study>/                    # one engagement, e.g. study1, study2, combined
@@ -299,7 +309,7 @@ interim report".
 - `neuresearch/src/check_vault.py` — validates each project's shape against its
   declared type. Specified in full in §6.
 - `new_project.py --type <paper|pipeline>` scaffolds the correct skeleton and
-  writes `project.yml` and `STATE.md`. For a pipeline unit it also takes
+  writes `project.json` and `STATE.md`. For a pipeline unit it also takes
   `--client` / `--study` to add a study to an existing unit.
 - The schema is documented in `neubrain/AGENTS.md`, not `CLAUDE.md`, so Codex and
   agy see it.
@@ -338,7 +348,7 @@ nested by client, which is the shape this section proposes. `intellicage`'s
 (`external/verstreken/Sessions/2026-07-10 18.38.52`). So the raw stage is not
 missing; it is **undeclared, unprotected, and unaccompanied**:
 
-- no `project.yml` names it, so nothing can check it;
+- no `project.json` names it, so nothing can check it;
 - it is `drwxrwx---`, so any agent can write into it;
 - there is no `MANIFEST.sha256`, so a change would leave no trace;
 - there are no `derived/` or `results/` siblings.
@@ -502,7 +512,7 @@ migration splits it:
 
 | owner | holds |
 |---|---|
-| **vault** (`neubrain/projects/<name>/`) | `plan.md`, `draft/` (the live manuscript + assembly assets), `papers.txt`, `archive/`, `submissions/`, `SUBMISSIONS.md`, `STATE.md`, `project.yml` |
+| **vault** (`neubrain/projects/<name>/`) | `plan.md`, `draft/` (the live manuscript + assembly assets), `papers.txt`, `archive/`, `submissions/`, `SUBMISSIONS.md`, `STATE.md`, `project.json` |
 | **paper repo** | figure and analysis code, `environment.yml`, generated figures, repo-specific `AGENTS.md` |
 
 Either side may hold a **read-only derived copy** of a file the other owns. Every
@@ -544,7 +554,7 @@ The findings split in two, and the split is the important part of the design:
 
 **AUTO-FIXABLE — no judgement required, `--fix` repairs these:**
 
-- a missing `project.yml` or `STATE.md` (scaffolded from template, fields blank
+- a missing `project.json` or `STATE.md` (scaffolded from template, fields blank
   and flagged rather than guessed);
 - regenerable derived files that are stale or absent — `logs/`, `references.bib`,
   `to-find.md` — which `neubrain/AGENTS.md` already declares are generated, never
@@ -601,7 +611,7 @@ work. `STATE.md`'s definition-of-done includes a clean run.
 
 ## Migration order
 
-1. Write `project.yml` for all 8 vault projects; classify `compare-svm`,
+1. Write `project.json` for all 8 vault projects; classify `compare-svm`,
    `theta-pac`, `writing`.
 2. Build `check_vault.py` in report-only mode; run it and record the failures
    without fixing them. `--fix` and the skill come after the migration, so the
