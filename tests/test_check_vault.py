@@ -245,3 +245,73 @@ def test_no_submissions_directory_is_not_a_finding(tmp_path):
     vault = make_vault(tmp_path)
     full_paper(vault, "alz-olf")
     assert codes_for(vault, "alz-olf", "unrecorded-submission") == []
+
+
+def pipeline_with_data(vault: Path, name: str, data_root: Path) -> Path:
+    d = add_project(vault, name, {
+        "schema": 1, "name": name, "type": "pipeline", "status": "active",
+        "data_root": str(data_root),
+    })
+    (d / "plan.md").write_text("plan\n")
+    (d / "protocol.md").write_text("protocol\n")
+    (d / "studies").mkdir()
+    return d
+
+
+def test_absent_data_root_is_reported(tmp_path):
+    vault = make_vault(tmp_path)
+    pipeline_with_data(vault, "oldenlabs", tmp_path / "nowhere")
+    found = codes_for(vault, "oldenlabs", "data-root-missing")
+    assert len(found) == 1
+    assert "nowhere" in found[0].message
+
+
+def test_writable_raw_is_an_auto_finding(tmp_path):
+    vault = make_vault(tmp_path)
+    root = tmp_path / "data"
+    (root / "raw").mkdir(parents=True)
+    (root / "raw" / "MANIFEST.sha256").write_text("")
+    pipeline_with_data(vault, "oldenlabs", root)
+    found = codes_for(vault, "oldenlabs", "raw-writable")
+    assert len(found) == 1
+    assert found[0].level == "AUTO"
+
+
+def test_missing_manifest_is_report_not_auto(tmp_path):
+    vault = make_vault(tmp_path)
+    root = tmp_path / "data"
+    (root / "raw").mkdir(parents=True)
+    pipeline_with_data(vault, "oldenlabs", root)
+    found = codes_for(vault, "oldenlabs", "raw-unmanifested")
+    assert len(found) == 1
+    assert found[0].level == "REPORT"
+
+
+def test_project_without_data_root_gets_no_data_findings(tmp_path):
+    vault = make_vault(tmp_path)
+    full_paper(vault, "alz-olf")
+    assert codes_for(vault, "alz-olf", "data-root-missing") == []
+    assert codes_for(vault, "alz-olf", "raw-unmanifested") == []
+
+
+def test_provenance_without_a_code_commit_is_reported(tmp_path):
+    vault = make_vault(tmp_path)
+    d = full_pipeline(vault, "intellicage")
+    study = d / "studies" / "verstreken" / "2026-07"
+    study.mkdir(parents=True)
+    (study / "study.json").write_text("{}\n")
+    (study / "provenance.json").write_text(json.dumps({"version": "0.1.0"}) + "\n")
+    found = codes_for(vault, "intellicage", "provenance-no-commit")
+    assert len(found) == 1
+    assert "verstreken/2026-07" in found[0].message
+
+
+def test_provenance_with_a_code_commit_is_clean(tmp_path):
+    vault = make_vault(tmp_path)
+    d = full_pipeline(vault, "intellicage")
+    study = d / "studies" / "verstreken" / "2026-07"
+    study.mkdir(parents=True)
+    (study / "provenance.json").write_text(
+        json.dumps({"code_commit": "a1b2c3d"}) + "\n"
+    )
+    assert codes_for(vault, "intellicage", "provenance-no-commit") == []

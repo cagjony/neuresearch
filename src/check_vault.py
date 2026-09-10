@@ -25,6 +25,8 @@ Requires: Python 3.10+ (stdlib only).
 from __future__ import annotations
 
 import argparse
+import json
+import os
 import sys
 from dataclasses import dataclass
 from datetime import date
@@ -145,11 +147,66 @@ def check_submissions_recorded(cfg: ProjectConfig,
     ]
 
 
+def check_data_root(cfg: ProjectConfig, project_dir: Path) -> list[Finding]:
+    """The declared data root must exist, with a protected, manifested raw/."""
+    if cfg.data_root is None:
+        return []
+    if not cfg.data_root.is_dir():
+        return [Finding(REPORT, cfg.name, "data-root-missing",
+                        f"data_root {cfg.data_root} does not exist")]
+
+    raw = cfg.data_root / "raw"
+    if not raw.is_dir():
+        return [Finding(REPORT, cfg.name, "data-root-missing",
+                        f"{raw} does not exist")]
+
+    findings = []
+    if os.access(raw, os.W_OK):
+        findings.append(Finding(
+            AUTO, cfg.name, "raw-writable",
+            f"{raw} is writable; raw data must be chmod a-w",
+        ))
+    if not (raw / "MANIFEST.sha256").is_file():
+        findings.append(Finding(
+            REPORT, cfg.name, "raw-unmanifested",
+            f"{raw} has no MANIFEST.sha256 — confirm raw is in its intended "
+            "state, then hash it; generating one now would bless whatever is "
+            "there",
+        ))
+    return findings
+
+
+def check_provenance_commit(cfg: ProjectConfig,
+                            project_dir: Path) -> list[Finding]:
+    """Every study run must record the code commit that produced it."""
+    studies = project_dir / "studies"
+    if not studies.is_dir():
+        return []
+    findings = []
+    for prov in sorted(studies.rglob("provenance.json")):
+        try:
+            data = json.loads(prov.read_text())
+        except json.JSONDecodeError:
+            findings.append(Finding(
+                REPORT, cfg.name, "provenance-no-commit",
+                f"{prov.relative_to(project_dir)} is not valid JSON",
+            ))
+            continue
+        if not data.get("code_commit"):
+            findings.append(Finding(
+                REPORT, cfg.name, "provenance-no-commit",
+                f"{prov.parent.relative_to(studies)} records no code_commit",
+            ))
+    return findings
+
+
 CHECKS: list = [
     check_required_shape,
     check_loose_scripts,
     check_stray_manuscript,
     check_submissions_recorded,
+    check_data_root,
+    check_provenance_commit,
 ]
 
 
