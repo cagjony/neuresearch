@@ -174,3 +174,74 @@ def test_a_file_where_a_directory_is_required_is_reported(tmp_path):
     found = codes_for(vault, "oldenlabs", "missing-required")
     assert len(found) == 1
     assert "studies/" in found[0].message
+
+
+def test_loose_python_at_project_root_is_reported(tmp_path):
+    vault = make_vault(tmp_path)
+    d = full_paper(vault, "alz-olf")
+    (d / "patch.py").write_text("# one-off\n")
+    (d / "fix_figures.py").write_text("# one-off\n")
+    found = codes_for(vault, "alz-olf", "loose-script")
+    assert {f.message.split()[0] for f in found} == {"fix_figures.py", "patch.py"}
+    assert all(f.level == "REPORT" for f in found)
+
+
+def test_scripts_in_tools_are_fine(tmp_path):
+    vault = make_vault(tmp_path)
+    d = full_paper(vault, "alz-olf")
+    (d / "tools").mkdir()
+    (d / "tools" / "build_figure.py").write_text("# kept\n")
+    assert codes_for(vault, "alz-olf", "loose-script") == []
+
+
+def test_manuscript_outside_draft_is_reported(tmp_path):
+    vault = make_vault(tmp_path)
+    d = full_paper(vault, "astro_atp")
+    (d / "manuscript.tex").write_text("old\n")
+    found = codes_for(vault, "astro_atp", "stray-manuscript")
+    assert len(found) == 1
+    assert "manuscript.tex" in found[0].message
+
+
+def test_nested_manuscript_outside_draft_is_reported(tmp_path):
+    vault = make_vault(tmp_path)
+    d = full_paper(vault, "astro_atp")
+    (d / "analysis" / "manuscript_v2").mkdir(parents=True)
+    (d / "analysis" / "manuscript_v2" / "manuscript.tex").write_text("live\n")
+    found = codes_for(vault, "astro_atp", "stray-manuscript")
+    assert len(found) == 1
+    assert "analysis/manuscript_v2/manuscript.tex" in found[0].message
+
+
+def test_the_draft_manuscript_is_not_reported_as_stray(tmp_path):
+    vault = make_vault(tmp_path)
+    full_paper(vault, "astro_atp")
+    assert codes_for(vault, "astro_atp", "stray-manuscript") == []
+
+
+def test_submission_folder_missing_from_submissions_md_is_reported(tmp_path):
+    vault = make_vault(tmp_path)
+    d = full_paper(vault, "astro_atp")
+    (d / "submissions" / "2026-07-09-csf").mkdir(parents=True)
+    (d / "submissions" / "2026-08-14-nonlinear-science").mkdir(parents=True)
+    (d / "SUBMISSIONS.md").write_text(
+        "| 2026-07-09 | CSF | X | `submitted/2026-07-09-csf` | abc | sent |\n"
+    )
+    found = codes_for(vault, "astro_atp", "unrecorded-submission")
+    assert len(found) == 1
+    assert "2026-08-14-nonlinear-science" in found[0].message
+
+
+def test_submissions_without_a_submissions_md_is_reported(tmp_path):
+    vault = make_vault(tmp_path)
+    d = full_paper(vault, "alz-olf")
+    (d / "submissions" / "2026-01-01-journal").mkdir(parents=True)
+    found = codes_for(vault, "alz-olf", "unrecorded-submission")
+    assert len(found) == 1
+    assert "SUBMISSIONS.md" in found[0].message
+
+
+def test_no_submissions_directory_is_not_a_finding(tmp_path):
+    vault = make_vault(tmp_path)
+    full_paper(vault, "alz-olf")
+    assert codes_for(vault, "alz-olf", "unrecorded-submission") == []

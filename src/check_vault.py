@@ -92,8 +92,64 @@ def check_required_shape(cfg: ProjectConfig, project_dir: Path) -> list[Finding]
     ]
 
 
+def check_loose_scripts(cfg: ProjectConfig, project_dir: Path) -> list[Finding]:
+    """A .py at the project root is a one-off nobody decided to keep."""
+    return [
+        Finding(REPORT, cfg.name, "loose-script",
+                f"{p.name} sits at the project root; scripts belong in tools/")
+        for p in sorted(project_dir.glob("*.py"))
+    ]
+
+
+def check_stray_manuscript(cfg: ProjectConfig, project_dir: Path) -> list[Finding]:
+    """There is exactly one live manuscript, and it lives in draft/."""
+    if cfg.type != "paper":
+        return []
+    draft = project_dir / "draft"
+    findings = []
+    for path in sorted(project_dir.rglob("manuscript.*")):
+        if path.suffix not in {".tex", ".md"} or not path.is_file():
+            continue
+        if draft in path.parents:
+            continue
+        rel = path.relative_to(project_dir)
+        findings.append(Finding(
+            REPORT, cfg.name, "stray-manuscript",
+            f"{rel} is outside draft/; there is one live manuscript",
+        ))
+    return findings
+
+
+def check_submissions_recorded(cfg: ProjectConfig,
+                               project_dir: Path) -> list[Finding]:
+    """Every submissions/ folder needs a SUBMISSIONS.md row naming it."""
+    submissions = project_dir / "submissions"
+    if not submissions.is_dir():
+        return []
+    folders = sorted(p.name for p in submissions.iterdir() if p.is_dir())
+    if not folders:
+        return []
+
+    record = project_dir / "SUBMISSIONS.md"
+    if not record.is_file():
+        return [Finding(
+            REPORT, cfg.name, "unrecorded-submission",
+            f"{len(folders)} submission folder(s) but no SUBMISSIONS.md",
+        )]
+
+    text = record.read_text()
+    return [
+        Finding(REPORT, cfg.name, "unrecorded-submission",
+                f"submissions/{name} has no row in SUBMISSIONS.md")
+        for name in folders if name not in text
+    ]
+
+
 CHECKS: list = [
     check_required_shape,
+    check_loose_scripts,
+    check_stray_manuscript,
+    check_submissions_recorded,
 ]
 
 
