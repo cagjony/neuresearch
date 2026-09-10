@@ -1,0 +1,7 @@
+# Development-only dependencies. NOT installed by environment.yml, which
+# deliberately installs runtime requirements.txt only.
+#
+#   /home/mouselab/.conda/envs/neuresearch/bin/python -m pip install -r requirements-dev.txt
+#
+# Nothing in src/ may import these.
+pytest

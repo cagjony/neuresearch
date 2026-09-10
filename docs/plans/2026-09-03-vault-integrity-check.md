@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- **Tools are stdlib-only.** No runtime third-party imports in `src/`. `reconcile.py` states this convention; follow it. `pytest` is a dev dependency and never imported by `src/`.
+- **The tools built by this plan are stdlib-only.** No third-party imports in `project_config.py` or `check_vault.py`. This is `reconcile.py`'s discipline, not a codebase-wide rule — `fetch_papers.py` uses `requests`, the sole entry in `requirements.txt`. `pytest` is a dev dependency listed in `requirements-dev.txt` and is never imported by `src/`.
 - **Interpreter is `/home/mouselab/.conda/envs/neuresearch/bin/python`, always by absolute path.** `conda activate neuresearch` does NOT change `python3` on this machine — the profile's PATH keeps `/opt/conda/envs/ece/bin/python3` (3.9) in front. This has already silently run a tool on the wrong interpreter once.
 - **This tool never writes anything except `logs/vault-status.md`.** Same rule `reconcile.py` follows. No moves, no deletes, no edits, in any code path in this plan.
 - **Exit codes:** `0` clean, `1` drift found, `2` tool error. On-disk state is identical either way.
