@@ -56,7 +56,45 @@ def discover(vault: Path) -> list[Path]:
 # Each takes (cfg, project_dir) and returns a list of Finding.
 # Registered in CHECKS below; adding a check is one line there.
 
-CHECKS: list = []
+REQUIRED_SHAPE: dict[str, list[str]] = {
+    "paper": [
+        "plan.md",
+        "papers.txt",
+        "archive/",
+        "draft/",
+        "draft/manuscript.*",
+        "draft/references.bib",
+    ],
+    "pipeline": [
+        "plan.md",
+        "protocol.md",
+        "studies/",
+    ],
+}
+
+
+def _satisfied(project_dir: Path, entry: str) -> bool:
+    if entry.endswith("/"):
+        return (project_dir / entry.rstrip("/")).is_dir()
+    if "*" in entry:
+        parent, _, pattern = entry.rpartition("/")
+        base = project_dir / parent if parent else project_dir
+        return base.is_dir() and any(p.is_file() for p in base.glob(pattern))
+    return (project_dir / entry).is_file()
+
+
+def check_required_shape(cfg: ProjectConfig, project_dir: Path) -> list[Finding]:
+    """Every entry the project's declared type requires must be present."""
+    return [
+        Finding(REPORT, cfg.name, "missing-required", f"{entry} is missing")
+        for entry in REQUIRED_SHAPE[cfg.type]
+        if not _satisfied(project_dir, entry)
+    ]
+
+
+CHECKS: list = [
+    check_required_shape,
+]
 
 
 def collect(vault: Path) -> list[Finding]:
