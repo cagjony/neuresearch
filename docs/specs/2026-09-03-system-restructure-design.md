@@ -21,7 +21,7 @@ on disk 2026-09-02:
 | A2 | The two pipeline projects disagree with each other | `intellicage` uses `experiment.json` + `sessions/`; `oldenlabs` uses `study.json` + `cache/` + `outputs/` |
 | A3 | One-off agent scripts become permanent repo content | `projects/alz-olf/` has 9 loose `.py` at root (`patch.py`, `patch_s1.py`, `fix_figures.py`, `remove_fig5.py`, …) + `texput.log`; every other vault project has 0. Mirrored in `bayat-et-al/` (`explore_*.py`, `fig3_recompute.log`) |
 | B | Derived data lives inside the Obsidian-synced git vault, and the raw location is undeclared | six `.parquet` in `projects/oldenlabs/analysis/experiments/dacruz_combined/cache/`. Raw data *does* live outside the vault at `/mnt/sysfs01/users/cagatay/external/{cruz,verstreken}/`, reached by absolute path from `experiment.json` — but nothing declares it, it is group-writable, and it has no `derived/`/`results/` siblings |
-| C | Parallelism happens but is undocumented | `neubrain-oldenlabs/` is a second clone of the same remote on branch `oldenlabs/dacruz-study2`, while `AGENTS.md` says "never run two agents on these repos at once" |
+| C | Parallelism happens but is undocumented | `neubrain-oldenlabs/` is a WORKTREE on branch `oldenlabs/dacruz-study2` (its `.git` is a file pointing at `neubrain/.git/worktrees/neubrain-oldenlabs`), while `AGENTS.md` says "never run two agents on these repos at once". Corrected 2026-09-11: an earlier draft of this spec called it a second clone. It is not. |
 | D | `HANDOFF.md` is a 2151-line global bottleneck | all projects interleaved in one file, rewritten every session |
 | E | Submission freeze is prose, not a tool | `alz-olf` has both `submission/` and `submissions/`, no `SUBMISSIONS.md`, no tag. `astro_atp` follows the rule, but its `submissions/` also holds an unsent bundle, so the folder does not mean one thing |
 | F | No method index | the library is keyed for citation (stem = citekey = bib key); nothing links a published method to the code implementing it |
@@ -411,7 +411,9 @@ The six `.parquet` files in
 
 - `neubrain/` stays on `main` and is the **integration tree**. No project work
   happens in it.
-- A lane is created with `git worktree add ../nb-<project> -b <project>/<topic>`.
+- A lane is created with `git worktree add ../neubrain-<project> -b <project>/<topic> main`.
+  Branch from `main`, not from whatever the main checkout is on — four `deep-sniff`
+  commits initially landed on `astro-atp/manuscript-v2-verified` for exactly that reason.
 - **Lane rule:** a lane stages only paths under its own `projects/<name>/`,
   verified with the idiom already in `neubrain/AGENTS.md`:
 
@@ -424,8 +426,21 @@ The six `.parquet` files in
   `_library/manifest.json` is the one genuinely shared writer; conflicts in it are
   additive (each lane adds stems), so a small `merge_manifest.py` performing a
   key-union merge is built alongside this change.
-- `neubrain-oldenlabs/` is retired once `oldenlabs/dacruz-study2` merges, and is
-  replaced by a worktree.
+- `neubrain-oldenlabs/` already IS a worktree; it needs no migration, only to be
+  recorded in the lanes registry.
+
+### Worktrees are already in use here, and have been since 2026-08-21
+
+`neubrain-oldenlabs` is not a clone — `git worktree list` reports it, and its
+`.git` is an 83-byte file reading
+`gitdir: /mnt/.../neubrain/.git/worktrees/neubrain-oldenlabs`. So the mechanism
+this section adopts is not new to this setup and is not speculative: it has run
+on this CIFS mount for weeks. A second lane, `deep-sniff/onboarding` at
+`code/neubrain-deep-sniff`, was created on 2026-09-11 and behaved correctly,
+including cherry-picking multi-MB binaries with their hashes intact.
+
+**Naming follows what already exists**: `neubrain-<project>`, not the `nb-<project>`
+this spec first proposed.
 
 ### Why worktrees are the safer option here, despite the CIFS history
 
@@ -631,8 +646,9 @@ work. `STATE.md`'s definition-of-done includes a clean run.
 8. Establish `data_root` for `oldenlabs` and `intellicage`; move `cache/` to
    `derived/<client>/<study>/`; write `MANIFEST.sha256` and `chmod a-w` on `raw/`.
 9. Convert paper-repo `HANDOFF.md`/`CLAUDE.md`/`GEMINI.md` to pointer stubs.
-10. Merge `oldenlabs/dacruz-study2`, retire the `neubrain-oldenlabs` clone, create
-    the first worktree lane; add `merge_manifest.py`.
+10. Merge `oldenlabs/dacruz-study2`; record the existing worktrees in the lanes
+    registry; add `merge_manifest.py`. (No clone to retire — `neubrain-oldenlabs`
+    was already a worktree, and `neubrain-deep-sniff` was added 2026-09-11.)
 11. Update `neubrain/AGENTS.md` and `neuresearch/AGENTS.md` with the new rules; fix
     the NFS/CIFS wording while there.
 12. Add `--fix` to `check_vault.py`, then write the `neubrain-vault` skill against
