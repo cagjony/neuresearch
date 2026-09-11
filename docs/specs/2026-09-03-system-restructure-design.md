@@ -429,6 +429,44 @@ The six `.parquet` files in
 - `neubrain-oldenlabs/` already IS a worktree; it needs no migration, only to be
   recorded in the lanes registry.
 
+### A lane does NOT carry the paper archive — found 2026-09-11
+
+`neubrain/.gitignore` line 4 is `_library/*`, excepting only `.gitkeep` and
+`manifest.json`. So the two halves of the library behave differently across
+worktrees:
+
+| | tracked? | consequence in a lane |
+|---|---|---|
+| `_library/manifest.json` | **yes** | every lane sees all ~292 entries |
+| `_library/*.xml`, `*.pdf` | **no** | only files fetched *into that directory* exist |
+
+Measured on 2026-09-11: the main checkout held 138 archive files; a
+freshly-created lane held 15 — only what it had just fetched.
+
+**This fails silently, which is the dangerous part.** `refs.py`,
+`make_nodes.py`, `extract_text.py` and `coding_dossier.py` treat a missing file
+as "no full text available" — an expected RESULT in their design — so a lane
+produces a large and entirely wrong "NO TEXT" count without erroring. It is the
+same shape as the `REFERENCE_HEADING_RE` gap already recorded in HANDOFF: a
+broken first layer reported as a clean result.
+
+A symlink would be the obvious fix and is **not available** — the share is
+mounted `nounix`, so CIFS cannot create one. Options, none yet chosen:
+
+1. **Library-wide operations run only from the main checkout.** Lanes do
+   manuscript and project work. Zero machinery; the rule has to be written into
+   `AGENTS.md` and enforced by `check_vault.py`, because nothing else will
+   catch a violation.
+2. **`check_vault.py` refuses to run library tools in a lane** — detect
+   `.git` being a file plus an archive count far below the manifest count, and
+   fail loud.
+3. **Track the archive in git.** Honest and self-healing, but it puts hundreds
+   of MB of publisher XML and PDF into the repo, and the `*.pdf` ignore exists
+   deliberately.
+
+Recommendation is 1 plus 2: state the rule, and make the checker enforce it
+rather than trusting it.
+
 ### Worktrees are already in use here, and have been since 2026-08-21
 
 `neubrain-oldenlabs` is not a clone — `git worktree list` reports it, and its
