@@ -19,7 +19,7 @@ on disk 2026-09-02:
 |---|---|---|
 | A | Project type is undeclared; nothing can validate shape | `neubrain/projects/` holds 8 projects of two kinds, no marker |
 | A2 | The two pipeline projects disagree with each other | `intellicage` uses `experiment.json` + `sessions/`; `oldenlabs` uses `study.json` + `cache/` + `outputs/` |
-| A3 | One-off agent scripts become permanent repo content | `projects/alz-olf/` has 9 loose `.py` at root (`patch.py`, `patch_s1.py`, `fix_figures.py`, `remove_fig5.py`, …) + `texput.log`; every other vault project has 0. Mirrored in `bayat-et-al/` (`explore_*.py`, `fig3_recompute.log`) |
+| A3 | One-off agent scripts accumulate in the working tree | `projects/alz-olf/` has 9 loose `.py` at root (`patch.py`, `patch_s1.py`, `fix_figures.py`, `remove_fig5.py`, …). **Corrected 2026-09-11: all 9 are UNTRACKED.** The only tracked scripts are `tools/build_ms.py` and `tools/cites.py` — already where the rule says they belong. So the convention was being followed; the root scripts are uncommitted scratch, not committed drift. `bayat-et-al`'s `explore_*.py` were not re-checked. |
 | B | Derived data lives inside the Obsidian-synced git vault, and the raw location is undeclared | six `.parquet` in `projects/oldenlabs/analysis/experiments/dacruz_combined/cache/`. Raw data *does* live outside the vault at `/mnt/sysfs01/users/cagatay/external/{cruz,verstreken}/`, reached by absolute path from `experiment.json` — but nothing declares it, it is group-writable, and it has no `derived/`/`results/` siblings |
 | C | Parallelism happens but is undocumented | `neubrain-oldenlabs/` is a WORKTREE on branch `oldenlabs/dacruz-study2` (its `.git` is a file pointing at `neubrain/.git/worktrees/neubrain-oldenlabs`), while `AGENTS.md` says "never run two agents on these repos at once". Corrected 2026-09-11: an earlier draft of this spec called it a second clone. It is not. |
 | D | `HANDOFF.md` is a 2151-line global bottleneck | all projects interleaved in one file, rewritten every session |
@@ -52,8 +52,18 @@ Locked with the author on 2026-09-02/03:
    `neubrain/projects/`; each declares its type.
 2. **Per-project data root, three stages.** `raw/` → `derived/` → `results/`,
    located anywhere the project names, not in one global tree.
-3. **Worktrees, one per project lane.** The library stays in the vault, whole and
-   shared — it is not split out into its own repo.
+3. ~~**Worktrees, one per project lane.**~~ **REVERSED 2026-09-11 — serial, one
+   tree, handoff.** The library stays in the vault, whole and shared. But a lane
+   does not carry the archive (see §3), and the vault *is* the library, so
+   parallel lanes buy little and carry a silent failure mode. Both worktrees
+   (`neubrain-deep-sniff`, `neubrain-oldenlabs`) are removed and everything is
+   merged into `main`. This restores what `AGENTS.md` already mandated: never two
+   agents on one tree.
+
+   The cheap route back, if concurrency is ever wanted: a `--library <path>` flag
+   on `fetch_papers.py`, `refs.py`, `extract_text.py` and `coding_dossier.py`,
+   defaulting to `<vault>/_library`, so a lane can point at the main checkout's
+   archive. Not built.
 4. **`HANDOFF.md` becomes a router; state moves to per-project `STATE.md`**, in
    plain markdown with fixed headings so Codex, agy and Claude all read and write
    it identically. Cross-agent portability is the reason this system exists and is
@@ -710,3 +720,35 @@ Not addressed by this design, deliberately:
   `submissions/` means; the next round makes a tool do it.
 - Any change to the literature subsystem: `_library/`, `lit/`, `concepts/` and the
   manifest keep their current structure and stay whole in the vault.
+
+
+---
+
+## Addendum 2026-09-11 — the CIFS mount is not merely "flaky"
+
+Consolidating to one tree ran into the stale delete-pending dirent condition
+`neubrain/AGENTS.md` documents, repeatedly and reproducibly, at
+`projects/astro_atp/communication`:
+
+- `ls` and `stat` report **No such file or directory**
+- `find` still lists it
+- `mkdir` reports **File exists**
+- `git checkout` fails with `cannot create directory ... File exists`
+
+Three consequences worth planning around, beyond what AGENTS.md already records:
+
+1. **`git checkout` can partially succeed.** One checkout reported
+   `Switched to branch 'main'` with exit 0 while leaving ~18 files holding the
+   *other* branch's content. The branch pointer moved; the working tree did not
+   follow. Never trust a checkout's exit code alone on this mount — diff the tree
+   against the branch afterwards.
+2. **`git status` can report a clean tree while a tracked file is unreadable.**
+   `what_we_tested.html` (blob `916e6cf`, 54283 bytes) is committed and pushed,
+   `git status` says clean, and `wc -c` on it fails with No such file. Git's stat
+   cache is fooled by the mount. Content in git is safe; the working tree is not
+   proof of anything.
+3. **The workaround that succeeded:** merge from the side whose content already
+   matches the working tree, so the merge writes as little as possible, then move
+   the other branch pointer and check it out (a no-op write-wise). Pushing early
+   and often is the real protection — every commit made here was pushed before
+   the next risky operation.
