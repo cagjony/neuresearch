@@ -271,12 +271,30 @@ def unpaywall_pdf_url(doi: str, email: str, session: requests.Session) -> str | 
     return best.get("url_for_pdf") or best.get("url")
 
 
+class NotAPDF(RuntimeError):
+    """A download returned 200 but the bytes are not a PDF."""
+
+
 def download(url: str, dest: Path, session: requests.Session) -> None:
+    """Download to ``dest`` and refuse anything that is not really a PDF.
+
+    Publishers answer an OA PDF request with 200 and an HTML interstitial —
+    a login wall, a cookie gate, or a META-REFRESH to a permissions page.
+    Without this check those ~2.7 KB stubs land in the library named
+    ``<citekey>.pdf``, the run reports ``[OK]``, and the corruption is only
+    found later by whoever tries to read the paper. A PDF starts with the
+    five bytes ``%PDF-``; nothing else is accepted.
+    """
     r = session.get(url, timeout=120, stream=True)
     r.raise_for_status()
     with dest.open("wb") as fh:
         for chunk in r.iter_content(chunk_size=1 << 15):
             fh.write(chunk)
+    head = dest.open("rb").read(1024)
+    if not head.lstrip()[:5] == b"%PDF-":
+        dest.unlink(missing_ok=True)
+        sniff = head.lstrip()[:80].decode("utf-8", "replace").replace("\n", " ")
+        raise NotAPDF(f"not a PDF (server returned {len(head)}+ bytes starting {sniff!r})")
 
 
 def grobid_tei(pdf: Path, grobid_url: str, session: requests.Session) -> bytes:
@@ -391,6 +409,12 @@ def main() -> int:
                 pdf = library / f"{stem}.pdf"
                 try:
                     download(pdf_url, pdf, session)
+                except NotAPDF as e:
+                    # The server said 200 but sent an HTML interstitial. Treat it
+                    # exactly like a failed download: no stub is kept, and route 3
+                    # still gets its chance, since a publisher that gates its PDF
+                    # often still serves the article as XML from NCBI.
+                    pdf_error = f"OA PDF download failed: {e}"
                 except requests.exceptions.RequestException as e:
                     # 403/401/5xx/timeout/connection error on the OA PDF is an
                     # expected gap (paywall, anti-bot, dead mirror), not a crash.

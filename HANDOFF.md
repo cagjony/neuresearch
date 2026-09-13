@@ -119,6 +119,19 @@ view at once.
   hand-maintained** — it and the tier column drift apart the moment a tier changes, and
   chasing a PDF for a section about to be deleted is exactly the waste this prevents.
   [BUILT ✓ — alz-olf worklist 56 → 19]
+- `fill_1001_form.py` — fill TÜBİTAK's official 1001 form from a project's
+  `manuscript.tex`. Writes into the pristine blank form's own cells and keeps every
+  instruction paragraph and table footnote the form ships with (the call forbids altering
+  the format); verifies 121/121 of the template's paragraphs survived. Content lives in the
+  manuscript, never in the script — including the İP contribution texts and the İş-Zaman
+  plan, both parsed out of the LaTeX. `--vault --project [--out]`. Uses `docx_form.py`
+  (cell-level docx writer) and `tex_sections.py` (LaTeX → form content).
+  [BUILT ✓ — 1001-ob-pcx, 19 pages]
+- `comments.py` — read a co-author's feedback on a .docx: comments (word/comments.xml,
+  printed next to the text they mark), tracked changes (w:ins/w:del with author), and
+  untracked edits (`--diff <ref>`, paragraph-level against the generated file). Word and
+  LibreOffice both write these. Report-only. [BUILT ✓ — recovered four hand-edited ÖZET
+  paragraphs that carried no tracked-change marks]
 - `sync_skills.py` — deploy `neuresearch/skills/` → `~/.claude/skills/`; `--check`
   audits. [BUILT — `--check` reports scientific-writing in-sync]
 

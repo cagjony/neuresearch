@@ -53,10 +53,11 @@ class Findings:
     missing_nodes: list[str] = field(default_factory=list)      # have file, no lit/ note
     orphan_nodes: list[str] = field(default_factory=list)       # lit/ note, not in manifest
     pdf_only: list[str] = field(default_factory=list)           # stored as PDF, no XML yet
+    corrupt_files: list[str] = field(default_factory=list)      # named .pdf/.xml, wrong bytes
 
     def is_clean(self) -> bool:
         return not any([self.missing_files, self.orphan_xml, self.missing_nodes,
-                        self.orphan_nodes])
+                        self.orphan_nodes, self.corrupt_files])
 
 
 # --------------------------------------------------------------------------- #
@@ -68,6 +69,34 @@ def load_manifest(library: Path) -> dict:
         # an empty/absent manifest is itself a finding, not a crash
         return {"by_id": {}, "entries": {}}
     return json.loads(f.read_text())
+
+
+def _looks_valid(path: Path) -> str | None:
+    """Return None if the file's bytes match its extension, else why not.
+
+    A publisher that gates its PDF answers the download with HTTP 200 and an
+    HTML interstitial — a login wall, a cookie gate, a META-REFRESH. Those land
+    in the library named ``<citekey>.pdf`` and pass every existence check, so
+    the corruption surfaces only when a human opens the paper. On 2026-08-26
+    five such stubs were found *inside a manuscript's citation list*
+    (devanand2015, growdon2015, koenig2005, larsson2009, griffiths2023), each
+    supporting claims nobody could have read. fetch_papers.py now refuses them
+    at download time; this catches the ones already on disk.
+    """
+    try:
+        head = path.open("rb").read(1024)
+    except OSError as e:                      # unreadable is a finding, not a crash
+        return f"unreadable ({e.strerror})"
+    if not head:
+        return "empty file"
+    lead = head.lstrip()
+    if path.suffix == ".pdf" and not lead.startswith(b"%PDF-"):
+        sniff = lead[:60].decode("utf-8", "replace").replace("\n", " ")
+        return f"named .pdf but starts {sniff!r}"
+    if path.suffix == ".xml" and not lead.startswith(b"<"):
+        sniff = lead[:60].decode("utf-8", "replace").replace("\n", " ")
+        return f"named .xml but starts {sniff!r}"
+    return None
 
 
 def scan(vault: Path) -> Findings:
@@ -103,6 +132,11 @@ def scan(vault: Path) -> Findings:
             f.pdf_only.append(stem)        # expected interim state, not an error
         if stem not in node_stems:
             f.missing_nodes.append(stem)
+        # An entry can list a file that exists but holds the wrong bytes.
+        for name in meta.get("files", []):
+            why = _looks_valid(library / name)
+            if why:
+                f.corrupt_files.append(f"{stem} / {name}: {why}")
 
     for stem in xml_stems:
         if stem not in entries:
@@ -153,6 +187,8 @@ def render(f: Findings) -> str:
         "",
         _section("Missing files (in manifest, absent from disk)",
                  f.missing_files, "none — every manifest entry has a file"),
+        _section("Corrupt files (present on disk, wrong bytes for their extension)",
+                 f.corrupt_files, "none — every stored file matches its extension"),
         _section("Orphan XML (on disk, not in manifest)",
                  f.orphan_xml, "none — no untracked archive files"),
         _section("Missing nodes (file present, no `lit/` note yet)",
