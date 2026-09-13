@@ -37,7 +37,7 @@ from tex_sections import Manuscript, flat, rich
 
 CM = 360000                     # EMU per centimetre
 FIG_CM = {                      # published width, height per figure
-    'olfactory_chain.png': (7.0, 11.8),
+    'olfactory_chain.png': (13.0, 10.42),
     'drn_workflow.png': (16.0, 5.42),
     'relay_gonogo.png': (16.0, 3.33),
 }
@@ -210,9 +210,9 @@ def stage_impact(m, xml):
     etki = m.rows(r'\textbf{Etkinin Oluşması Öngörülen Zaman}\\', r'\end{longtable}', 3)
     paras = [[(flat(r[0]) + '. ', True)] + r[1] + [(' Öngörülen zaman: ' + flat(r[2]) + '.', False)]
              for r in etki]
-    paras += m.paras(r'\noindent\textbf{ÖNGÖRÜLEN UYGULAMA ALANLARI.}',
+    paras += m.paras(r'\noindent\textbf{Öngörülen uygulama alanları.}',
                      r'\subsection{Proje Sonuçlarının Yayılımı')
-    paras[len(etki)] = [('ÖNGÖRÜLEN UYGULAMA ALANLARI. ', True)] + paras[len(etki)]
+    paras[len(etki)] = [('Öngörülen uygulama alanları. ', True)] + paras[len(etki)]
     _, a, b = item(100)
     ca, cb = dx.spans(xml, 'tc', a, b)[0]
     xml = dx.fill_cell(xml, ca, cb, paras)
