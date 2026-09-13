@@ -174,6 +174,70 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
+### CURRENT STATE (2026-09-13) — 1001-ob-pcx: official form filled, waiting on author comments
+
+**Deadline: 14.09.2026 — tomorrow.** TÜBİTAK 1001, ARDEB-PBS. PI Çağatay Aydın
+(Istanbul Medipol). Researcher Ali Zareh (salaried, on staff). Advisors Muhammed İkbal Alp,
+Mehmet Kemal Özdemir. Two MSc scholars, months 13-24.
+
+**The chain of custody for text.** `neubrain/projects/1001-ob-pcx/manuscript.tex` is the source
+of truth. The submitted form is generated from it and is never edited directly:
+
+    cd ~/code/neuresearch
+    python3 src/fill_1001_form.py --vault ~/code/neubrain --project 1001-ob-pcx
+    python3 src/comments.py <file.docx>                  # comments + tracked changes
+    python3 src/comments.py <file.docx> --diff <v3.docx> # untracked edits
+
+Output `…/archive/docs/1001_BASVURU_FORMU_v3.docx`, built from the pristine blank
+`…/archive/docs/bos_basvuru_formlari/1001_basvuru_formu.docx` (the author saved TÜBİTAK's .doc
+as .docx in Word, unchanged). The blank is a read-only input; never write to it.
+
+**Measured, this session:** 19 pages (limit 25, EK-1/EK-2 excluded) · ÖZET 487 and Abstract 587
+words (limit 600) · 121/121 of the template's own paragraphs present (instruction texts, table
+footnotes, full field labels) · no comments, no tracked changes · 3 figures placed · budget
+2.908.047 TL · 30 animals under the HADYEK ceiling · 3 work packages (İP1 1-16, İP2 7-34,
+İP3 10-36; weights 30/40/30).
+
+**READ THIS BEFORE REBUILDING THE FORM.** Earlier today I overwrote a copy the author had
+saved with comments in it. I had diffed only the *text*, saw no difference, and rebuilt over
+the file; the comments were in `word/comments.xml`, which the text diff cannot see, and the
+file had not been committed, so they were unrecoverable. The author had to re-describe them
+from memory. `fill_1001_form.py` now refuses to overwrite an output that carries comments or
+tracked changes unless `--force`, and `comments.py` exists precisely to be run first. Run it.
+Note also that nothing is visible until the author **saves** — an open Word document holds its
+edits in memory.
+
+Two of the lost comments were recovered from the author's description and are applied:
+- The ÖZET and the Abstract now open on why concentration matters at all (natural plumes
+  fluctuate on a millisecond scale and mice resolve that, ref29 Ackels 2021), so concentration
+  invariance is posed as a problem the system must solve before the bulb/piriform contrast.
+- §1.1 gained a paragraph on across-individual variability as a measured phenomenon: IBL's
+  121-replicate, ten-lab reproducibility study (ref15, already in EK-1 but until now cited only
+  for RIGOR quality control) found targeting variability to be the main driver, which is the
+  justification for this project's histological track reconstruction and for regressing the
+  track difference out of the across-animal similarity.
+**The rest of that comment set is unknown.** Ask before assuming they were addressed.
+
+### NEXT ACTION (1001-ob-pcx)
+
+The author is downloading `1001_BASVURU_FORMU_v3.docx` to their own machine to read it and
+write comments there, then sending it back. When it arrives:
+
+1. `python3 src/comments.py <returned file>` — comments and tracked changes.
+2. `python3 src/comments.py <returned file> --diff <freshly built v3>` — untracked edits.
+3. Apply every one to `manuscript.tex`, not to the docx.
+4. Rebuild, re-measure pages and the 600-word abstract limits, and say what changed.
+
+Author-side items still open (none of them are code): e-imza for Zareh, Alp, Özdemir and the
+institution's officials; ARBİS records with at least three keywords each; confirm the 2026-2
+budget ceiling; check the same-topic conflict rule against İkbal Alp's ODOR project; review and
+personalise `uyz_beyani.md` (the generative-AI declaration is entered online, not in the form).
+
+Companion files in the project: `FORM_URETIMI.md` (how to build), `basvuru_uygunluk_denetimi.md`
+(call compliance), `yurutucu_sorumluluklari.md` (the PI's responsibilities per work package),
+`citation_audit.md`, `submission_gaps.md`, `uyz_beyani.md`.
+
+
 ### OPEN — aon-pir-rev Methods + numbers (deferred by author 2026-08-27)
 
 Seven items recorded with evidence in `neubrain/projects/aon-pir-rev/OPEN_ISSUES.md`. Highest

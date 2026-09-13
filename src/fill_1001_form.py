@@ -318,6 +318,8 @@ def main():
     ap.add_argument('--vault', required=True)
     ap.add_argument('--project', required=True)
     ap.add_argument('--out', default=None)
+    ap.add_argument('--force', action='store_true',
+                    help='overwrite an output file that carries comments or tracked changes')
     a = ap.parse_args()
 
     proj = Path(a.vault) / 'projects' / a.project
@@ -326,6 +328,20 @@ def main():
     if not blank.exists():
         raise SystemExit(f'blank form not found: {blank}\n'
                          'Save TÜBİTAK\'s .doc as .docx in Word, unchanged, and put it there.')
+
+    if out.exists() and not a.force:
+        z = zipfile.ZipFile(out)
+        marks = []
+        if 'word/comments.xml' in z.namelist():
+            marks.append('yorum')
+        if re.search(r'<w:(ins|del)\b', z.read('word/document.xml').decode('utf-8')):
+            marks.append('değişiklik izi')
+        z.close()
+        if marks:
+            raise SystemExit(
+                f'{out} içinde {" ve ".join(marks)} var; üzerine yazmak onları siler.\n'
+                f'Önce oku:  python3 src/comments.py "{out}"\n'
+                f'Düzeltmeyi manuscript.tex\'e işledikten sonra --force ile yeniden üret.')
 
     m = Manuscript(proj / 'manuscript.tex')
     xml = dx.load(blank)
