@@ -37,7 +37,7 @@ from tex_sections import Manuscript, flat, rich
 
 CM = 360000                     # EMU per centimetre
 FIG_CM = {                      # published width, height per figure
-    'olfactory_chain.png': (13.0, 10.42),
+    'olfactory_chain.png': (13.0, 10.50),
     'drn_workflow.png': (16.0, 5.42),
     'relay_gonogo.png': (16.0, 3.33),
 }

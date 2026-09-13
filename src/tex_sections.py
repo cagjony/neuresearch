@@ -39,6 +39,8 @@ def tex2txt(t):
     t = t.replace("\\ ", " ").replace("~", " ")
     for a, b in _SYMBOLS:
         t = t.replace(a, b)
+    t = re.sub(r"\$(\d+)\^\{(\d+)\}\s*=\s*([\d.]+)\$",
+               lambda m: m.group(1) + m.group(2).translate(str.maketrans("0123456789","\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079")) + " = " + m.group(3), t)
     t = re.sub(r"\$\^\{(-?\d+)\}\$",
                lambda m: m.group(1).translate(str.maketrans("-0123456789", "\u207b\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079")), t)
     t = re.sub(r"\\[a-zA-Z]+\*?(\[[^\]]*\])?(\{[^}]*\})?", "", t)
