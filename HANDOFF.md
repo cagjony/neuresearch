@@ -174,69 +174,116 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
-### CURRENT STATE (2026-09-13) — 1001-ob-pcx: official form filled, waiting on author comments
+### CURRENT STATE (2026-09-14) — 1001-ob-pcx: submission package complete and audited
 
-**Deadline: 14.09.2026 — tomorrow.** TÜBİTAK 1001, ARDEB-PBS. PI Çağatay Aydın
-(Istanbul Medipol). Researcher Ali Zareh (salaried, on staff). Advisors Muhammed İkbal Alp,
-Mehmet Kemal Özdemir. Two MSc scholars, months 13-24.
+**Deadline: 14.09.2026 — today.** TÜBİTAK 1001, ARDEB-PBS. PI Çağatay Aydın (Istanbul Medipol).
+Researcher Ali Zareh (salaried, on staff). Advisors Muhammed İkbal Alp, Mehmet Kemal Özdemir.
+Two undergraduate and two MSc scholars, months 13-24.
 
 **The chain of custody for text.** `neubrain/projects/1001-ob-pcx/manuscript.tex` is the source
 of truth. The submitted form is generated from it and is never edited directly:
 
     cd ~/code/neuresearch
     python3 src/fill_1001_form.py --vault ~/code/neubrain --project 1001-ob-pcx
+    python3 src/fill_ek1.py       --vault ~/code/neubrain --project 1001-ob-pcx   # EK-1
     python3 src/comments.py <file.docx>                  # comments + tracked changes
-    python3 src/comments.py <file.docx> --diff <v3.docx> # untracked edits
+    python3 src/comments.py <file.docx> --diff <ref.docx> # untracked edits
 
 Output `…/archive/docs/1001_BASVURU_FORMU_v3.docx`, built from the pristine blank
-`…/archive/docs/bos_basvuru_formlari/1001_basvuru_formu.docx` (the author saved TÜBİTAK's .doc
-as .docx in Word, unchanged). The blank is a read-only input; never write to it.
+`…/archive/docs/bos_basvuru_formlari/1001_basvuru_formu.docx`. The blank is a read-only input.
 
-**Measured, this session:** 19 pages (limit 25, EK-1/EK-2 excluded) · ÖZET 487 and Abstract 587
-words (limit 600) · 121/121 of the template's own paragraphs present (instruction texts, table
-footnotes, full field labels) · no comments, no tracked changes · 3 figures placed · budget
-2.908.047 TL · 30 animals under the HADYEK ceiling · 3 work packages (İP1 1-16, İP2 7-34,
-İP3 10-36; weights 30/40/30).
+**The four documents, as they stand:**
 
-**READ THIS BEFORE REBUILDING THE FORM.** Earlier today I overwrote a copy the author had
-saved with comments in it. I had diffed only the *text*, saw no difference, and rebuilt over
-the file; the comments were in `word/comments.xml`, which the text diff cannot see, and the
-file had not been committed, so they were unrecoverable. The author had to re-describe them
-from memory. `fill_1001_form.py` now refuses to overwrite an output that carries comments or
-tracked changes unless `--force`, and `comments.py` exists precisely to be run first. Run it.
-Note also that nothing is visible until the author **saves** — an open Word document holds its
-edits in memory.
+| File | State |
+|---|---|
+| `1001_BASVURU_FORMU_v3.docx` | 22 pages (limit 25), ÖZET 599 / Abstract 600 words, 121/121 template paragraphs, 3 figures |
+| `EK-1_KAYNAKLAR_v3.docx` | 2 pages, 46 references, all cited, numbering continuous |
+| `EK-2_BUTCE_v3.docx` | 7 pages, 2.692.036 TL (1.523.558 + 760.478 + 120.000 + 288.000) |
+| `VERI_YONETIM_PLANI_v3.docx` | new this session; the 30 TB / 20 TB contradiction fixed |
 
-Two of the lost comments were recovered from the author's description and are applied:
-- The ÖZET and the Abstract now open on why concentration matters at all (natural plumes
-  fluctuate on a millisecond scale and mice resolve that, ref29 Ackels 2021), so concentration
-  invariance is posed as a problem the system must solve before the bulb/piriform contrast.
-- §1.1 gained a paragraph on across-individual variability as a measured phenomenon: IBL's
-  121-replicate, ten-lab reproducibility study (ref15, already in EK-1 but until now cited only
-  for RIGOR quality control) found targeting variability to be the main driver, which is the
-  justification for this project's histological track reconstruction and for regressing the
-  track difference out of the across-animal similarity.
-**The rest of that comment set is unknown.** Ask before assuming they were addressed.
+All four are free of comments and tracked changes — verified before handing them over.
+
+**READ THIS BEFORE REBUILDING THE FORM.** On 2026-09-13 a copy the author had saved with
+comments in it was overwritten: only the *text* had been diffed, and comments live in
+`word/comments.xml`, which a text diff cannot see. `fill_1001_form.py` now refuses to overwrite
+an output carrying comments or tracked changes unless `--force`, and `comments.py` exists to be
+run first. Run it. Nothing is visible until the author **saves**: an open Word document holds
+its edits in memory.
+
+**Twelve rounds of author feedback (ca01…ca012) are all applied**, including ca012's six comments
+and its 220 untracked word-level edits (162 taken; the rejections and their reasons are in the
+commit message for `49885be`). Turkish house style now fixed: numbers under ten spelled out,
+"eşzamanlı" written closed, no em or en dashes anywhere, "önceden sabitlenmiş / raporlanır /
+kestirim" kept as fixed terms, quotations never edited.
+
+**Citation audit done against the sources** (`projects/1001-ob-pcx/citation_audit_v3.md`): 152
+citation sites, 46 references, full texts opened, datasets and software verified live. Three real
+defects were found and fixed — ref2 (the group's own eLife paper) had been described as
+simultaneous, same-animal recording when its probe table is one region per animal; Pashkovski 2020
+was in the bibliography twice as [24] and [44]; ref39's title was truncated. Four more were
+tightened to the source. Every borrowed number checked out.
 
 ### NEXT ACTION (1001-ob-pcx)
 
-The author is downloading `1001_BASVURU_FORMU_v3.docx` to their own machine to read it and
-write comments there, then sending it back. When it arrives:
+Nothing is pending on the code side. What remains is the author's:
 
-1. `python3 src/comments.py <returned file>` — comments and tracked changes.
-2. `python3 src/comments.py <returned file> --diff <freshly built v3>` — untracked edits.
-3. Apply every one to `manuscript.tex`, not to the docx.
-4. Rebuild, re-measure pages and the 600-word abstract limits, and say what changed.
-
-Author-side items still open (none of them are code): e-imza for Zareh, Alp, Özdemir and the
-institution's officials; ARBİS records with at least three keywords each; confirm the 2026-2
-budget ceiling; check the same-topic conflict rule against İkbal Alp's ODOR project; review and
-personalise `uyz_beyani.md` (the generative-AI declaration is entered online, not in the form).
+1. **Submit.** If the earlier files were already sent to the team, resend: the reference count
+   changed from 47 to 46 in the audit, so EK-1 and every citation number after [43] moved.
+2. **`iliskili_proje.md`** — the related-project comparison for the PBS "İlişkili Proje" screen is
+   drafted on the four axes the screen asks for, with our side fully specified. Three facts about
+   İkbal Alp's ODOR project are left in brackets and must be filled: its question, whether it
+   involves an animal experiment or runs on existing data, and what it commits to deliver.
+3. **`uyz_beyani.md`** — the generative-AI declaration, entered online, not in the form.
+   Review and personalise.
+4. e-imza for Zareh, Alp, Özdemir and the institution's officials; ARBİS records with at least
+   three keywords each; confirm the 2026-2 budget ceiling.
 
 Companion files in the project: `FORM_URETIMI.md` (how to build), `basvuru_uygunluk_denetimi.md`
-(call compliance), `yurutucu_sorumluluklari.md` (the PI's responsibilities per work package),
-`citation_audit.md`, `submission_gaps.md`, `uyz_beyani.md`.
+(call compliance), `yurutucu_sorumluluklari.md`, `citation_audit_v3.md` (this session's audit),
+`citation_audit.md` (the 2026-09-12 audit of the earlier draft), `submission_gaps.md`,
+`iliskili_proje.md`, `uyz_beyani.md`.
 
+### SESSION NOTE — 2026-09-14, 1001-ob-pcx: ca012, the other three documents, and the citation audit
+
+- **Reading back an author's returned .docx has three channels, not one.** Comments
+  (`word/comments.xml`), tracked changes (`w:ins`/`w:del`), and *untracked* edits typed straight
+  into the text. Only `comments.py --diff` against a rebuild of the commit the author branched
+  from finds the third, and it is where most of ca011's and ca012's work actually was: ca012
+  carried 6 comments and 220 word-level edits.
+
+- **Rejecting an author edit needs a reason you can state.** The ones refused in ca012 fell into
+  five families: an accusative object left in front of a passive verb; meaning lost ("duyusal
+  yüzey korteks" → "duyusal korteks"); meaning reversed ("tek yönün kurulması" → "kurulmaması" in
+  a failure list); a verbatim quotation from the Development Plan edited; and house style
+  (digits for spelled-out numbers, changing a fixed term in one place out of many). Two of those
+  rejections were later *confirmed by the sources* during the citation audit: Chae 2019 says
+  "no evidence of a smoothly-varying representation", so "düzgün değişen" had to stay, and
+  Schreck 2022 says its unit recordings were "from the OB or APC" while LFPs were simultaneous,
+  so "kaydıyla eşzamanlı" was the right construction.
+
+- **A citation audit is not a bibliography check.** Pull each `\cite` with the sentence carrying
+  it, open the source, and compare the claim to the source's own words. This session that turned
+  up a claim about *our own paper* that the paper contradicts in its Methods table and warns about
+  in its Discussion. The fix strengthened the proposal: the gap it fills is larger than we had
+  claimed, and the cited paper names simultaneous recording along the pathway as the next step.
+
+- **Verify the non-paper references live.** DANDI (38 assets, 95,296,628,680 bytes, version
+  0.250815.1203), the Allen RMA API (`graph_id=1` → 1,327 structures), GitLab tags
+  (ndx-odor-metadata v0.1.1 and its "WITHOUT any appropriate tests yet"), DataCite (the Mendeley
+  dataset's `info:eu-repo/semantics/embargoedAccess`), and the Development Plan PDF from sbb.gov.tr
+  (articles 546, 546.1, 546.2 word for word). All held.
+
+- **Check figure-reuse licences as part of the audit.** Guo 2014 (PLOS ONE), IBL 2025 (Nature) and
+  Zareh 2026 (Elsevier) are all CC BY 4.0, so the three attributions in the form stand.
+
+- **Paywalled sources have legal author copies.** Morrens 2020 is 403 at Cell and absent from PMC,
+  but KU Leuven's Lirias repository serves the author copy, which is where the equal-contribution
+  footnote, the head-restrained mice and the odour CS were confirmed. `fetch_papers.py` does not
+  try institutional repositories; that is a manual step worth remembering.
+
+- **A word-limited abstract makes every edit a budget problem.** ÖZET and Abstract are capped at
+  600 words each, so two corrections there had to be word-neutral: the replacement sentence was
+  counted token for token and a redundant "the" was dropped elsewhere to pay for it.
 
 ### OPEN — aon-pir-rev Methods + numbers (deferred by author 2026-08-27)
 
