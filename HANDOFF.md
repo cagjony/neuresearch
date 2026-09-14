@@ -183,11 +183,15 @@ Two undergraduate and two MSc scholars, months 13-24.
 **The chain of custody for text.** `neubrain/projects/1001-ob-pcx/manuscript.tex` is the source
 of truth. The submitted form is generated from it and is never edited directly:
 
-    cd ~/code/neuresearch
-    python3 src/fill_1001_form.py --vault ~/code/neubrain --project 1001-ob-pcx
-    python3 src/fill_ek1.py       --vault ~/code/neubrain --project 1001-ob-pcx   # EK-1
+    cd /mnt/sysfs01/users/cagatay/code/neuresearch
+    python3 src/fill_1001_form.py --vault /mnt/sysfs01/users/cagatay/code/neubrain --project 1001-ob-pcx
+    python3 src/fill_ek1.py       --vault /mnt/sysfs01/users/cagatay/code/neubrain --project 1001-ob-pcx   # EK-1
     python3 src/comments.py <file.docx>                  # comments + tracked changes
     python3 src/comments.py <file.docx> --diff <ref.docx> # untracked edits
+
+Write the mount path out in full, never `~/code`. The repos live on a shared mount reachable
+from several servers (euserve00, mcnanalysis, …) and `$HOME` differs on each: on mcnanalysis it
+is `/home/mouselab`, so `~/code` resolves to nothing and the build dies on "blank form not found".
 
 Output `…/archive/docs/1001_BASVURU_FORMU_v3.docx`, built from the pristine blank
 `…/archive/docs/bos_basvuru_formlari/1001_basvuru_formu.docx`. The blank is a read-only input.
