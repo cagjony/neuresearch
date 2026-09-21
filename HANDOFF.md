@@ -105,8 +105,12 @@ view at once.
   (git is the backup; `git checkout -- plan.md` is the undo — no .bak kept). TUNING
   NEEDED (later, not blocking): split MISSING into a separate `to-find.md`, and add
   an explicit fuzzy-match floor (currently a title-overlap check, no numeric floor).]
-- `new_project.py` — scaffold a new project (plan template, papers.txt, manuscript
-  stub) + print next steps. [BUILT]
+- `new_project.py` — scaffold a new project in the canonical `paper` shape
+  (`project.json`, `STATE.md`, `plan.md`, `papers.txt`, `archive/`,
+  `draft/manuscript.md`, `draft/references.bib`) + print next steps. Guarded by
+  `tests/test_new_project.py`, which asserts a fresh scaffold passes `check_vault.py`.
+  [BUILT ✓ — ran for thermoregulation. `--type pipeline` / `--client` / `--study`
+  from the restructure spec are NOT built.]
 - `triage_refs.py` — build a project's reference triage table: one row per DOI with year,
   first author, journal, times-cited, which draft sections cite it, whether a full text is
   held, and a mechanically proposed tier. Author fills `tier` / `replacement_doi` / `note`;
@@ -160,10 +164,15 @@ view at once.
 
 ## HOW TO START A NEW PROJECT
 
-1. `new_project.py --vault /…/neubrain --name <project>` (slots plan.md,
-   manuscript.md, references.bib [derived], papers.txt [disposable], archive/).
+1. `new_project.py --vault /…/neubrain --name <project>` — scaffolds the
+   canonical `paper` shape check_vault.py enforces: `project.json`, `STATE.md`,
+   `plan.md`, `papers.txt` [disposable], `archive/`, `draft/manuscript.md`,
+   `draft/references.bib` [derived]. The manuscript lives in `draft/`; there is
+   exactly one live draft per project.
 2. Paste planyourscience PLAN into `plan.md` and the MANUSCRIPT skeleton into
-   `manuscript.md`; put references into `papers.txt`. Dump new finds into `archive/`.
+   `draft/manuscript.md`; put references into `papers.txt`. Dump new finds into
+   `archive/`. Then `check_vault.py --vault /…/neubrain` should report nothing
+   for the new project.
 3. `fetch_papers.py --project <project>` → `refs.py --only-empty` →
    `make_nodes.py propose` → (edit `concepts/_proposed.md`) → `make_nodes.py wire`
    → `relate.py`.
@@ -173,6 +182,52 @@ view at once.
 ---
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
+
+### CURRENT STATE (2026-09-21) — new project `thermoregulation`; new_project.py now scaffolds the spec shape
+
+`neubrain/projects/thermoregulation/` exists and is **empty by design** — a scaffold, no
+science in it. `check_vault.py` reports **nothing** for it (the other 10 projects still
+report `no-project-config`: writing their `project.json` files is the outstanding item from
+the 2026-09-03 restructure, §7 step 1).
+
+`new_project.py` was 18 days stale against
+`docs/specs/2026-09-03-system-restructure-design.md`: it wrote `manuscript.md` and
+`references.bib` at the project root, which the spec moved into `draft/`, and it wrote
+neither `project.json` nor `STATE.md`. A project scaffolded by it therefore failed
+`check_vault.py` the moment it was created. It now writes the full `paper` shape, and
+`tests/test_new_project.py` scaffolds into a tmp vault and asserts `check_vault.collect`
+returns no findings — so the scaffolder and the checker can no longer drift apart silently.
+
+Not done (deliberately): `--type pipeline` and `--client/--study`, which the spec's §1
+Enforcement paragraph also asks of this tool. No pipeline unit is being created; add it
+when one is.
+
+### NEXT ACTION (thermoregulation)
+
+1. **Name it properly if `thermoregulation` is wrong** — the request said "termo
+   regulation" and nothing more. A rename is `git mv` plus the `name` field in
+   `project.json` (the checker requires the two to match).
+2. Paste the plan into `plan.md` and the manuscript skeleton into `draft/manuscript.md`;
+   reference identifiers into `papers.txt`. Until the plan exists there is nothing to
+   fetch — `suggest.py` needs plan.md keywords.
+3. Then the library chain: `fetch_papers.py` → `refs.py --only-empty` →
+   `make_nodes.py propose` → (curate `concepts/_proposed.md`) → `wire` → `relate.py` →
+   `build_bib.py --out …/draft/references.bib`.
+4. Decide whether this paper is related to `deep-sniff` (FLIR thermal video of mice) — if
+   it draws on the same recordings, `source_studies` in `project.json` should say so.
+
+Nothing is committed. Both repos are dirty from earlier sessions (`neuresearch`:
+`HANDOFF.md`, `src/fetch_papers.py`; `neubrain`: several projects), so stage explicit
+paths — never `git add -A` in the vault.
+
+### SESSION LOG
+
+- 2026-09-21 — Created the `thermoregulation` paper project in the vault, and fixed the
+  scaffolder that would have created it wrong: `new_project.py` now writes `project.json`,
+  `STATE.md` and `draft/{manuscript.md,references.bib}` per the 2026-09-03 restructure spec,
+  with `tests/test_new_project.py` tying it to `check_vault.py`. The new project is the only
+  one of 11 the checker reports nothing for. No plan or literature yet — the project is an
+  empty, conformant shell awaiting its plan. Nothing committed. (agent: Claude Code)
 
 ### CURRENT STATE (2026-09-14) — 1001-ob-pcx: submission package complete and audited
 
@@ -202,7 +257,7 @@ Output `…/archive/docs/1001_BASVURU_FORMU_v3.docx`, built from the pristine bl
 |---|---|
 | `1001_BASVURU_FORMU_v3.docx` | 22 pages (limit 25), ÖZET 599 / Abstract 600 words, 121/121 template paragraphs, 3 figures |
 | `EK-1_KAYNAKLAR_v3.docx` | 2 pages, 46 references, all cited, numbering continuous |
-| `EK-2_BUTCE_v3.docx` | 7 pages, 2.692.036 TL (1.523.558 + 760.478 + 120.000 + 288.000) |
+| `EK-2_BUTCE_v3.docx` | 7 pages, 2.985.036 TL (1.773.558 + 760.478 + 163.000 + 288.000) |
 | `VERI_YONETIM_PLANI_v3.docx` | new this session; the 30 TB / 20 TB contradiction fixed |
 
 All four are free of comments and tracked changes — verified before handing them over.
@@ -227,12 +282,25 @@ simultaneous, same-animal recording when its probe table is one region per anima
 was in the bibliography twice as [24] and [44]; ref39's title was truncated. Four more were
 tightened to the source. Every borrowed number checked out.
 
+**Budget round on 14.09.2026, after the advisors asked for two items.** Scientifica Control Cube
+(S-UI-1200I) 250.000 TL in 06.1, and one more international congress in 03.3/03.4. The cube is
+the control unit for a motorised micromanipulator the lab already owns, so §3.2 now declares that
+arm among the institution's equipment and EK-2 leads with "only the unit is requested, not the
+arm" — the same pattern the Plexon row uses for the PXIe card. Travel went 120.000 → 178.000 →
+163.000: the 2026-2 ceiling is **3.000.000 TL** (confirmed by the PI), and 178.000 would have put
+the total at 3.000.036, 36 TL over. Final **2.985.036 TL**, 14.964 TL of headroom, and the total
+deliberately does not sit on a round number the way the earlier draft's exact 3.000.000 did.
+Percentages in the justification paragraph moved with it (equipment 59.4%, the probe 44.6% of
+equipment, 32.9% without it), and one stale ledger sentence in EK-2 was corrected: the travel line
+was funded out of the complementary-hardware row only for its first 120.000 TL.
+
 ### NEXT ACTION (1001-ob-pcx)
 
 Nothing is pending on the code side. What remains is the author's:
 
 1. **Submit.** If the earlier files were already sent to the team, resend: the reference count
-   changed from 47 to 46 in the audit, so EK-1 and every citation number after [43] moved.
+   changed from 47 to 46 in the audit, so EK-1 and every citation number after [43] moved, and the
+   budget changed again after that.
 2. **`iliskili_proje.md`** — the related-project comparison for the PBS "İlişkili Proje" screen is
    drafted on the four axes the screen asks for, with our side fully specified. Three facts about
    İkbal Alp's ODOR project are left in brackets and must be filled: its question, whether it
@@ -240,7 +308,8 @@ Nothing is pending on the code side. What remains is the author's:
 3. **`uyz_beyani.md`** — the generative-AI declaration, entered online, not in the form.
    Review and personalise.
 4. e-imza for Zareh, Alp, Özdemir and the institution's officials; ARBİS records with at least
-   three keywords each; confirm the 2026-2 budget ceiling.
+   three keywords each. (The 2026-2 ceiling is settled: 3.000.000 TL, recorded in
+   `basvuru_uygunluk_denetimi.md`.)
 
 Companion files in the project: `FORM_URETIMI.md` (how to build), `basvuru_uygunluk_denetimi.md`
 (call compliance), `yurutucu_sorumluluklari.md`, `citation_audit_v3.md` (this session's audit),
@@ -288,6 +357,33 @@ Companion files in the project: `FORM_URETIMI.md` (how to build), `basvuru_uygun
 - **A word-limited abstract makes every edit a budget problem.** ÖZET and Abstract are capped at
   600 words each, so two corrections there had to be word-neutral: the replacement sentence was
   counted token for token and a redundant "the" was dropped elsewhere to pay for it.
+
+### CURRENT STATE (2026-09-04) — aon-pir-rev: Figure 4 FINISHED; two findings, one reverses the manuscript
+
+Full detail lives in `aon_pir_rev/HANDOFF.md` (dynamic section) and
+`neubrain/projects/aon-pir-rev/OPEN_ISSUES.md` (commit `ebb8042`, on `main`). Summary:
+
+- **Every Figure 4 panel (a–k) regenerates from current scripts on the current dataset, now with
+  per-neuron region labels and the good-cell mask.** The old per-animal `exp_info.csv` region
+  assignment is gone from all panels.
+- **R1.8 normalisation applied at SESSION level** (one pooled baseline-SD scale per
+  region×session). The **per-cell** variant is abandoned as an artifact — it reweights neurons up
+  to 12× to correct a 1.50× regional difference — and its CKA outputs are quarantined.
+- **CKA needs no normalisation** (scale-invariant, computed within region within animal; verified
+  identical). **GV does** — it scales as scale⁴.
+- **Finding 1:** late trials (6-8) have lower GV than early (1-3) — 6/6 day pairs, both regions,
+  raw and session-normalised, signed-rank **p = 0.031** (the n = 6 floor). The only Figure 4
+  result reaching conventional significance; it matches the paper's habituation claim.
+- **Finding 2:** aPCx is more variable than AON — CKA 38.2 vs 26.5, session-normalised GV 117.2 vs
+  43.9. **Raw GV says the opposite** (768 vs 324), exactly as R1.8 predicted, so the defensible
+  statement is that the two measures converge once the rate confound is removed.
+  **This reverses the manuscript's current claim** and that sentence needs rewriting.
+- **R1.1 tracking validation** built Schoonover-style from already-extracted data only, no raw
+  `.bin` access, on the track dataset: n = 969 pairs; waveform 0.920 vs 0.837 (p = 3.2e-25),
+  displacement 13.0 vs 16.3 µm (p = 2.0e-06), ACG 0.134 vs 0.464 (p = 5.6e-71).
+- **Still gating:** the MB110/MB118 region contradiction (exp_info vs manuscript_v12 Methods),
+  three divergent manuscripts (`paper.md` / vault `manuscript.md` / `manuscript_v12.docx`),
+  and caption g's asserted ANOVA *p<0.05 against a measured p = 0.70.
 
 ### OPEN — aon-pir-rev Methods + numbers (deferred by author 2026-08-27)
 
@@ -1738,6 +1834,14 @@ Builds on the 2026-07-08 EVE block below (Chaos supplements + Fig 3 reorder). Th
   real fetches — purge the fakes (entries + by_id + files + nodes) before re-fetching.
 
 ### SESSION LOG
+- 2026-09-04 — aon-pir-rev: Figure 4 finished. All panels a-k regenerated atlas-corrected; R1.8
+  normalisation applied at session level (per-cell abandoned as a reweighting artifact, its CKA panels
+  quarantined); CKA shown to need no normalisation, GV to need it. Two findings survive: late trials
+  have lower GV than early (6/6 pairs, both regions, both normalisations, p=0.031 - the only significant
+  Figure 4 result), and aPCx is more variable than AON on CKA and normalised GV, which REVERSES the
+  manuscript's claim because raw GV says the opposite. Schoonover-style tracking validation added for
+  R1.1 from already-extracted data only (n=969; ACG 0.134 vs 0.464, p=5.6e-71); SVM re-run on corrected
+  region labels (R2.7 survives). (agent: Claude)
 - 2026-08-29 — aon-pir-rev: Figure 4b/4c regenerated (report-only script pairs in aon_pir_rev/paper/).
   4c settled on `Sparseness.m` = Bolding & Franks 2017's published equation, verified from
   `_library/bolding2017.xml`; the submitted panel used a different measure. Corrected an earlier
