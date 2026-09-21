@@ -109,7 +109,7 @@ view at once.
   (`project.json`, `STATE.md`, `plan.md`, `papers.txt`, `archive/`,
   `draft/manuscript.md`, `draft/references.bib`) + print next steps. Guarded by
   `tests/test_new_project.py`, which asserts a fresh scaffold passes `check_vault.py`.
-  [BUILT ✓ — ran for thermoregulation. `--type pipeline` / `--client` / `--study`
+  [BUILT ✓ — ran for zigbee-thermoregulation. `--type pipeline` / `--client` / `--study`
   from the restructure spec are NOT built.]
 - `triage_refs.py` — build a project's reference triage table: one row per DOI with year,
   first author, journal, times-cited, which draft sections cite it, whether a full text is
@@ -183,9 +183,9 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
-### CURRENT STATE (2026-09-21) — new project `thermoregulation`; new_project.py now scaffolds the spec shape
+### CURRENT STATE (2026-09-21) — new project `zigbee-thermoregulation`; new_project.py now scaffolds the spec shape
 
-`neubrain/projects/thermoregulation/` exists and is **empty by design** — a scaffold, no
+`neubrain/projects/zigbee-thermoregulation/` exists and is **empty by design** — a scaffold, no
 science in it. `check_vault.py` reports **nothing** for it (the other 10 projects still
 report `no-project-config`: writing their `project.json` files is the outstanding item from
 the 2026-09-03 restructure, §7 step 1).
@@ -202,32 +202,39 @@ Not done (deliberately): `--type pipeline` and `--client/--study`, which the spe
 Enforcement paragraph also asks of this tool. No pipeline unit is being created; add it
 when one is.
 
-### NEXT ACTION (thermoregulation)
+### NEXT ACTION (zigbee-thermoregulation)
 
-1. **Name it properly if `thermoregulation` is wrong** — the request said "termo
-   regulation" and nothing more. A rename is `git mv` plus the `name` field in
-   `project.json` (the checker requires the two to match).
-2. Paste the plan into `plan.md` and the manuscript skeleton into `draft/manuscript.md`;
-   reference identifiers into `papers.txt`. Until the plan exists there is nothing to
-   fetch — `suggest.py` needs plan.md keywords.
-3. Then the library chain: `fetch_papers.py` → `refs.py --only-empty` →
-   `make_nodes.py propose` → (curate `concepts/_proposed.md`) → `wire` → `relate.py` →
-   `build_bib.py --out …/draft/references.bib`.
-4. Decide whether this paper is related to `deep-sniff` (FLIR thermal video of mice) — if
-   it draws on the same recordings, `source_studies` in `project.json` should say so.
+Settled by the author on 2026-09-21: the name is `zigbee-thermoregulation`, the project is
+independent of `deep-sniff`, and its code repo is
+`neurophysiology-expertise-unit/zigbee-thermoregulation` (default branch `master`), cloned
+at `code/zigbee-thermoregulation`. The rig runs on a Windows PC, never on this server.
 
-Nothing is committed. Both repos are dirty from earlier sessions (`neuresearch`:
-`HANDOFF.md`, `src/fetch_papers.py`; `neubrain`: several projects), so stage explicit
-paths — never `git add -A` in the vault.
+Pilot data (MH002, 2026-09-21) are in `external/zigbee-thermoregulation/260921_pilot/`
+with Excel exports for collaborators; the findings are in the project's `STATE.md`. In
+short: brain temperature (skull chip) fell 30.2 → 29.5 °C, but the rig was in heat mode and
+the 30 °C plausibility floor discarded every reading below 30.
+
+1. **Fix the rig config before the next animal:** `control.mode: cool`, a brain setpoint,
+   and `body_valid_range` low end below `body_min_c`. Record a baseline of minutes, not
+   10 s.
+2. Check whether 30.2 °C is brain or skull-surface temperature — brain is ~36–37 °C.
+3. Paste the plan into `plan.md`, then the library chain (fetch → refs → nodes → relate →
+   `build_bib.py --out …/draft/references.bib`).
 
 ### SESSION LOG
 
-- 2026-09-21 — Created the `thermoregulation` paper project in the vault, and fixed the
+- 2026-09-21 — Created the `zigbee-thermoregulation` paper project in the vault, and fixed the
   scaffolder that would have created it wrong: `new_project.py` now writes `project.json`,
   `STATE.md` and `draft/{manuscript.md,references.bib}` per the 2026-09-03 restructure spec,
   with `tests/test_new_project.py` tying it to `check_vault.py`. The new project is the only
   one of 11 the checker reports nothing for. No plan or literature yet — the project is an
   empty, conformant shell awaiting its plan. Nothing committed. (agent: Claude Code)
+- 2026-09-21 (later) — Renamed the project `zigbee-thermoregulation`, linked and cloned its
+  code repo, and built `mouse_thermo/recordings.py` there (headless recording analysis:
+  time-weighted duty, pre-gate chip temperature, CSV/Excel/plots) plus
+  `tools/make_figures.py`. Analysed the MH002 pilot, made the cooling and schematic
+  figures, exported Excel for collaborators. Committed and pushed: code repo `7cb13b4`,
+  neubrain `cecb544`, and this repo. (agent: Claude Code)
 
 ### CURRENT STATE (2026-09-14) — 1001-ob-pcx: submission package complete and audited
 

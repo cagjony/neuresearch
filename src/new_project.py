@@ -10,12 +10,19 @@ later, when fetch_papers / ingest run).
 
     python new_project.py --vault /path/to/neubrain --name my_project
 
-Creates (refusing to clobber an existing project):
-    projects/<name>/plan.md         placeholder header — paste the PLAN export
-    projects/<name>/manuscript.md   placeholder header — paste the MANUSCRIPT skeleton
-    projects/<name>/references.bib  empty; DERIVED by build_bib.py (don't hand-edit)
-    projects/<name>/papers.txt      optional, disposable intake list
-    projects/<name>/archive/        dump zone for new PDFs/DOIs/ideas (+ README)
+Creates (refusing to clobber an existing project) the canonical `paper` shape
+of docs/specs/2026-09-03-system-restructure-design.md §1, which check_vault.py
+enforces:
+    projects/<name>/project.json          type/status declaration (schema 1)
+    projects/<name>/STATE.md              the project's dynamic state (schema v1)
+    projects/<name>/plan.md               placeholder — paste the PLAN export
+    projects/<name>/papers.txt            optional, disposable intake list
+    projects/<name>/archive/              dump zone for new PDFs/DOIs/ideas (+ README)
+    projects/<name>/draft/manuscript.md   placeholder — paste the MANUSCRIPT skeleton
+    projects/<name>/draft/references.bib  empty; DERIVED by build_bib.py
+
+The manuscript lives in `draft/` — there is exactly one live draft per project,
+and the bibliography that feeds it sits next to it.
 
 Then prints the ordered next steps (paste plan/manuscript → fetch → build nodes
 → build bib → reconcile citations → write).
@@ -27,6 +34,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from datetime import date
 from pathlib import Path
 
 # Each file is a SLOT, not a template: a short header telling you what to paste,
@@ -51,10 +59,41 @@ MANUSCRIPT_PLACEHOLDER = """<!-- Paste your planyourscience MANUSCRIPT skeleton 
 # {name} — manuscript
 """
 
+PROJECT_JSON = """{{
+  "schema": 1,
+  "name": "{name}",
+  "type": "paper",
+  "paper_repo": null,
+  "data_root": null,
+  "source_studies": [],
+  "lane": null,
+  "status": "active"
+}}
+"""
+
+STATE_PLACEHOLDER = """# STATE — {name}
+<!-- Schema v1. This file is the project's dynamic state. Any agent updates
+     this file and no other. Durable rules live in AGENTS.md.
+     Session log lines are `### YYYY-MM-DD — <agent>@<machine> — <summary>`. -->
+
+## CURRENT STATE
+
+({today}) Scaffolded, empty. No plan, no literature, no draft yet.
+
+## NEXT ACTION
+
+1. Paste the plan into `plan.md` and the manuscript skeleton into
+   `draft/manuscript.md`; put reference identifiers into `papers.txt`.
+2. Run the library chain (fetch → refs → make_nodes → relate → build_bib).
+
+## SESSION LOG
+"""
+
 # references.bib is DERIVED. The comment char in BibTeX is '%'.
 REFERENCES_PLACEHOLDER = """% references.bib — DERIVED FILE, do not hand-edit.
 % Generated and refreshed by build_bib.py from the manifest (the source of truth):
-%   python src/build_bib.py --vault <vault> --project {name} --email you@host
+%   python src/build_bib.py --vault <vault> --project {name} --email you@host \\
+%       --out <vault>/projects/{name}/draft/references.bib
 % Any manual edits here are overwritten on the next regenerate.
 """
 
@@ -109,10 +148,16 @@ def main() -> int:
         return 1
 
     proj.mkdir(parents=True)
+    (proj / "project.json").write_text(PROJECT_JSON.format(name=args.name))
+    (proj / "STATE.md").write_text(
+        STATE_PLACEHOLDER.format(name=args.name, today=date.today().isoformat()))
     (proj / "plan.md").write_text(PLAN_PLACEHOLDER.format(name=args.name))
-    (proj / "manuscript.md").write_text(MANUSCRIPT_PLACEHOLDER.format(name=args.name))
-    (proj / "references.bib").write_text(REFERENCES_PLACEHOLDER.format(name=args.name))
     (proj / "papers.txt").write_text(PAPERS_PLACEHOLDER.format(name=args.name))
+
+    draft = proj / "draft"
+    draft.mkdir()
+    (draft / "manuscript.md").write_text(MANUSCRIPT_PLACEHOLDER.format(name=args.name))
+    (draft / "references.bib").write_text(REFERENCES_PLACEHOLDER.format(name=args.name))
 
     archive = proj / "archive"
     archive.mkdir()
@@ -120,15 +165,17 @@ def main() -> int:
     (archive / "README.md").write_text(ARCHIVE_README.format(name=args.name))
 
     print(f"Scaffolded project '{args.name}' at {proj}")
-    print("  - plan.md         (paste the planyourscience PLAN export)")
-    print("  - manuscript.md   (paste the planyourscience MANUSCRIPT skeleton)")
-    print("  - references.bib  (empty — DERIVED by build_bib.py; don't hand-edit)")
-    print("  - papers.txt      (optional, disposable intake list)")
-    print("  - archive/        (dump zone for new PDFs/DOIs/ideas — see its README)")
+    print("  - project.json          (type=paper, status=active — check_vault.py reads this)")
+    print("  - STATE.md              (the project's dynamic state; agents update it)")
+    print("  - plan.md               (paste the planyourscience PLAN export)")
+    print("  - papers.txt            (optional, disposable intake list)")
+    print("  - archive/              (dump zone for new PDFs/DOIs/ideas — see its README)")
+    print("  - draft/manuscript.md   (paste the planyourscience MANUSCRIPT skeleton)")
+    print("  - draft/references.bib  (empty — DERIVED by build_bib.py; don't hand-edit)")
     print()
     print("NEXT STEPS (in order):")
     print(f"  1) Paste your planyourscience PLAN into {proj/'plan.md'} and the")
-    print(f"     MANUSCRIPT skeleton into {proj/'manuscript.md'}. Put the plan's")
+    print(f"     MANUSCRIPT skeleton into {draft/'manuscript.md'}. Put the plan's")
     print(f"     reference identifiers into {proj/'papers.txt'} (or fetch directly).")
     print(f"  2) Fetch the literature (open access only):")
     print(f"       python src/fetch_papers.py {proj/'papers.txt'} \\")
@@ -140,12 +187,13 @@ def main() -> int:
     print(f"       python src/make_nodes.py wire    --vault {args.vault} --project {args.name}")
     print(f"       python src/relate.py     --vault {args.vault} --project {args.name}")
     print(f"  4) Build the bibliography, then wire the plan's citations:")
-    print(f"       python src/build_bib.py  --vault {args.vault} --project {args.name} --email you@host")
+    print(f"       python src/build_bib.py  --vault {args.vault} --project {args.name} \\")
+    print(f"           --email you@host --out {draft/'references.bib'}")
     print(f"       python src/reconcile_citations.py --vault {args.vault} --project {args.name}")
     print(f"       #   review the report; commit plan.md; then re-run with --apply")
     print(f"  5) Drop new finds into {archive}/ anytime; ask Claude Code to process them.")
     print()
-    print("Then draft & review manuscript.md with the scientific-writing skill.")
+    print("Then draft & review draft/manuscript.md with the scientific-writing skill.")
     return 0
 
 
