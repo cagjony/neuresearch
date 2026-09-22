@@ -40,6 +40,14 @@ Answers file — blocks separated by `## id=<comment id>`:
            inserts a coloured paragraph after the commented one, with no label —
            document text, not a remark. The way to ADD information in answer to a
            comment without rewriting what the applicant already wrote.
+`heading_after`
+           like `para_after`, but bold — a new section heading.
+`revise`   keeps `find` visible but struck through, followed by `text` — a rewording
+           the owner can compare against what was there.
+`insert_after`
+           inserts `text` right after `find`, leaving `find` itself untouched.
+`strike`   marks `find` as struck through, in the answer colour, instead of deleting
+           it: text the owner wrote must stay visible until the owner removes it.
 `note`     appends a LABELLED coloured paragraph — a remark to a reviewer rather
            than a text change. Cannot close a comment.
 `resolve: yes`
@@ -104,15 +112,35 @@ def parse_answers(text: str) -> list[dict]:
         b['find'] = b['find'].strip()
         b.setdefault('at', '')
         b.setdefault('widths', '')
-    return [b for b in blocks if b['text'] or b['type'] in ('cut', 'resolve')]
+    return [b for b in blocks if b['text'] or b['type'] in ('cut', 'resolve', 'strike')]
+
+
+def insert_after_in_block(block: str, find: str, new: str, color: str) -> tuple[str, bool]:
+    """Insert coloured `new` right after `find`; every existing run keeps its text."""
+    runs = [(m.start(), m.end(), m.group(0)) for m in RUN_RE.finditer(block)
+            if T_RE.search(m.group(0))]
+    texts = [T_RE.search(r[2]).group(1) for r in runs]
+    at = ''.join(texts).find(esc(find))
+    if at < 0:
+        return block, False
+    end, cursor = at + len(esc(find)), 0
+    for (s, e, run), txt in zip(runs, texts):
+        if cursor < end <= cursor + len(txt):
+            k = end - cursor
+            piece = (set_run_text(run, txt[:k]) + coloured_runs(new, color)
+                     + (set_run_text(run, txt[k:]) if txt[k:] else ''))
+            return block[:s] + piece + block[e:], True
+        cursor += len(txt)
+    return block, False
 
 
 def esc(s: str) -> str:
     return html.escape(s, quote=False)
 
 
-def coloured_runs(text: str, color: str) -> str:
-    rpr = f'<w:rPr><w:color w:val="{color}"/></w:rPr>'
+def coloured_runs(text: str, color: str, bold: bool = False, strike: bool = False) -> str:
+    rpr = ('<w:rPr>' + ('<w:b/><w:bCs/>' if bold else '') + ('<w:strike/>' if strike else '')
+           + f'<w:color w:val="{color}"/></w:rPr>')
     out = []
     for n, line in enumerate(text.split('\n')):
         if n:
@@ -129,7 +157,8 @@ def set_run_text(run: str, new: str) -> str:
     return T_RE.sub(lambda m: f'<w:t xml:space="preserve">{new}</w:t>', run, count=1)
 
 
-def replace_in_block(block: str, find: str, new: str, color: str) -> tuple[str, bool]:
+def replace_in_block(block: str, find: str, new: str, color: str,
+                     strike: bool = False) -> tuple[str, bool]:
     """Replace `find` across run boundaries inside one paragraph."""
     runs = [(m.start(), m.end(), m.group(0)) for m in RUN_RE.finditer(block)
             if T_RE.search(m.group(0))]
@@ -161,7 +190,7 @@ def replace_in_block(block: str, find: str, new: str, color: str) -> tuple[str, 
         if pre:
             out.append(set_run_text(run, pre))
         if not inserted:
-            out.append(coloured_runs(new, color))
+            out.append(coloured_runs(new, color, strike=strike))
             inserted = True
         if post:
             out.append(set_run_text(run, post))
@@ -400,11 +429,36 @@ def main() -> None:
             cut_words.append((b['at'][:60] or cid, len(visible(blocks[idx]).split()), gone))
             del blocks[idx]
             continue
-        if b['type'] == 'para_after':
+        if b['type'] in ('para_after', 'heading_after'):
             # A new paragraph in the answer colour, carrying NO tag — this is
             # document text the applicant may keep, not a remark addressed to a
             # reviewer. Use it to ADD information without touching what is there.
-            blocks.insert(idx + 1, '<w:p>' + coloured_runs(b['text'], a.color) + '</w:p>')
+            # It takes the anchor's paragraph spacing so only the colour differs
+            # (minus list numbering and paragraph-mark formatting, which belong to
+            # the anchor alone).
+            m = re.search(r'<w:pPr>.*?</w:pPr>', blocks[idx], re.S)
+            ppr = re.sub(r'<w:rPr>.*?</w:rPr>|<w:numPr>.*?</w:numPr>', '', m.group(0), flags=re.S) if m else ''
+            blocks.insert(idx + 1, '<w:p>' + ppr
+                          + coloured_runs(b['text'], a.color, bold=b['type'] == 'heading_after') + '</w:p>')
+            edited.append((cid, who))
+        elif b['type'] in ('revise', 'insert_after'):
+            if b['type'] == 'revise':
+                new_blk, ok = replace_in_block(blocks[idx], b['find'], b['find'], a.color, strike=True)
+                if ok:
+                    new_blk, ok = insert_after_in_block(new_blk, b['find'], ' ' + b['text'], a.color)
+            else:
+                new_blk, ok = insert_after_in_block(blocks[idx], b['find'], b['text'], a.color)
+            if not ok:
+                failed.append((cid or b['at'][:40], f'phrase not found in its paragraph: {b["find"][:60]!r}'))
+                continue
+            blocks[idx] = new_blk
+            edited.append((cid, who))
+        elif b['type'] == 'strike':
+            new_blk, ok = replace_in_block(blocks[idx], b['find'], b['find'], a.color, strike=True)
+            if not ok:
+                failed.append((cid or b['at'][:40], f'phrase not found in its paragraph: {b["find"][:60]!r}'))
+                continue
+            blocks[idx] = new_blk
             edited.append((cid, who))
         elif b['type'] == 'table_fill':
             if not blocks[idx].startswith('<w:tbl'):
@@ -429,7 +483,7 @@ def main() -> None:
             noted.append((cid, who))
 
         if b['resolve'].strip().lower() in ('yes', 'true', '1'):
-            if b['type'] not in ('replace', 'table_fill', 'table_new', 'para_after'):
+            if b['type'] not in ('replace', 'table_fill', 'table_new', 'para_after', 'heading_after', 'strike', 'revise', 'insert_after'):
                 failed.append((cid, 'resolve: yes on a note — a remark does not close a comment'))
                 continue
             resolved.append(cid)
