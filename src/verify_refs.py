@@ -2,7 +2,7 @@
 """Check every numbered reference of a manuscript against Crossref (+ OpenAlex affiliations).
 
     pdftotext -layout submission.pdf ms.txt
-    python verify_refs.py ms.txt refs_check.tsv [--email you@host]
+    python <neuresearch>/src/verify_refs.py review/ms.txt review/refs_check.tsv [--email you@host]
 
 Splits the list after a line "References", queries Crossref query.bibliographic for each
 entry, and writes one TSV row per reference: claimed text vs. matched title/author/year/

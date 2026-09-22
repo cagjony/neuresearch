@@ -21,7 +21,7 @@ The reviewer's checklist below is ordered by priority. Work top to bottom and re
 | # | Check | How |
 |---|---|---|
 | 1 | Hallucinated text | Look for parameters, modules or facts that do not exist (e.g. a "sparse selection parameter of Mamba"). Look for author names that differ from the reference entry, captions that contradict the text, text that contradicts its own figure, and "Author et al." with no number. |
-| 2 | Hallucinated references | `python verify_refs.py review/ms.txt review/refs_check.tsv`. Resolve every low `title_sim` by hand. |
+| 2 | Hallucinated references | from the project folder: `python <neuresearch>/src/verify_refs.py review/ms.txt review/refs_check.tsv`. Resolve every low `title_sim` by hand. |
 | 3 | Claim is in the cited paper | Open the source and find the sentence or table. Verdicts: supported / unrelated / wrong source / wrong reference number. |
 | 4 | Generalization | List every generalization claim in the abstract, introduction and contributions, next to the splits actually used. Within-dataset splits are not generalization. Find out whether other papers on the **same datasets** ran cross-dataset, cross-chemistry, cross-protocol or small-sample tests; cite them as the expected standard. Count the actual test cells. |
 | 5 | Arbitrary numbers | Look for hyperparameters that are unstated (window length, filter settings, "predefined rules"), design choices selected on **test** results, and outlier removal applied to test targets. |
