@@ -138,6 +138,11 @@ view at once.
   paragraphs that carried no tracked-change marks]
 - `sync_skills.py` — deploy `neuresearch/skills/` → `~/.claude/skills/`; `--check`
   audits. [BUILT — `--check` reports scientific-writing in-sync]
+- `verify_refs.py` — check every numbered reference of a submitted manuscript against Crossref
+  (title/author/year/journal/volume/page, title similarity) and pull OpenAlex institutions for
+  the self-citation check. Run from the review project: `python <neuresearch>/src/verify_refs.py
+  review/ms.txt review/refs_check.tsv`. A low `title_sim` is a lead, not a verdict. Report-only.
+  [BUILT ✓ — EAAI-26-18624, 42/42 refs real]
 
 ---
 
@@ -183,6 +188,35 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
+### CURRENT STATE (2026-09-22) — peer review EAAI-26-18624 SUBMITTED; new skill `reviewing-manuscripts`
+
+Cagatay refereed **EAAI-26-18624** (Engineering Applications of AI; *MV-Mamba … lithium-ion
+battery SOH estimation*). The review text was **submitted on 2026-09-22** from
+`neubrain/projects/EAAI-26-18624/review/submission_answers.txt` (generated from Part B of
+`draft/manuscript.md`; Part A holds the evidence). Suggested recommendation was Reject
+(resubmission encouraged) / Major Revision — the choice was the author's.
+Findings, all verified against source papers: 42/42 references real, none self-cited; all 13
+copied benchmark values traced — only 2 are published means, the rest are single best
+cells/trials/batches, two are cross-run chimeras, three reference numbers wrong; DCM-Net's
+out-of-distribution results compared with MV-Mamba's in-distribution split; generalization
+claimed but never tested; VAN/GRN reproduce the uncited TFT, SE-Net uncited; no statistics,
+no code, no AI declaration.
+**Confidential:** the manuscript PDF, `review/ms.txt` and page renders are NOT in git
+(`*.pdf` + a project `.gitignore`); only reviewer notes and the submitted text are.
+
+The workflow became the skill **`skills/reviewing-manuscripts/`** (priority-ordered checklist,
+benchmark-tracing method, output shape) + tool `src/verify_refs.py`. Deployed to
+`~/.claude/skills/` by copying that one skill — NOT via `sync_skills.py`, because the installed
+`scientific-writing` differs from the committed one (audit: `sync_skills.py --check`).
+Not yet tested on a fresh agent.
+
+### NEXT ACTION (EAAI-26-18624)
+
+1. Nothing until the editor's decision / a revision arrives. On a revision: new round in the same
+   project; check each of the 10 major comments against the response.
+2. Decide which `scientific-writing` copy is current (installed vs repo), then `sync_skills.py`.
+3. Optional: pressure-test `reviewing-manuscripts` on a fresh agent with a different submission.
+
 ### CURRENT STATE (2026-09-21) — new project `zigbee-thermoregulation`; new_project.py now scaffolds the spec shape
 
 `neubrain/projects/zigbee-thermoregulation/` exists and is **empty by design** — a scaffold, no
@@ -222,6 +256,8 @@ the 30 °C plausibility floor discarded every reading below 30.
    `build_bib.py --out …/draft/references.bib`).
 
 ### SESSION LOG
+- 2026-09-22 — EAAI-26-18624 peer review done and submitted; `reviewing-manuscripts` skill and
+  `src/verify_refs.py` added. 17 cited papers ingested (tagged EAAI-26-18624). (agent: Claude)
 
 - 2026-09-21 — Created the `zigbee-thermoregulation` paper project in the vault, and fixed the
   scaffolder that would have created it wrong: `new_project.py` now writes `project.json`,
