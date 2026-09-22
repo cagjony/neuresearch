@@ -46,6 +46,9 @@ Answers file — blocks separated by `## id=<comment id>`:
            the owner can compare against what was there.
 `insert_after`
            inserts `text` right after `find`, leaving `find` itself untouched.
+`strike_block`
+           strikes every run of the addressed paragraph or table (a superseded table
+           stays visible above its replacement, which `table_new` inserts).
 `strike`   marks `find` as struck through, in the answer colour, instead of deleting
            it: text the owner wrote must stay visible until the owner removes it.
 `note`     appends a LABELLED coloured paragraph — a remark to a reviewer rather
@@ -112,7 +115,21 @@ def parse_answers(text: str) -> list[dict]:
         b['find'] = b['find'].strip()
         b.setdefault('at', '')
         b.setdefault('widths', '')
-    return [b for b in blocks if b['text'] or b['type'] in ('cut', 'resolve', 'strike')]
+    return [b for b in blocks if b['text'] or b['type'] in ('cut', 'resolve', 'strike', 'strike_block')]
+
+
+def strike_all_runs(block: str, color: str) -> str:
+    """Strike + colour every text run, keeping each run's own formatting otherwise."""
+    mark = f'<w:strike/><w:color w:val="{color}"/>'
+    def one(m):
+        run = m.group(0)
+        if not T_RE.search(run):
+            return run
+        run = re.sub(r'<w:color\b[^>]*/>', '', run)
+        if '<w:rPr>' in run:
+            return run.replace('</w:rPr>', mark + '</w:rPr>', 1)
+        return re.sub(r'^(<w:r(?:\s[^>]*)?>)', r'\1<w:rPr>' + mark + '</w:rPr>', run, count=1)
+    return RUN_RE.sub(one, block)
 
 
 def insert_after_in_block(block: str, find: str, new: str, color: str) -> tuple[str, bool]:
@@ -453,6 +470,9 @@ def main() -> None:
                 continue
             blocks[idx] = new_blk
             edited.append((cid, who))
+        elif b['type'] == 'strike_block':
+            blocks[idx] = strike_all_runs(blocks[idx], a.color)
+            edited.append((cid, who))
         elif b['type'] == 'strike':
             new_blk, ok = replace_in_block(blocks[idx], b['find'], b['find'], a.color, strike=True)
             if not ok:
@@ -483,7 +503,7 @@ def main() -> None:
             noted.append((cid, who))
 
         if b['resolve'].strip().lower() in ('yes', 'true', '1'):
-            if b['type'] not in ('replace', 'table_fill', 'table_new', 'para_after', 'heading_after', 'strike', 'revise', 'insert_after'):
+            if b['type'] not in ('replace', 'table_fill', 'table_new', 'para_after', 'heading_after', 'strike', 'revise', 'insert_after', 'strike_block'):
                 failed.append((cid, 'resolve: yes on a note — a remark does not close a comment'))
                 continue
             resolved.append(cid)

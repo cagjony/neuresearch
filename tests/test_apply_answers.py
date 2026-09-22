@@ -22,7 +22,8 @@ def test_strike_and_heading(tmp_path: Path) -> None:
                    '## at=Keep this.\ntype: heading_after\ntext: New section\n\n'
                    '## at=Keep this.\ntype: strike\nfind: Old criterion one.\n\n'
                    '## at=Keep this.\ntype: revise\nfind: Keep this.\ntext: Kept, reworded.\n\n'
-                   '## at=Keep this.\ntype: insert_after\nfind: Old criterion\ntext:  [added]\n')
+                   '## at=Keep this.\ntype: insert_after\nfind: Old criterion\ntext:  [added]\n\n'
+                   '## at=Body.\ntype: strike_block\n')
     subprocess.run([sys.executable, str(SRC), '--docx', str(src), '--answers', str(ans),
                     '--out', str(out)], check=True)
     doc = zipfile.ZipFile(out).read('word/document.xml').decode()
@@ -32,3 +33,5 @@ def test_strike_and_heading(tmp_path: Path) -> None:
     assert doc.count('<w:numPr>') == 1                                    # numbering not copied
     assert doc.count('<w:strike/>') >= 2 and 'Kept, reworded.' in doc     # revise keeps the old
     assert doc.index('Old criterion') < doc.index('[added]') < doc.index('one.')
+    body = doc[doc.rindex('<w:p>'):]                                       # the struck paragraph
+    assert '<w:strike/>' in body and body.count('w:color') == 1
