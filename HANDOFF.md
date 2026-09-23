@@ -280,6 +280,9 @@ the 30 °C plausibility floor discarded every reading below 30.
   (bourne2006, zyromski2025) — five papers added to the library under `writing`. (agent: Claude)
 - 2026-09-22 — EAAI-26-18624 peer review done and submitted; `reviewing-manuscripts` skill and
   `src/verify_refs.py` added. 17 cited papers ingested (tagged EAAI-26-18624). (agent: Claude)
+- 2026-09-22 — aon-pir-rev: R1.1 tracking-validation figure redrawn with explained axes and a
+  'what to expect' schematic; position panel set to linear 0-100 um by the author. Position is the
+  weakest of the three metrics (58% on the same-neuron side vs ACG 78%, waveform 69%). (agent: Claude)
 
 - 2026-09-21 — Created the `zigbee-thermoregulation` paper project in the vault, and fixed the
   scaffolder that would have created it wrong: `new_project.py` now writes `project.json`,
