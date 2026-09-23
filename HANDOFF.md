@@ -256,6 +256,9 @@ the 30 °C plausibility floor discarded every reading below 30.
    `build_bib.py --out …/draft/references.bib`).
 
 ### SESSION LOG
+- 2026-09-23 — `reviewing-manuscripts` grounded in published standards: leakage taxonomy
+  (kapoor2023), DOME (walsh2021), TRIPOD+AI (collins2024), reviewer conduct + confidentiality
+  (bourne2006, zyromski2025) — five papers added to the library under `writing`. (agent: Claude)
 - 2026-09-22 — EAAI-26-18624 peer review done and submitted; `reviewing-manuscripts` skill and
   `src/verify_refs.py` added. 17 cited papers ingested (tagged EAAI-26-18624). (agent: Claude)
 
