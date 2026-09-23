@@ -271,6 +271,12 @@ the 30 °C plausibility floor discarded every reading below 30.
    `build_bib.py --out …/draft/references.bib`).
 
 ### SESSION LOG
+- 2026-09-23 — aon-pir-rev: manuscript edits now generated from `edits/*.md` via apply_answers in blue
+  (no tracked changes; superseded text struck, not deleted) — v13 Methods, v13_results Results+Table 1,
+  v14 Figure 3. apply_answers gained strike / revise / insert_after / heading_after / strike_block, and
+  new paragraphs inherit the anchor's spacing. Table 1 and the Results numbers recomputed on
+  comb_my_update: 20 recordings, 17 mice, 2,077 units (the paper's 2,285 came from the pre-RAS atlas).
+  R2.7 answered with the matched-neuron-count SVM; result unchanged. (agent: Claude)
 - 2026-09-23 — `reviewing-manuscripts` grounded in published standards, then tested on two fresh
   agents (with/without the skill) and fixed from what the test exposed: checks 10b (internal
   arithmetic) and 10c (repeated values), mandatory full reference sweep, baselines must be cited,
