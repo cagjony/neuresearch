@@ -205,17 +205,32 @@ no code, no AI declaration.
 (`*.pdf` + a project `.gitignore`); only reviewer notes and the submitted text are.
 
 The workflow became the skill **`skills/reviewing-manuscripts/`** (priority-ordered checklist,
-benchmark-tracing method, output shape) + tool `src/verify_refs.py`. Deployed to
-`~/.claude/skills/` by copying that one skill — NOT via `sync_skills.py`, because the installed
-`scientific-writing` differs from the committed one (audit: `sync_skills.py --check`).
-Not yet tested on a fresh agent.
+benchmark-tracing method, output shape) + tool `src/verify_refs.py`, now grounded in five
+methodology papers in the library under `writing`: `bourne2006` (reviewer conduct), `zyromski2025`,
+`kapoor2023` (leakage taxonomy L1–L3), `walsh2021` (DOME — "falsely claimed as state-of-the-art" is
+a named failure), `collins2024` (TRIPOD+AI). Detail lives in `references/evidence-standards.md`;
+it also states the confidentiality rule the tooling follows (the manuscript never leaves the
+machine; only published reference metadata goes to Crossref/OpenAlex/Unpaywall).
+
+**Tested (2026-09-23)** on a published paper used as a stand-in submission, two fresh agents, one
+with the skill and one told to use no skills. The skill triggered, set the checklist order and held
+the confidentiality rule, and was the only run to verify anything externally — but the no-skill run
+caught two things the skill had not asked for. Those are now checks **10b** (recompute every average
+and % claim from the paper's own tables) and **10c** (identical values where independent runs should
+differ), plus: run the FULL reference sweep and never spot-check, every baseline must be named and
+cited, and `pdfinfo` the PDF first. All 3 skills are now **in-sync** (`sync_skills.py --check`): the
+`scientific-writing` drift was only a frontmatter restyle made in `~/.claude/skills` on 2026-09-21
+with a stray `SKILL.md.bak` — identical bodies, nothing unfinished.
 
 ### NEXT ACTION (EAAI-26-18624)
 
-1. Nothing until the editor's decision / a revision arrives. On a revision: new round in the same
-   project; check each of the 10 major comments against the response.
-2. Decide which `scientific-writing` copy is current (installed vs repo), then `sync_skills.py`.
-3. Optional: pressure-test `reviewing-manuscripts` on a fresh agent with a different submission.
+1. Nothing until the editor's decision / a revision of EAAI-26-18624 arrives. On a revision: new
+   round in the same project; check each of the 10 major comments against the authors' response.
+2. **Next referee invitation: just say "I am the reviewer of this paper" and point at the PDF** — the
+   skill sets up the project, runs the reference sweep, traces the benchmark numbers and drafts both
+   the comments to the authors and the confidential comments to the editor.
+3. Open, small: `reviewing-manuscripts` has been tested once, on one stand-in paper. A second test on
+   a different field would be worth it before trusting it unsupervised.
 
 ### CURRENT STATE (2026-09-21) — new project `zigbee-thermoregulation`; new_project.py now scaffolds the spec shape
 
@@ -256,6 +271,10 @@ the 30 °C plausibility floor discarded every reading below 30.
    `build_bib.py --out …/draft/references.bib`).
 
 ### SESSION LOG
+- 2026-09-23 — `reviewing-manuscripts` grounded in published standards, then tested on two fresh
+  agents (with/without the skill) and fixed from what the test exposed: checks 10b (internal
+  arithmetic) and 10c (repeated values), mandatory full reference sweep, baselines must be cited,
+  `pdfinfo` first. `scientific-writing` drift resolved — all 3 skills in sync. (agent: Claude)
 - 2026-09-23 — `reviewing-manuscripts` grounded in published standards: leakage taxonomy
   (kapoor2023), DOME (walsh2021), TRIPOD+AI (collins2024), reviewer conduct + confidentiality
   (bourne2006, zyromski2025) — five papers added to the library under `writing`. (agent: Claude)
