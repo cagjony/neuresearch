@@ -1,6 +1,13 @@
 ---
 name: scientific-writing
-description: Use when drafting, structuring, or revising a scientific manuscript or any of its parts — title, abstract, introduction, results, discussion, figures, or a grant's Specific Aims. Grounds every move in two methodology papers held in the library: Mensh & Kording's "Ten simple rules for structuring papers" (structure) and Carandini's "Some Tips for Writing Science" (sentence- and word-level craft). Trigger on requests to write or restructure a paper, tighten an abstract, fix a rambling introduction, order results, sharpen a discussion, cut wordiness, or fix impenetrable prose.
+description: >-
+  Use when drafting, structuring, or revising a scientific manuscript or any of its parts —
+  title, abstract, introduction, results, discussion, figures, or a grant's Specific Aims.
+  Grounds every move in two methodology papers held in the library: Mensh & Kording's "Ten simple
+  rules for structuring papers" (structure) and Carandini's "Some Tips for Writing Science"
+  (sentence- and word-level craft). Trigger on requests to write or restructure a paper, tighten
+  an abstract, fix a rambling introduction, order results, sharpen a discussion, cut wordiness,
+  or fix impenetrable prose.
 ---
 
 # Scientific writing
