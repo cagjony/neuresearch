@@ -69,15 +69,23 @@ Always add `--clusters=wice` or `--clusters=mindwell`. An account works only wit
 
 **Credits:** `sam-balance`. A full wICE GPU node costs 45,000 credits/h (billed pro rata by cores and GPUs); 1M credits ≈ €3.50; the interactive partition is free (HPCintro slide 36).
 
-## Globus
+## Globus and manGO (verified 2026-09-26)
 
-Collection IDs: KU Leuven Tier-2 Lustre scratch `82c495cc-aef8-40ad-88df-f9c92bee82d3`,
-GPFS scratch `a6593381-d93d-4543-a3af-89424bcc6555`, data dirs `38948f53-d4f5-4e94-afa5-ad364c7a66b8`
-(`globus/collections.rst`). Paths inside a collection are relative, e.g. `scratch/<3 digits>/vscXXXXX/...` (from `$VSC_SCRATCH`).
+Setup, once, in the `$VSC_DATA/tools` venv: `globus login --no-local-server`, then a one-time
+`globus session consent --no-local-server '<scope>'` per collection (`globus ls <id>:/` prints the scope; several fit in one bracket).
+`globus collection show` needs admin consent; use `globus ls` / `globus endpoint show`.
 
-**Unverified (from lab code only):** manGO-on-VSC `cb13a033-02dd-401d-9cb5-7554178c0435`,
-Bonin-lab NERF share `46cc0b3b-735d-4499-9fd8-8d085a71dca6` = **vsc-nerf-boninlab-boninlabwip2024** (the boninlabwip2024 share, NOT bigDATA; access needs an ACL from the Bonin lab, checked 2026-09-26). Each collection needs a one-time `globus session consent '…' --no-local-server` (the exact scope is printed by `globus ls`). `globus collection show` needs admin consent: use `globus ls`/`endpoint show`.
-The lab's pattern is a 3-job chain (`--dependency=afterok`): Globus in → compute → Globus out plus scratch cleanup. Scratch is deleted only after the transfer reports SUCCEEDED.
+| Collection | ID |
+|---|---|
+| manGO ("VSC iRODS gbiomed.irods.icts.kuleuven.be") | `cb13a033-02dd-401d-9cb5-7554178c0435` |
+| Tier-2 Lustre scratch (`globus/collections.rst`) | `82c495cc-aef8-40ad-88df-f9c92bee82d3` |
+| Tier-2 GPFS scratch | `a6593381-d93d-4543-a3af-89424bcc6555` |
+| Bonin NERF share ("vsc-nerf-boninlab-boninlabwip2024", NOT bigDATA; needs Bonin-lab ACL) | `46cc0b3b-735d-4499-9fd8-8d085a71dca6` |
+
+- manGO paths start at `/gbiomed/home/<project>/`. **A project you aren't a member of reports "not found"**, not "denied" (e.g. Bonin's `PVDH/`).
+- Unit 2p data: `/gbiomed/home/Data_Hub/FD000009-NEUROPHY_2PAST/BDS calcium imaging project/2p_data/<session>/<run>/` (~90 sessions, ~26 GB tif per run). The names contain spaces: quote `"<id>:<path>"`.
+- Scratch paths inside `82c495cc` are relative: `scratch/<3 digits>/vscXXXXX/...`.
+- Lab pattern (Dylan): a 3-job chain (`--dependency=afterok`): Globus in → compute → Globus out, then delete scratch only after SUCCEEDED.
 
 ## neu2p on VSC
 
@@ -85,3 +93,12 @@ The lab's pattern is a 3-job chain (`--dependency=afterok`): Globus in → compu
 Run from an interactive job:
 `nextflow run neu2p/main.nf -profile vsc --device cuda --suite2p_container $VSC_DATA/suite2p.sif --vsc_account lp_big_wice_gpu --cluster_options '--clusters=wice --partition=dedicated_big_gpu' --input_dir ... --settings ...`
 **Status: not yet run end-to-end on VSC.** Update this line after the first successful run.
+
+## Keeping this knowledge up to date
+
+One fact lives in three places, all versioned. **When you verify, correct or add a VSC fact, update all three in the same session:**
+1. this skill: `neuresearch/skills/vsc-for-neu-users/SKILL.md` (then `python src/sync_skills.py`);
+2. the colleague guide: `code/neuvsc/README.md` (push to github.com/neurophysiology-expertise-unit/neuvsc);
+3. `neubrain/projects/neuvsc/STATE.md` (what is verified vs pending) and `reading.md` if a new source was read.
+
+A fact marked "unverified" becomes plain text only after it worked in practice; note the date.
