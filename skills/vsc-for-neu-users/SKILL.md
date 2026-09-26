@@ -76,7 +76,7 @@ GPFS scratch `a6593381-d93d-4543-a3af-89424bcc6555`, data dirs `38948f53-d4f5-4e
 (`globus/collections.rst`). Paths inside a collection are relative, e.g. `scratch/<3 digits>/vscXXXXX/...` (from `$VSC_SCRATCH`).
 
 **Unverified (from lab code only):** manGO-on-VSC `cb13a033-02dd-401d-9cb5-7554178c0435`,
-NERF file server `46cc0b3b-735d-4499-9fd8-8d085a71dca6`. Confirm with `globus ls <id>:/` before relying on them.
+Bonin-lab NERF share `46cc0b3b-735d-4499-9fd8-8d085a71dca6` = **vsc-nerf-boninlab-boninlabwip2024** (the boninlabwip2024 share, NOT bigDATA; access needs an ACL from the Bonin lab, checked 2026-09-26). Each collection needs a one-time `globus session consent '…' --no-local-server` (the exact scope is printed by `globus ls`). `globus collection show` needs admin consent: use `globus ls`/`endpoint show`.
 The lab's pattern is a 3-job chain (`--dependency=afterok`): Globus in → compute → Globus out plus scratch cleanup. Scratch is deleted only after the transfer reports SUCCEEDED.
 
 ## neu2p on VSC
