@@ -67,7 +67,7 @@ Sources: `leuven/tier2_hardware/kuleuven_storage.rst`, `data/data_management_gui
 
 Always add `--clusters=wice` or `--clusters=mindwell`. An account works only with its own partition. Access is requested via account.vscentrum.be → New/Join Group; check it with `groups` and `sacctmgr show assoc user=$USER`.
 
-**Credits:** `sam-balance`. A full wICE GPU node costs 45,000 credits/h (billed pro rata by cores and GPUs); 1M credits ≈ €3.50; the interactive partition is free (HPCintro slide 36).
+**Credits:** `sam-balance` (as of 2026-09-26 the `lp_big_mindwell_*` accounts show a balance of 1, so they're effectively unusable; use wICE). Jobs: `squeue --clusters=all -u $USER`, `sacct -M wice …`, `slurmtop --dedicated --cluster wice`. A full wICE GPU node costs 45,000 credits/h (billed pro rata by cores and GPUs); 1M credits ≈ €3.50; the interactive partition is free (HPCintro slide 36).
 
 ## Globus and manGO (verified 2026-09-26)
 
@@ -84,12 +84,12 @@ Setup, once, in the `$VSC_DATA/tools` venv: `globus login --no-local-server`, th
 
 - manGO paths start at `/gbiomed/home/<project>/`. **A project you aren't a member of reports "not found"**, not "denied" (e.g. Bonin's `PVDH/`).
 - Unit 2p data: `/gbiomed/home/Data_Hub/FD000009-NEUROPHY_2PAST/BDS calcium imaging project/2p_data/<session>/<run>/` (~90 sessions, ~26 GB tif per run). The names contain spaces: quote `"<id>:<path>"`.
-- Scratch paths inside `82c495cc` are relative: `scratch/<3 digits>/vscXXXXX/...`.
+- Scratch inside `82c495cc` is `/scratch/<3 digits>/vscXXXXX/` = `$VSC_SCRATCH` without `leuven/` (verified).
 - Lab pattern (Dylan): a 3-job chain (`--dependency=afterok`): Globus in → compute → Globus out, then delete scratch only after SUCCEEDED.
 
 ## neu2p on VSC
 
-`$VSC_DATA`: `git clone https://github.com/neurophysiology-expertise-unit/neu2p.git`, plus `suite2p.sif`.
+`$VSC_DATA`: the neu2p repo (private: copy it with `rsync -rlt --exclude results/ neu2p/ vsc:$VSC_DATA/neu2p/` from a lab machine, or clone with a GitHub login) plus `suite2p.sif` (scp over `ssh vsc`, about 40 MB/s).
 Run from an interactive job:
 `nextflow run neu2p/main.nf -profile vsc --device cuda --suite2p_container $VSC_DATA/suite2p.sif --vsc_account lp_big_wice_gpu --cluster_options '--clusters=wice --partition=dedicated_big_gpu' --input_dir ... --settings ...`
 **Status: not yet run end-to-end on VSC.** Update this line after the first successful run.
