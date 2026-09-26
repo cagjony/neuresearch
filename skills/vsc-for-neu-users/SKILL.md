@@ -87,12 +87,17 @@ Setup, once, in the `$VSC_DATA/tools` venv: `globus login --no-local-server`, th
 - Scratch inside `82c495cc` is `/scratch/<3 digits>/vscXXXXX/` = `$VSC_SCRATCH` without `leuven/` (verified).
 - Lab pattern (Dylan): a 3-job chain (`--dependency=afterok`): Globus in → compute → Globus out, then delete scratch only after SUCCEEDED.
 
-## neu2p on VSC
+## neu2p on VSC (ran 2026-09-26)
 
-`$VSC_DATA`: the neu2p repo (private: copy it with `rsync -rlt --exclude results/ neu2p/ vsc:$VSC_DATA/neu2p/` from a lab machine, or clone with a GitHub login) plus `suite2p.sif` (scp over `ssh vsc`, about 40 MB/s).
-Run from an interactive job:
-`nextflow run neu2p/main.nf -profile vsc --device cuda --suite2p_container $VSC_DATA/suite2p.sif --vsc_account lp_big_wice_gpu --cluster_options '--clusters=wice --partition=dedicated_big_gpu' --input_dir ... --settings ...`
-**Status: not yet run end-to-end on VSC.** Update this line after the first successful run.
+- The code (private repo) and `suite2p.sif` live in `$VSC_DATA`; data is in `$VSC_SCRATCH/raw/`.
+- **The `interactive` partition rejects the lp_big_* accounts ("Invalid qos")**: run the Nextflow head as
+  `sbatch -M wice -A lp_big_wice_cpu -p dedicated_big_bigmem -n 1 -c 1 --mem=4G`.
+- **KU Leuven sbatch requires `-M`** ("Please select a cluster…", cli_filter error): `export SLURM_CLUSTERS=wice` in the head script.
+- Use `--partition dedicated_big_gpu --vsc_account lp_big_wice_gpu --device cuda`. **Never `--cluster_options '--x'`**:
+  Nextflow's CLI takes it as a new flag and sets the value to `true` → "Invalid directive … true".
+- 1024² movies: `-c mem.config` with SUITE2P memory 96 GB (the default 32 GB is too small for detection).
+- A100 check: driver 595.71, the container's torch 2.14+cu130 sees CUDA.
+- Full recipe: neuvsc guide, step 8.
 
 ## Keeping this knowledge up to date
 
