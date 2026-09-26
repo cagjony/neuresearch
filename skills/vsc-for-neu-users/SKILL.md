@@ -43,6 +43,10 @@ Sources: `leuven/tier2_hardware/kuleuven_storage.rst`, `data/data_management_gui
 - **"Disk quota exceeded" on `~/.nextflow` or `~/.globus`:** home is full. Run `du -sh ~/.[!.]* | sort -h`. The usual cause is `~/.vscode-server` (GBs). Move it and symlink it, keeping the same name at both ends (`compute/portal/ondemand/vscode-server.rst`):
   `mv ~/.vscode-server $VSC_DATA/.vscode-server && ln -s $VSC_DATA/.vscode-server ~/.vscode-server`.
   Then set `export NXF_HOME=$VSC_DATA/.nextflow` (never scratch: it is purged).
+- **SSH from a lab server** (verified 2026-09-26): no permanent key login; you need a 16 h certificate plus the firewall.
+  Run `SSH_AUTH_SOCK=~/.ssh/agent-vsc.sock step ssh login --context VSC` from a MobaXterm terminal (it opens Firefox on
+  the server); `--console` fails (no device flow); `invalid_grant` means retry faster. Firewall: `curl -4` the token line
+  from firewall.vscentrum.be on the server. Then `ssh vsc`. kmk/certagent are for u-number servers, not VSC (`accounts/mfa_login*.rst`).
 - **A tool looks missing** (`which`/`module avail` show nothing): run `module spider <Name>`. Modules are per cluster tree; e.g. `Nextflow/25.04.8` needs a `cluster/...` module (the login default works). Globus CLI has no KU Leuven module; install it in a venv in `$VSC_DATA` (`globus/cli.rst`).
 - **Apptainer:** set the cache/tmp to `/tmp/$USER/...` only when `$SLURM_JOB_ID` is set. Build and run containers on compute nodes (`compute/software/installing_software/containers.rst`). Keep `.sif` files in `$VSC_DATA`.
 - **Login node:** no heavy or long work (`compute/jobs/index.rst`). Start the Nextflow head from the wICE `interactive` partition, which is free of credits (`leuven/wice_quick_start.rst`). **Unverified:** which account `interactive` accepts; BIG accounts are tied to their own partitions, so try `wicedefaultslurmaccount` if `lp_big_*` is rejected.
