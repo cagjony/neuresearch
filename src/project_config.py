@@ -35,7 +35,7 @@ from pathlib import Path
 
 PROJECT_FILE = "project.json"
 SCHEMA_VERSION = 1
-VALID_TYPES = frozenset({"paper", "pipeline"})
+VALID_TYPES = frozenset({"paper", "pipeline", "reference"})
 VALID_STATUS = frozenset({"active", "frozen", "archived"})
 
 

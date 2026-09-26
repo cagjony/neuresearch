@@ -72,6 +72,11 @@ REQUIRED_SHAPE: dict[str, list[str]] = {
         "protocol.md",
         "studies/",
     ],
+    # a knowledge base (e.g. neuvsc): what we read and what is verified
+    "reference": [
+        "STATE.md",
+        "reading.md",
+    ],
 }
 
 

@@ -123,6 +123,15 @@ def full_pipeline(vault: Path, name: str) -> Path:
     return d
 
 
+def full_reference(vault: Path, name: str) -> Path:
+    d = add_project(vault, name, {
+        "schema": 1, "name": name, "type": "reference", "status": "active",
+    })
+    (d / "STATE.md").write_text("state\n")
+    (d / "reading.md").write_text("sources\n")
+    return d
+
+
 def codes_for(vault: Path, project: str, code: str) -> list:
     return [f for f in check_vault.collect(vault)
             if f.project == project and f.code == code]
@@ -138,6 +147,20 @@ def test_complete_pipeline_project_reports_no_shape_drift(tmp_path):
     vault = make_vault(tmp_path)
     full_pipeline(vault, "oldenlabs")
     assert codes_for(vault, "oldenlabs", "missing-required") == []
+
+
+def test_complete_reference_project_reports_no_shape_drift(tmp_path):
+    vault = make_vault(tmp_path)
+    full_reference(vault, "neuvsc")
+    assert codes_for(vault, "neuvsc", "missing-required") == []
+
+
+def test_reference_missing_reading_list_is_reported(tmp_path):
+    vault = make_vault(tmp_path)
+    d = full_reference(vault, "neuvsc")
+    (d / "reading.md").unlink()
+    found = codes_for(vault, "neuvsc", "missing-required")
+    assert [f.message for f in found] == ["reading.md is missing"]
 
 
 def test_paper_missing_draft_manuscript_is_reported(tmp_path):
