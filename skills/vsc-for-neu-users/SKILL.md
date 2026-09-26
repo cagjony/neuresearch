@@ -51,7 +51,7 @@ Sources: `leuven/tier2_hardware/kuleuven_storage.rst`, `data/data_management_gui
 - **Non-interactive `ssh vsc '<cmd>'` has no `$VSC_DATA`/`$VSC_SCRATCH`**: the VSC variables are set only in login shells. Wrap commands in `bash -l -c '...'`.
 - **A tool looks missing** (`which`/`module avail` show nothing): run `module spider <Name>`. Modules are per cluster tree; e.g. `Nextflow/25.04.8` needs a `cluster/...` module (the login default works). Globus CLI has no KU Leuven module; install it in a venv in `$VSC_DATA` (`globus/cli.rst`).
 - **Apptainer:** set the cache/tmp to `/tmp/$USER/...` only when `$SLURM_JOB_ID` is set. Build and run containers on compute nodes (`compute/software/installing_software/containers.rst`). Keep `.sif` files in `$VSC_DATA`.
-- **Login node:** no heavy or long work (`compute/jobs/index.rst`). Start the Nextflow head from the wICE `interactive` partition, which is free of credits (`leuven/wice_quick_start.rst`). **Unverified:** which account `interactive` accepts; BIG accounts are tied to their own partitions, so try `wicedefaultslurmaccount` if `lp_big_*` is rejected.
+- **Login node:** no heavy or long work (`compute/jobs/index.rst`). The free wICE `interactive` partition exists (`leuven/wice_quick_start.rst`) but **rejects the lp_big_* accounts ("Invalid qos", verified 2026-09-26)**: run long light processes such as the Nextflow head as a 1-core job on `dedicated_big_bigmem`.
 - **Staging data into scratch:** use `cp` (not `-a`) or Globus. `mv` and `rsync -a` keep an old access time, so the file can be purged at once. Copy results out when done.
 - **Match scratch to cluster:** wICE/Genius jobs use Lustre, Mindwell jobs use GPFS; admins cancel jobs that don't, without notice.
 
