@@ -208,17 +208,32 @@ def fetch_epmc_xml(rec: Record, session: requests.Session) -> bytes | None:
 
     inEPMC=Y is sometimes optimistic and the fullTextXML endpoint 404s; that is
     an expected 'not actually available' result, not an error -> caller falls
-    back to Unpaywall. Genuine failures (5xx, network) still raise loudly.
+    back to Unpaywall. A 5xx is retried three times and then also falls through
+    (with a loud line), because a sick endpoint is not a fact about the paper and
+    must not abort the batch. Network errors and 4xx other than 404 still raise.
 
     NOTE: the endpoint is keyed on the bare PMCID with NO source segment
     (.../rest/<PMCID>/fullTextXML). Inserting rec.source (e.g. MED) makes EPMC
     404 every article, even open-access ones.
     """
-    r = session.get(f"{EPMC}/{rec.pmcid}/fullTextXML", timeout=60)
-    if r.status_code == 404:
-        return None
-    r.raise_for_status()
-    return r.content
+    for attempt in range(3):
+        r = session.get(f"{EPMC}/{rec.pmcid}/fullTextXML", timeout=60)
+        if r.status_code == 404:
+            return None
+        if r.status_code < 500:
+            r.raise_for_status()
+            return r.content
+        if attempt < 2:
+            time.sleep(2 * (attempt + 1))
+    # A 5xx after three tries is the SERVER being unwell, not a fact about this
+    # paper and not a bug in our code. Raising here aborted an entire batch on
+    # one flaky endpoint (2026-09-18: EPMC returned 500 for several PMCIDs in a
+    # row), which also denied every later paper its Unpaywall and NCBI-efetch
+    # routes. Report loudly and fall through instead -- the caller treats None
+    # as "this route had nothing" and keeps going.
+    print(f"[EPMC 5xx] {rec.pmcid}: {r.status_code} after 3 tries — "
+          f"falling through to Unpaywall/NCBI", flush=True)
+    return None
 
 
 def fetch_pmc_efetch(rec: Record, session: requests.Session) -> bytes | None:
@@ -404,7 +419,19 @@ def main() -> int:
         # --- source 2: Unpaywall OA PDF (optional GROBID -> TEI) --- #
         if not src_label and rec.doi:
             time.sleep(POLITE_DELAY)
-            pdf_url = unpaywall_pdf_url(rec.doi, args.email, session)
+            try:
+                pdf_url = unpaywall_pdf_url(rec.doi, args.email, session)
+            except (requests.exceptions.RequestException, ValueError) as e:
+                # Unpaywall itself being unreachable, slow or non-JSON is a
+                # third-party outage, not a fault in this paper. It was allowed
+                # to abort the whole run: the lookup sat outside the try below,
+                # so one firewalled host cost every remaining paper its route-3
+                # chance. (api.unpaywall.org was unreachable from this network
+                # for the whole of 2026-08; 12 of 14 papers had a PMCID and
+                # would have been fetched by NCBI.) Treat it as a missing
+                # answer and carry on.
+                pdf_url = None
+                pdf_error = f"Unpaywall lookup failed: {e}"
             if pdf_url:
                 pdf = library / f"{stem}.pdf"
                 try:

@@ -102,7 +102,7 @@ Setup, once, in the `$VSC_DATA/tools` venv: `globus login --no-local-server`, th
 - **Data on manGO → `stream.nf`** (preflight, Globus in/out waiting for SUCCEEDED, raw deleted only after upload).
   Nextflow pitfalls seen: `session` is a reserved name (tasks became `nextflow.Session@…`); SLURM variables are not
   set inside the container (`$SLURM_JOB_ID: unbound variable`); `errorStrategy 'ignore'` + `cleanup` deletes failed
-  tasks' logs; the vsc profile's 8-CPU default must not apply to steps run in the head job (label `transfer`).
+  tasks' logs; the vsc profile's 8-CPU default must not apply to steps run in the head job (label `transfer`). Give the `stream.nf` head ≥ max_parallel + 3 cores (8): local tasks are capped by the head's core count (Nextflow thread pool), and a 2-core head deadlocked (waiting copy-ins held both threads; uploads never ran). `executor.$local.queueSize` does not help.
 - PENDING "ReqNodeNotAvail, Reserved for maintenance" = walltime overlaps maintenance: request less, `-resume` later.
 - macOS `._*.tif` AppleDouble files (magic 00051607) sit next to movies on manGO: skip dotfiles.
 - Full recipe: neuvsc guide, step 8.
