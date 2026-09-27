@@ -38,6 +38,8 @@ Cited `*.rst` paths are relative to `code/hpcleuven/VscDocumentation/source/`; "
 
 Sources: `leuven/tier2_hardware/kuleuven_storage.rst`, `data/data_management_guidelines.rst`, HPCintro slide 25.
 
+**Beyond 500 GB of scratch:** node-local `$VSC_SCRATCH_NODE` (600 GB per wICE job, wiped at job end) for per-job intermediates; GPFS scratch is Mindwell-only (Mindwell credits = 1); staging/project storage are paid and currently frozen; Tier-1 Data is from 5 TB and free, by proposal. Stream sessions (in → process → out → delete) rather than keep datasets on scratch. Recommended `~/.bashrc` (NXF_HOME, Apptainer vars inside jobs only, `neu2p-env`/`-status`/`-history` aliases): neuvsc guide, step 3.
+
 ## Quick reference: failures seen in practice
 
 - **"Disk quota exceeded" on `~/.nextflow` or `~/.globus`:** home is full. Run `du -sh ~/.[!.]* | sort -h`. The usual cause is `~/.vscode-server` (GBs). Move it and symlink it, keeping the same name at both ends (`compute/portal/ondemand/vscode-server.rst`):
