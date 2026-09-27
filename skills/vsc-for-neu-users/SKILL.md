@@ -99,6 +99,12 @@ Setup, once, in the `$VSC_DATA/tools` venv: `globus login --no-local-server`, th
   Nextflow's CLI takes it as a new flag and sets the value to `true` → "Invalid directive … true".
 - 1024² movies: `-c mem.config` with SUITE2P memory 96 GB (the default 32 GB is too small for detection).
 - A100 check: driver 595.71, the container's torch 2.14+cu130 sees CUDA.
+- **Data on manGO → `stream.nf`** (preflight, Globus in/out waiting for SUCCEEDED, raw deleted only after upload).
+  Nextflow pitfalls seen: `session` is a reserved name (tasks became `nextflow.Session@…`); SLURM variables are not
+  set inside the container (`$SLURM_JOB_ID: unbound variable`); `errorStrategy 'ignore'` + `cleanup` deletes failed
+  tasks' logs; the vsc profile's 8-CPU default must not apply to steps run in the head job (label `transfer`).
+- PENDING "ReqNodeNotAvail, Reserved for maintenance" = walltime overlaps maintenance: request less, `-resume` later.
+- macOS `._*.tif` AppleDouble files (magic 00051607) sit next to movies on manGO: skip dotfiles.
 - Full recipe: neuvsc guide, step 8.
 
 ## Keeping this knowledge up to date
