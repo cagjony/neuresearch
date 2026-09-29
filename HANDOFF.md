@@ -188,6 +188,31 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
+### CURRENT STATE (2026-09-29, evening) — `neu2p-pipeline`: BDS 2p analysis (neurons done, astrocytes + red neurons in test)
+
+Full state, numbers and paths: **`neubrain/projects/neu2p-pipeline/STATE.md`** (read its last dated entries). In short:
+- **Neuronal GCaMP6f, 32 sessions: done.** suite2p 1.1.0 (sourcery, 12 µm) on VSC via `neu2p/stream.nf`; results on manGO
+  `2p_processed/<session>/neu2p-1.1.0_882f450/` + raid `external/destrooper/neu2p/260827_bds/`. Face camera (facemap) aligned via
+  stimpy riglogs for 25/31. Result: Csf1r-FIRE mice 3–5x more active at rest (mouse-level p = 0.029), not more movement; no NLGF
+  effect. Report v2 + email sent to Asli (reports under `…/cagatay/external/destrooper/neu2p/260827_bds/reports/`).
+- **Pipeline:** `stream.nf` v2 (GATE back-pressure, Globus copies as 1-core SLURM jobs, 2-core head) + `scripts/pull_to_raid.sh`.
+  VSC access: Smallstep cert + firewall (neuvsc guide); euserver00 is a Globus collection (Connect Personal).
+- **Astrocytes (two-colour sessions, green channel):** AQuA2 compiled (local MATLAB R2025b + Compiler) into the image
+  `aqua2_r2025b_6e9a965_94e1461.sif` (Runtime licence accepted by the lab); `scripts/aqua2_session.sh` = bin to ~0.33 s / ~1 µm,
+  mask poorly registered frames, AQuA2, events by state. Tested on 4 sessions (VSC = local result). AQuA2 finds ~0 events at
+  rest (even at threshold 2); events cluster around movement, partly focus artefacts (field brighter after movement).
+  QC movies: `neu2p/aqua2/qc_movie.m`. Literature digest `projects/neu2p-pipeline/compare_astrocyte_activity.md`.
+- **Red neurons (jRGECO1a, lysosomal puncta):** no working detection yet; sourcery on the registered red movie under test.
+
+### NEXT ACTION (neu2p-pipeline)
+
+1. Read the red-channel sourcery test (VSC `$VSC_SCRATCH/redtest/260612_MG4646…/out`, job 62191885) and the AQuA2 sweep QC
+   movies (`/home/mouselab/containers/aqua2_sweep/…/qc_events_*.mp4`).
+2. Parameter sweeps on VSC grounded in published settings (user's request 2026-09-29): AQuA2 (threshold, min duration/size in s
+   and µm, baseline handling) and red-neuron detection (diameter, threshold, puncta masking). Choose with the user/Asli.
+3. Then the remaining 25 two-colour sessions: registration (stream v2) → AQuA2 → face camera. Several manGO folders
+   (bodycam 01/06, presentation 02/06 + 12/06) are unreadable: use Asli's bkrunch copy (read-only) for stimpy logs.
+
 ### CURRENT STATE (2026-09-29) — new project `neumea-pipeline`: HD-MEA sorting → electrode map; sorter benchmark running
 
 New vault project `neubrain/projects/neumea-pipeline/` for the code repo `neumea` (CMOS-MEA scan → sort →
