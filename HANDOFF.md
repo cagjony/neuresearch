@@ -188,6 +188,25 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
+### CURRENT STATE (2026-09-29) — new project `neumea-pipeline`: HD-MEA sorting → electrode map; sorter benchmark running
+
+New vault project `neubrain/projects/neumea-pipeline/` for the code repo `neumea` (CMOS-MEA scan → sort →
+bombcell-good units → whole-footprint electrode map pushed to MaxWell). **Full state, paths and numbers live in
+its `STATE.md`**; the aim (Cagatay's words) is in its AIM section. In short:
+- Library: 43 papers (HD-MEA history, sorters, drift, quality metrics, SHYBRID), notes, 16 curated concepts,
+  `draft/references.bib`. MaxLab API docs + MaxLab Live manual in its `archive/` (docs gitignored).
+- neumea branch `bench`: hybrid / stack / repro / run benchmark; containers on euserver00.
+- Running on euserver00: reproduction of the XT026 KS4 sort in the container, then 1,024-ch stacks of three
+  NP2 probes (5/10/15/30 min) with a KS4 smoke test.
+- Blocked: MEA raw data (manGO PAVER, Globus cziboc) — CNL IT emailed.
+- Also this session: colleague repo `process-maxwell` cloned (bugs reported, not edited); `neuvsc/reading.md`
+  gained the VIB CNL IT ex-NERF user docs (gitlab vibit/sysneu/doc/users, cloned to `code/vib-sysneu-users`).
+
+### NEXT ACTION (neumea-pipeline)
+
+Read the reproduction result first (`~euclient/repro.log` on euserver00); only if it matches the original sort,
+run the full sorter list on the stacks. Order and criteria: `neumea-pipeline/STATE.md` → NEXT ACTION.
+
 ### CURRENT STATE (2026-09-22) — peer review EAAI-26-18624 SUBMITTED; new skill `reviewing-manuscripts`
 
 Cagatay refereed **EAAI-26-18624** (Engineering Applications of AI; *MV-Mamba … lithium-ion
@@ -271,6 +290,9 @@ the 30 °C plausibility floor discarded every reading below 30.
    `build_bib.py --out …/draft/references.bib`).
 
 ### SESSION LOG
+- 2026-09-29 — neumea-pipeline: project created; 43-paper library + concepts + bib; neumea `bench` branch
+  (hybrid/stack/repro), neumea + bench containers on euserver00 (neo pinned); raw XT026/027/029 on the raid;
+  XT026 reproduction running. neuvsc reading list + VIB sysneu docs; process-maxwell reviewed. (agent: Claude)
 - 2026-09-23 — aon-pir-rev: manuscript edits now generated from `edits/*.md` via apply_answers in blue
   (no tracked changes; superseded text struck, not deleted) — v13 Methods, v13_results Results+Table 1,
   v14 Figure 3. apply_answers gained strike / revise / insert_after / heading_after / strike_block, and
