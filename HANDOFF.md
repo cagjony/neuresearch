@@ -219,24 +219,26 @@ Full state, numbers and paths: **`neubrain/projects/neu2p-pipeline/STATE.md`** (
 4. Upload analysis results (aqua2_*, red-neurons_*, facemap) to manGO; push neu2p; clean `$VSC_SCRATCH/redtest` (40 GB, ask).
 5. Two-colour report + email for Asli (like the neuronal v2 report).
 
-### CURRENT STATE (2026-09-29) — new project `neumea-pipeline`: HD-MEA sorting → electrode map; sorter benchmark running
+### CURRENT STATE (2026-09-30) — neumea-pipeline: sorter benchmark at 1,024 channels; hybrid ground-truth test running on VSC
 
-New vault project `neubrain/projects/neumea-pipeline/` for the code repo `neumea` (CMOS-MEA scan → sort →
-bombcell-good units → whole-footprint electrode map pushed to MaxWell). **Full state, paths and numbers live in
-its `STATE.md`**; the aim (Cagatay's words) is in its AIM section. In short:
-- Library: 43 papers (HD-MEA history, sorters, drift, quality metrics, SHYBRID), notes, 16 curated concepts,
-  `draft/references.bib`. MaxLab API docs + MaxLab Live manual in its `archive/` (docs gitignored).
-- neumea branch `bench`: hybrid / stack / repro / run benchmark; containers on euserver00.
-- Running on euserver00: reproduction of the XT026 KS4 sort in the container, then 1,024-ch stacks of three
-  NP2 probes (5/10/15/30 min) with a KS4 smoke test.
-- Blocked: MEA raw data (manGO PAVER, Globus cziboc) — CNL IT emailed.
-- Also this session: colleague repo `process-maxwell` cloned (bugs reported, not edited); `neuvsc/reading.md`
-  gained the VIB CNL IT ex-NERF user docs (gitlab vibit/sysneu/doc/users, cloned to `code/vib-sysneu-users`).
+Project `neubrain/projects/neumea-pipeline/` for the code repo `neumea` (branch `bench`, e49a535). **Full state,
+numbers and paths: its `STATE.md`.** In short:
+- Containers: own pinned apptainer images (`neumea_002b075.sif`, `bench_002b075.sif`); decided rule — new image per
+  SpikeInterface/sorter update, hub sorter images only as a base (memory note + STATE).
+- Reproduction + control on euserver00: container KS4 re-finds 58/66 KS-good units of the original XT026 sort;
+  KS4 on identical input is reproducible (246/252). Labelling now seeded; bombcell thresholds = process-maxwell's.
+- 1,024-ch stacks of three NP2 probes on VSC A100: KS4 3.9× real time (2.1× without drift), linear in length;
+  TDC2 0.78× with the most GOOD units, but 28/44 unmatched by KS4 → hybrid test (67 injected neurons) running.
+- neumea reader now opens every well × recording of a MaxWell file (MaxTwo scans failed before); one map per well;
+  tested on neo's MaxOne/MaxTwo files. Channel QC step added (no saving on NP data; needs MEA data).
+- Blocked: our MEA raw data (manGO PAVER, Globus cziboc) — CNL IT asked. Open MaxWell data: RT-Sort organoids on
+  Dryad (browser download needed).
 
 ### NEXT ACTION (neumea-pipeline)
 
-Read the reproduction result first (`~euclient/repro.log` on euserver00); only if it matches the original sort,
-run the full sorter list on the stacks. Order and criteria: `neumea-pipeline/STATE.md` → NEXT ACTION.
+Read the hybrid results on VSC (`$VSC_SCRATCH/neumea_bench/hyb1024_5min/results/`) and split them by template origin;
+then pick the overnight-scan sorter. Order and criteria: `neumea-pipeline/STATE.md` → NEXT ACTION. VSC certificate
+expires 2026-10-01 14:01 (renewal steps in STATE).
 
 ### CURRENT STATE (2026-09-22) — peer review EAAI-26-18624 SUBMITTED; new skill `reviewing-manuscripts`
 
@@ -321,6 +323,9 @@ the 30 °C plausibility floor discarded every reading below 30.
    `build_bib.py --out …/draft/references.bib`).
 
 ### SESSION LOG
+- 2026-09-30 — neumea-pipeline: repro/control, process-maxwell thresholds, seeded labels, VSC 1,024-ch KS4 +
+  5 other sorters, agreement check, reader per well/rec + per-well maps, channel QC, hybrid inject (own template
+  moves) running on VSC; open MaxWell datasets found (GIN test files, Dryad organoids). (agent: Claude)
 - 2026-09-29 — neumea-pipeline: project created; 43-paper library + concepts + bib; neumea `bench` branch
   (hybrid/stack/repro), neumea + bench containers on euserver00 (neo pinned); raw XT026/027/029 on the raid;
   XT026 reproduction running. neuvsc reading list + VIB sysneu docs; process-maxwell reviewed. (agent: Claude)
