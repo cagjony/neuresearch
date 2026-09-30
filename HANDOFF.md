@@ -188,30 +188,36 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
-### CURRENT STATE (2026-09-29, evening) — `neu2p-pipeline`: BDS 2p analysis (neurons done, astrocytes + red neurons in test)
+### CURRENT STATE (2026-09-30, night) — `neu2p-pipeline`: BDS two-colour production run in progress
 
-Full state, numbers and paths: **`neubrain/projects/neu2p-pipeline/STATE.md`** (read its last dated entries). In short:
-- **Neuronal GCaMP6f, 32 sessions: done.** suite2p 1.1.0 (sourcery, 12 µm) on VSC via `neu2p/stream.nf`; results on manGO
-  `2p_processed/<session>/neu2p-1.1.0_882f450/` + raid `external/destrooper/neu2p/260827_bds/`. Face camera (facemap) aligned via
-  stimpy riglogs for 25/31. Result: Csf1r-FIRE mice 3–5x more active at rest (mouse-level p = 0.029), not more movement; no NLGF
-  effect. Report v2 + email sent to Asli (reports under `…/cagatay/external/destrooper/neu2p/260827_bds/reports/`).
-- **Pipeline:** `stream.nf` v2 (GATE back-pressure, Globus copies as 1-core SLURM jobs, 2-core head) + `scripts/pull_to_raid.sh`.
-  VSC access: Smallstep cert + firewall (neuvsc guide); euserver00 is a Globus collection (Connect Personal).
-- **Astrocytes (two-colour sessions, green channel):** AQuA2 compiled (local MATLAB R2025b + Compiler) into the image
-  `aqua2_r2025b_6e9a965_94e1461.sif` (Runtime licence accepted by the lab); `scripts/aqua2_session.sh` = bin to ~0.33 s / ~1 µm,
-  mask poorly registered frames, AQuA2, events by state. Tested on 4 sessions (VSC = local result). AQuA2 finds ~0 events at
-  rest (even at threshold 2); events cluster around movement, partly focus artefacts (field brighter after movement).
-  QC movies: `neu2p/aqua2/qc_movie.m`. Literature digest `projects/neu2p-pipeline/compare_astrocyte_activity.md`.
-- **Red neurons (jRGECO1a, lysosomal puncta):** no working detection yet; sourcery on the registered red movie under test.
+Full state, numbers and paths: **`neubrain/projects/neu2p-pipeline/STATE.md`** (last dated entries). In short:
+- **Neuronal GCaMP6f, 32 sessions: done** (report v2 sent to Asli; FIRE mice 3–5x more active at rest).
+- **Settings chosen by the user (2026-09-30):** AQuA2 thr 3, smoXY 2, no drift removal, min 1 s / 10 µm², binned ~0.33 s /
+  ~1 µm (`neu2p/aqua2/parameters_bds_astro_thr3_smo2.csv`); red neurons (jRGECO1a) sourcery thr 3, 12 µm, tau 0.563, ALL ROIs
+  (suite2p's built-in classifier rejects most red neurons; don't use iscell). Basis: VSC sweeps, recorded in STATE.
+- **Two-colour run, 23 sessions:** stream.nf registration → manGO `2p_processed/<s>/neu2p-1.1.0_882f450_registration/`; per
+  session `neu2p/scripts/twocol_post.sh` (AQuA2 + red neurons, VSC GPU job) submitted by `scripts/pull_to_raid.sh` (POST hook),
+  which pulls a session to raid `…/260827_bds/<s>/neu2p-1.1.0_882f450_registration/` only after `post.done`.
+  **15 done.** The first head (62195332) stalled on the scratch quota (6 staged two-colour sessions ≈ 450 GB) → 8 left
+  (mg4753 fov1_d70/fov2_d90/fov3_d90, mg4754 x5) rerun as **head 62202934 with --max_staged 3**; pull detached on
+  mcnanalysis01 (log raid `…/260827_bds/pull_twocol_rest8.log`). SUITE2P jobs queue behind neumea jobs on the same GPU account.
+- **Face camera, 22 two-colour sessions:** `scripts/bodycam_batches.sh` (batches of 4, SKIP_STIMPY=1) detached, log raid
+  `…/260827_bds/bodycam_twocol.log`, list `…/analysis/face_twocol_sessions.tsv`. Stimpy logs copied from Asli's bkrunch copy
+  (read-only; presentation `mg474` = 2p `mg4754`) into `<s>/stimpy/`. Not in the list: MG4646 fov2 (empty video), no_cam sessions.
+- Not processed (decide with the user): red-only sessions (3), green-only astrocyte sessions (~12, AQuA2 would apply),
+  mg4801 fov4 run01 (5.8 GB second run).
+- Unpushed: neu2p c9e6ec1, 96da076 (I push neu2p); neubrain/neuresearch commits (user pushes).
 
 ### NEXT ACTION (neu2p-pipeline)
 
-1. Read the red-channel sourcery test (VSC `$VSC_SCRATCH/redtest/260612_MG4646…/out`, job 62191885) and the AQuA2 sweep QC
-   movies (`/home/mouselab/containers/aqua2_sweep/…/qc_events_*.mp4`).
-2. Parameter sweeps on VSC grounded in published settings (user's request 2026-09-29): AQuA2 (threshold, min duration/size in s
-   and µm, baseline handling) and red-neuron detection (diameter, threshold, puncta masking). Choose with the user/Asli.
-3. Then the remaining 25 two-colour sessions: registration (stream v2) → AQuA2 → face camera. Several manGO folders
-   (bodycam 01/06, presentation 02/06 + 12/06) are unreadable: use Asli's bkrunch copy (read-only) for stimpy logs.
+1. Check both runs finished: `tail` the two logs above; `ssh vsc 'sacct -M wice -X -S 2026-09-30 | grep -v COMPLETED'`. A
+   session left on scratch without `post.done` = its twocol_post job failed (logs `$VSC_SCRATCH/neu2p_logs/twocol_post/`).
+   If ssh/cert expired, re-login (neuvsc guide) and restart pull_to_raid.sh with the same POST (command in STATE / this log).
+2. Face → 2p alignment for the 22 sessions (`scripts/face_to_2p.py`), then events-by-state for astrocytes and red neurons
+   (`aqua2_events_state.py` already per session; red: `state_activity.py`).
+3. Look at MG4645 fov4 red (only 22 ROIs vs 131 in fov1).
+4. Upload analysis results (aqua2_*, red-neurons_*, facemap) to manGO; push neu2p; clean `$VSC_SCRATCH/redtest` (40 GB, ask).
+5. Two-colour report + email for Asli (like the neuronal v2 report).
 
 ### CURRENT STATE (2026-09-29) — new project `neumea-pipeline`: HD-MEA sorting → electrode map; sorter benchmark running
 
