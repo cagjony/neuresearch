@@ -2,6 +2,7 @@
 """Check every `"quote" [citekey]` pair in a Markdown digest against _library/<citekey>.xml (itertext, whitespace collapsed).
     python src/quote_check.py <digest.md> [extra text]    (run from the vault root; extra text: e.g. a planted fake to test)
 """
+import re, sys, xml.etree.ElementTree as ET
 md = open(sys.argv[1]).read() + (sys.argv[2] if len(sys.argv) > 2 else "")
 norm = lambda s: re.sub(r"\s+", " ", s).strip()
 src = {}
