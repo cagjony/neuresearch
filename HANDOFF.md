@@ -231,12 +231,14 @@ numbers and paths: its `STATE.md`.** In short:
   TDC2 0.78× with the most GOOD units, but 28/44 unmatched by KS4 → hybrid test (67 injected neurons) running.
 - neumea reader now opens every well × recording of a MaxWell file (MaxTwo scans failed before); one map per well;
   tested on neo's MaxOne/MaxTwo files. Channel QC step added (no saving on NP data; needs MEA data).
-- Blocked: our MEA raw data (manGO PAVER, Globus cziboc) — CNL IT asked. Open MaxWell data: RT-Sort organoids on
-  Dryad (browser download needed).
+- MaxTwo reading verified end to end on neo's test files (all wells × scan blocks; electrode ids = SI positions).
+- Open MaxWell data: RT-Sort organoid recording + their Kilosort2 sorts fetched via a Dryad API account; neumea end-to-end
+  job on it queued on VSC (62203030). Our own MEA raw data still blocked (manGO PAVER, Globus cziboc) — CNL IT asked.
 
 ### NEXT ACTION (neumea-pipeline)
 
-Read the hybrid results on VSC (`$VSC_SCRATCH/neumea_bench/hyb1024_5min/results/`) and split them by template origin;
+Read the organoid end-to-end job and the hybrid results on VSC (`$VSC_SCRATCH/neumea_bench/{organoid_L1_7mo/neumea,
+hyb1024_5min/results}/`); split the hybrid by template origin;
 then pick the overnight-scan sorter. Order and criteria: `neumea-pipeline/STATE.md` → NEXT ACTION. VSC certificate
 expires 2026-10-01 14:01 (renewal steps in STATE).
 
@@ -323,6 +325,7 @@ the 30 °C plausibility floor discarded every reading below 30.
    `build_bib.py --out …/draft/references.bib`).
 
 ### SESSION LOG
+- 2026-10-01 — neumea-pipeline: Dryad organoid via API, MaxTwo read check passed, organoid e2e job queued. (agent: Claude)
 - 2026-09-30 — neumea-pipeline: repro/control, process-maxwell thresholds, seeded labels, VSC 1,024-ch KS4 +
   5 other sorters, agreement check, reader per well/rec + per-well maps, channel QC, hybrid inject (own template
   moves) running on VSC; open MaxWell datasets found (GIN test files, Dryad organoids). (agent: Claude)
