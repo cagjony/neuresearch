@@ -188,6 +188,40 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
+### CURRENT STATE (2026-10-01, night) — `alz-olf`: target is ANATOMY (invited); short version built
+
+- **Journal decided: Anatomy** (TSACA, dergipark.org.tr/en/pub/anatomy). Invited by Prof. Gülgün
+  Şengül through Emel Sokullu. Supersedes TJMS / Turkish J Geriatrics / Archives of Neuropsychiatry.
+  Limits: ≤15 pp A4 double-spaced (title page excluded), abstract 100–250, keywords alphabetical
+  with semicolons, NLM with ALL authors in [n], no reference cap, no APC.
+- **Full version frozen:** git tag `alz-olf-full-2026-10-01` in neubrain; `manuscript.md` untouched.
+  Its corpus numbers are now stale (see next point).
+- **Corpus fixed:** `tools/construct_coding.tsv` = the 91 cited studies. Dropped chen2024,
+  scopa2020, wheeler2021, yu2024 (no longer cited); coded abraham2010 and nunes2015 from full text
+  (rodent, discrimination, neural=none). New headline: 45/91 scored a construct; **26 of 28 human
+  score identification; 0 of 17 rodent**. Panel B is still held.
+- **Short version:** `projects/alz-olf/anatomy/manuscript.md`. 2,993 body words, abstract 236,
+  58 keys cited; every changed sentence is `[...]{.blue}`. The anatomy is now up front (§2). New
+  Figure 5 is a schematic staircase plus psychometric curve (`tools/curve_figure.py`, simulated
+  observers). Reader feedback added: "at which stage" instead of "where" (Hande); OERP
+  absence ≠ loss [lotsch2006 abstract; huart2012 full text]; retest r 0.43–0.92 [hummel1997,
+  albrecht2008, haehner2009; abstracts]. Hande's "OERP present in anosmics" is NOT supported
+  (cohorts show none) and was left out. Practice effects on the threshold test are NOT supported
+  (Albrecht found no mean change) and were left out.
+- **Build:** `python3 anatomy/build.py` → `anatomy/out/manuscript.docx` + `title_page.docx`.
+  Blue survives into Word. `anatomy/references.bib` = the project bib + 5 new Crossref entries +
+  NLM MedlineTA abbreviations (looked up in the NLM Catalog by ISSN). The 5 new papers are NOT
+  ingested into the vault yet. 28 pp in all: text plus figures ≈ 15, references 13 (96, via nocite).
+
+NEXT ACTION (alz-olf / Anatomy)
+1. Ask Emel/Prof. Şengül whether references and figures count toward the 15 pages.
+2. Fill the TO FILL fields in `anatomy/title_page.md`: one corresponding author, titles, address,
+   funding, conflict of interest.
+3. Co-author read of the blue text. Then claim-check the 58 cited keys (the 51-instance audit now
+   applies to the short version).
+4. Page numbers in Word; COI form; copyright form signed by all six authors; cover letter.
+5. Ingest the 5 new refs (ingest.py); supplementary Table S1 from construct_coding.tsv.
+
 ### CURRENT STATE (2026-10-01, evening) — `astro_atp`: manuscript revised, ρ̄ vs ATP added; ready for author read
 Manuscript `neubrain/projects/astro_atp/analysis/manuscript_v2/manuscript.tex` (25 pp, 30 refs, 0 undefined).
 Reading copy `projects/astro_atp/archive/docs/astro_atp_manuscript_v4.docx` (Word loop: `archive/docs/README.md`).
