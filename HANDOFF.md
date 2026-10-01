@@ -234,8 +234,8 @@ Project `neubrain/projects/neumea-pipeline/` for code repo `neumea` (branch `ben
 
 ### NEXT ACTION (neumea-pipeline)
 
-Read the organoid end-to-end job 62204616 on VSC (`$VSC_SCRATCH/neumea_bench/organoid_L1_7mo/neumea/`), compare with
-their 61 Kilosort2 units, then sort only the QC-kept channels. Order and criteria: `neumea-pipeline/STATE.md` →
+Organoid end to end works (13 GOOD → map of 400 electrodes); rejected high-SNR units are mostly merged neurons on the
+sparse layout. Next: read the organoid TDC2 vs KS4 comparison (jobs 62205106/7, script `$VSC_DATA/neumea_bench/org_sorters.py`). Order and criteria: `neumea-pipeline/STATE.md` →
 NEXT ACTION. VSC certificate expires 2026-10-01 14:01; the firewall closes unpredictably (renewal steps in STATE).
 
 ### CURRENT STATE (2026-09-22) — peer review EAAI-26-18624 SUBMITTED; new skill `reviewing-manuscripts`
@@ -321,6 +321,8 @@ the 30 °C plausibility floor discarded every reading below 30.
    `build_bib.py --out …/draft/references.bib`).
 
 ### SESSION LOG
+- 2026-10-01 — neumea-pipeline: organoid end to end (13 GOOD, 400-electrode map); ISI check shows merged neurons
+  limit yield on the sparse layout; TDC2 vs KS4 on the organoid queued. (agent: Claude)
 - 2026-10-01 — neumea-pipeline: hybrid result, bombcell SNR finding, 3 MaxWell reader/CLI bugs fixed on the organoid
   recording, organoid end-to-end resubmitted on VSC. (agent: Claude)
 - 2026-10-01 — neumea-pipeline: Dryad organoid via API, MaxTwo read check passed, organoid e2e job queued. (agent: Claude)
