@@ -219,28 +219,24 @@ Full state, numbers and paths: **`neubrain/projects/neu2p-pipeline/STATE.md`** (
 4. Upload analysis results (aqua2_*, red-neurons_*, facemap) to manGO; push neu2p; clean `$VSC_SCRATCH/redtest` (40 GB, ask).
 5. Two-colour report + email for Asli (like the neuronal v2 report).
 
-### CURRENT STATE (2026-09-30) — neumea-pipeline: sorter benchmark at 1,024 channels; hybrid ground-truth test running on VSC
+### CURRENT STATE (2026-10-01) — neumea-pipeline: hybrid test done (TDC2 = KS4 for map building, 5× faster); organoid end-to-end run on VSC
 
-Project `neubrain/projects/neumea-pipeline/` for the code repo `neumea` (branch `bench`, e49a535). **Full state,
-numbers and paths: its `STATE.md`.** In short:
-- Containers: own pinned apptainer images (`neumea_002b075.sif`, `bench_002b075.sif`); decided rule — new image per
-  SpikeInterface/sorter update, hub sorter images only as a base (memory note + STATE).
-- Reproduction + control on euserver00: container KS4 re-finds 58/66 KS-good units of the original XT026 sort;
-  KS4 on identical input is reproducible (246/252). Labelling now seeded; bombcell thresholds = process-maxwell's.
-- 1,024-ch stacks of three NP2 probes on VSC A100: KS4 3.9× real time (2.1× without drift), linear in length;
-  TDC2 0.78× with the most GOOD units, but 28/44 unmatched by KS4 → hybrid test (67 injected neurons) running.
-- neumea reader now opens every well × recording of a MaxWell file (MaxTwo scans failed before); one map per well;
-  tested on neo's MaxOne/MaxTwo files. Channel QC step added (no saving on NP data; needs MEA data).
-- MaxTwo reading verified end to end on neo's test files (all wells × scan blocks; electrode ids = SI positions).
-- Open MaxWell data: RT-Sort organoid recording + their Kilosort2 sorts fetched via a Dryad API account; neumea end-to-end
-  job on it queued on VSC (62203030). Our own MEA raw data still blocked (manGO PAVER, Globus cziboc) — CNL IT asked.
+Project `neubrain/projects/neumea-pipeline/` for code repo `neumea` (branch `bench`, a6cb52f). **Full state: its
+`STATE.md`** (newest results at the bottom of CURRENT STATE). In short:
+- Hybrid ground truth (67 injected neurons, 1,024 ch × 5 min, VSC A100): found-as-GOOD TDC2 33 in 3.1 min (0.61× real
+  time) vs KS4-no-drift 33 in 10.7 min; position error 10–11 um for all sorters; no home advantage.
+- bombcell's SNR > 5 (also SI's default) rejects a third of cleanly sorted injected neurons (median SNR 4.7, acc 0.96) —
+  the yield limit; to discuss with the PaVer team.
+- Real MaxWell data (RT-Sort organoid via Dryad API) exposed 3 bugs, all fixed with tests: uint16 samples, legacy
+  MaxOne 1,028-vs-1,020 rows, plugin notice in `chunks` stdout. Channel QC on the organoid keeps 49 % of electrodes.
+- MaxTwo reading verified on neo's test files (all wells × scan blocks; electrode ids = SI positions).
+- Containers pinned; rule: new image per SpikeInterface/sorter update. Our own MEA data still blocked (CNL IT).
 
 ### NEXT ACTION (neumea-pipeline)
 
-Read the organoid end-to-end job and the hybrid results on VSC (`$VSC_SCRATCH/neumea_bench/{organoid_L1_7mo/neumea,
-hyb1024_5min/results}/`); split the hybrid by template origin;
-then pick the overnight-scan sorter. Order and criteria: `neumea-pipeline/STATE.md` → NEXT ACTION. VSC certificate
-expires 2026-10-01 14:01 (renewal steps in STATE).
+Read the organoid end-to-end job 62204616 on VSC (`$VSC_SCRATCH/neumea_bench/organoid_L1_7mo/neumea/`), compare with
+their 61 Kilosort2 units, then sort only the QC-kept channels. Order and criteria: `neumea-pipeline/STATE.md` →
+NEXT ACTION. VSC certificate expires 2026-10-01 14:01; the firewall closes unpredictably (renewal steps in STATE).
 
 ### CURRENT STATE (2026-09-22) — peer review EAAI-26-18624 SUBMITTED; new skill `reviewing-manuscripts`
 
@@ -325,6 +321,8 @@ the 30 °C plausibility floor discarded every reading below 30.
    `build_bib.py --out …/draft/references.bib`).
 
 ### SESSION LOG
+- 2026-10-01 — neumea-pipeline: hybrid result, bombcell SNR finding, 3 MaxWell reader/CLI bugs fixed on the organoid
+  recording, organoid end-to-end resubmitted on VSC. (agent: Claude)
 - 2026-10-01 — neumea-pipeline: Dryad organoid via API, MaxTwo read check passed, organoid e2e job queued. (agent: Claude)
 - 2026-09-30 — neumea-pipeline: repro/control, process-maxwell thresholds, seeded labels, VSC 1,024-ch KS4 +
   5 other sorters, agreement check, reader per well/rec + per-well maps, channel QC, hybrid inject (own template
