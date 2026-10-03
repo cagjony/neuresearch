@@ -102,16 +102,21 @@ def parse_answers(text: str) -> list[dict]:
             continue
         if cur is None:
             continue
-        m = re.match(r'^(type|find|text|resolve|widths)\s*:\s*(.*)$', raw)
+        m = re.match(r'^(type|find|text|resolve|widths)\s*:(.*)$', raw)
         if m:
             key = m.group(1)
-            cur[key] = m.group(2)
+            val = m.group(2)
+            # exactly ONE space after the colon is the separator; a second one is content, so an
+            # inserted sentence can keep the space that separates it from the sentence it follows
+            cur[key] = val[1:] if val.startswith(' ') else val
         elif key in ('text', 'find'):
             cur[key] += ('\n' + raw) if cur[key] else raw
     if cur:
         blocks.append(cur)
     for b in blocks:
-        b['text'] = b['text'].strip()
+        # rstrip only: a LEADING space in `text` is deliberate — an inserted sentence has to
+        # keep the space that separates it from the one it follows, or the two run together.
+        b['text'] = b['text'].strip('\n').rstrip()
         b['find'] = b['find'].strip()
         b.setdefault('at', '')
         b.setdefault('widths', '')

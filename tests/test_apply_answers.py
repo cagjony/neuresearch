@@ -35,3 +35,13 @@ def test_strike_and_heading(tmp_path: Path) -> None:
     assert doc.index('Old criterion') < doc.index('[added]') < doc.index('one.')
     body = doc[doc.rindex('<w:p>'):]                                       # the struck paragraph
     assert '<w:strike/>' in body and body.count('w:color') == 1
+
+
+def test_insert_after_keeps_leading_space(tmp_path: Path) -> None:
+    src, out, ans = tmp_path / 'in.docx', tmp_path / 'out.docx', tmp_path / 'a.md'
+    make_docx(src)
+    ans.write_text('## at=Keep this.\ntype: insert_after\nfind: Keep this.\ntext:  Next sentence.\n')
+    subprocess.run([sys.executable, str(SRC), '--docx', str(src), '--answers', str(ans),
+                    '--out', str(out)], check=True)
+    doc = zipfile.ZipFile(out).read('word/document.xml').decode()
+    assert ' Next sentence.' in doc and 'Keep this.</w:t>' in doc   # not glued to the previous one
