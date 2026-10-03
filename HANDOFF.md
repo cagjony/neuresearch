@@ -188,6 +188,46 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
+### CURRENT STATE (2026-10-03) — `intellicage`: phenotype re-cut to S1–S4, learning figures, door timing measured
+
+Prep for presenting to the Verstreken postdoc (Marieke). Previous IntelliCage session (decks,
+activity report, corner faults) was `a46491b7-…` — resume from `code/`, not `neu-intellicage/`.
+All new outputs live OUTSIDE git in `external/verstreken/intellicage/analysis/` (each folder has a
+README; every plot has its CSV). Nothing committed. Code used = `neu-intellicage` commit `8541ef9`
+via worktree `neu-intellicage/.claude/worktrees/learning-figures` (branch `learning-figures`, no
+changes) — the learning script imports from it, so keep it. User's checkout of `neu-intellicage`
+(`activity-phenotype`) has UNCOMMITTED edits to `activity.py`/`groups.py` (hourly_profile) — theirs,
+untouched.
+
+- **Decision (user): behavioural phenotype = S1–S4 pooled; learning = S3 place, S4 reversal, S5
+  patrolling.** The 22 Sep decks' phenotype pooled S1–S5 incl. patrolling fault days.
+  `261003_phenotype_S1-S4/` (activity-report on 10 complete ZT days): 4/41 measures at the p=0.029
+  floor, none survive BH (q=0.29) — Tau KD more active hours (19.8 vs 18.4), more light-phase hours
+  (8.1 vs 6.8), LESS bursty (0.40 vs 0.46; holds in S1, S3, S4 separately), longer visits (17.3 vs
+  14.1 s). **"Fewer night visits" does NOT hold pre-patrolling** (235 vs 282/day, p=0.17; hourly
+  cluster only ZT13, p=0.086) — the deck's night claim and ZT13–16 cluster came from S5 pooling.
+- **Learning (`261003_learning/`, fig1–3 + `group_tests.csv`): no Tau KD vs Scramble difference
+  anywhere, all p ≥ 0.20.** Place 15–17 Aug 0.53 vs 0.47; reversal first 100 visits 0.42 vs 0.47,
+  last block 0.53 vs 0.51, old-corner return 0.24 vs 0.23; patrolling (fault days excluded) 0.46 vs
+  0.42. S4 export is now complete (7,801 visits, 19 Aug 16:14 – 25 Aug). fig4 = S1–S4 hourly profile.
+- **Door timing measured from `Output.txt` SetDoor commands (`261003_door_timing/`).** No session
+  had a hold or delay: door-open command 0 ms after poke onset; 7–10 ms pokes opened it. S1 all
+  doors open (free water). S2 any poke, 7 s from LAST poke start (re-triggerable). S3–S5 only the
+  first correct poke, fixed 7.0 s, no reopening; median 6.6–6.9 s licking per rewarded visit. User
+  sees this as a protocol flaw (no waiting taught; big reward may lower burstiness) — same for both
+  groups, licks/visit not different (g≈0.1). The "7 s" in old reports came from the July archive.
+- **Conditioned visits = visits in S3–S5** because every corner is +1/−1 (no neutral 0); "conditioned"
+  only drops neutral visits (S1–S2). Wrong visits are kept.
+- **Faults (red markers) are S5-only**: corner 2 on 29–30 Aug, corner 3 dry from 3 Sep (43→88%).
+  S3/S4 delivery clean (poked-but-dry 7.7–9.1%, all corners).
+
+NEXT ACTION (intellicage)
+1. Update the Marieke deck: replace the night-visit headline with the S1–S4 result (burstiness,
+   light-phase activity, visit duration) and add fig1–3; state the door rule plainly.
+2. Next cohort protocol: add a nose-poke hold/delay and shorter door window; pre-specify burstiness.
+3. Decide whether to commit `learning_figures.py`/`door_timing.py` into `neu-intellicage/scripts`.
+4. Unresolved: the S2 openings that stayed open to visit end (30 s – 9 min, no licks).
+
 ### CURRENT STATE (2026-10-01, night) — `alz-olf`: target is ANATOMY (invited); short version built
 
 - **Journal decided: Anatomy** (TSACA, dergipark.org.tr/en/pub/anatomy). Invited by Prof. Gülgün
