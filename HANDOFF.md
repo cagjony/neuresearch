@@ -188,6 +188,33 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
+### CURRENT STATE (2026-10-04) — `astro_atp`: manuscript complete pending author read (v5 docx out)
+Manuscript `neubrain/projects/astro_atp/analysis/manuscript_v2/manuscript.tex` (25 pp, 32 refs, 0 undefined).
+Reading copy `projects/astro_atp/archive/docs/astro_atp_manuscript_v5.docx` (Word loop: `archive/docs/README.md`).
+Cover letter `analysis/manuscript_v2/cover_letter_nonlinear_science.tex` (1 p; frozen 2026-08-14 snapshot untouched).
+All pushed: neubrain `bdb133e` (main), bayat-et-al `dfa3686` (`astro-atp/i0-0.42-audit`, remote SSH).
+- Real-data anchors: wang2017 (direction only), cahill2024 ("same protocol, route not identified": Cx43/CBX
+  also hit hemichannel ATP release, fujii2017 Fig 4e). Discussion names the open test (ρ̄ vs graded dose).
+- ρ̄ vs ATP (exact, `bayat-et-al/phase3_rhobar.py`, reproduces stored sweeps to 0.0): ρ̄ 0.056→~0 by A≈0.9,
+  smooth, while activity rises 6.6%→22%. Coupling-only control (only D_eff follows A; others at A_ref 0.10 / 0.90)
+  gives the same fall, with activity flat 20–22% at A_ref 0.90 → "ATP decorrelates the network by uncoupling it".
+  Fig 2 panel F (`fig_2_atp_excitability.py`). Unexplained-but-harmless: B@0.10 starts higher (0.17 vs 0.056).
+- Own papers in Discussion (2026-10-04): kiren2026 (dopamine as another diffusing messenger, after "Similar
+  omissions…"); zareh2026 (two-region LFP ablation logic as a way to test what a released field carries between
+  territories; moderate stretch, worded as "would measure"). Both verified against Crossref.
+- Revision language removed. Env: `/opt/conda/envs/ece/bin/python -s` (system numpy broken; matches numba cache).
+  Reproducing stored runs needs a VERBATIM copy of the njit sweep (fastmath; see memory).
+
+### NEXT ACTION (astro_atp)
+1. Author reads v5 docx → saves `astro_atp_manuscript_v5_ca02.docx` in archive/docs → `docx_comments.py --answers`
+   → `analysis/manuscript_v2/answers_ca02.md` → apply to .tex → rebuild PDF + v6.
+2. Open author items in `analysis/manuscript_v2/review_2026-10-01.md` (3–7: initial-conditions scope, g_inf formula,
+   nucleation 0.266 vs 0.098 mechanism, one-name-per-concept renames, intro repetition).
+3. User-side: check DZNE (Krohn/Breuer/Wegmann/Dean 2026) data availability in a browser.
+4. Submit to Nonlinear Science (transfer record still carries the old title — the cover letter says so).
+5. Post-submission: ρ̄ vs dose on Cahill's Dryad traces (10.5061/dryad.83bk3jb0j), incl. Cx43-KO/CBX arm.
+6. alz-olf bib: kiren2026 entry there lacks its DOI (10.1016/j.nbd.2026.107387).
+
 ### CURRENT STATE (2026-10-01, night) — `alz-olf`: target is ANATOMY (invited); short version built
 
 - **Journal decided: Anatomy** (TSACA, dergipark.org.tr/en/pub/anatomy). Invited by Prof. Gülgün
@@ -221,33 +248,6 @@ NEXT ACTION (alz-olf / Anatomy)
    applies to the short version).
 4. Page numbers in Word; COI form; copyright form signed by all six authors; cover letter.
 5. Ingest the 5 new refs (ingest.py); supplementary Table S1 from construct_coding.tsv.
-
-### CURRENT STATE (2026-10-01, evening) — `astro_atp`: manuscript revised, ρ̄ vs ATP added; ready for author read
-Manuscript `neubrain/projects/astro_atp/analysis/manuscript_v2/manuscript.tex` (25 pp, 30 refs, 0 undefined).
-Reading copy `projects/astro_atp/archive/docs/astro_atp_manuscript_v4.docx` (Word loop: `archive/docs/README.md`).
-Updated cover letter in `analysis/manuscript_v2/cover_letter_nonlinear_science.tex` (the frozen snapshot in
-`submissions/2026-08-14-nonlinear-science/` is untouched). Pushed: neubrain `14c98bb` (main),
-bayat-et-al `d4a24a2` (`astro-atp/i0-0.42-audit`, remote now SSH).
-- Done today: real-data anchors added. wang2017 (FASP) gives direction only. cahill2024 is stated as "same
-  protocol, route not identified": Cx43/CBX also hit hemichannel ATP release (fujii2017 Fig 4e) and the response
-  onset was unchanged. Discussion now names the open test (correlation vs graded agonist dose). All revision
-  language is removed ("submitted/previous version", "old-scheme").
-- ρ̄ vs ATP is now real. The Methods had claimed an exact z-scored ρ̄ plus a ≤0.0025 proxy check that no code
-  ever ran. `bayat-et-al/phase3_rhobar.py` re-runs the L=32 sweep: a VERBATIM copy of sweep_p2 is needed,
-  because a specialised copy diverges at 1e-15 via fastmath and chaos amplifies it. It reproduces
-  `phase2v1_bayat_b0.42_L32_A_full.npz` exactly. Result: ρ̄ 0.056±0.025 (A=0.01) falls smoothly to ~0 by
-  A≈0.9, while activity rises 6.6%→22%; it tracks the 17× fall in D_eff. The R proxy is off by up to 0.06.
-- Env: system python3 numpy is broken (GLIBC). Use `/opt/conda/envs/ece/bin/python -s` (py3.9, numba 0.60;
-  it matches the numba cache).
-
-### NEXT ACTION (astro_atp)
-1. Author reads v4 docx → `_v4_ca02.docx` → `docx_comments.py --answers` → `answers_ca02.md` → apply to .tex.
-2. Open author items in `analysis/manuscript_v2/review_2026-10-01.md` (items 3–7: initial conditions scope,
-   g_inf formula, nucleation 0.266 vs 0.098 mechanism, one-name-per-concept renames, intro repetition).
-3. Optional: ρ̄ for coupling-only control (phase2 mode B) to show the decorrelation is coupling-driven;
-   a figure panel for ρ̄ vs A (currently text only).
-4. User-side: check DZNE (Krohn/Breuer/Wegmann/Dean 2026) data availability in a browser (bioRxiv blocks fetch).
-5. Post-submission: ρ̄ vs dose on Cahill's Dryad traces (10.5061/dryad.83bk3jb0j), incl. Cx43-KO/CBX arm.
 
 ### CURRENT STATE (2026-09-30, night) — `neu2p-pipeline`: BDS two-colour production run in progress
 
@@ -382,6 +382,7 @@ the 30 °C plausibility floor discarded every reading below 30.
    `build_bib.py --out …/draft/references.bib`).
 
 ### SESSION LOG
+- 2026-10-04 — astro_atp: coupling-only ρ̄ control + Fig 2F; kiren2026/zareh2026 in Discussion; v5 docx. (agent: Claude)
 - 2026-10-01 — astro_atp: Wang/Cahill anchors + open-test paragraph, review pass, cover letter, revision language
   removed, exact ρ̄ vs ATP computed and reported, v4 docx; both repos pushed. (agent: Claude)
 - 2026-10-01 — neumea-pipeline: organoid end to end (13 GOOD, 400-electrode map); ISI check shows merged neurons
