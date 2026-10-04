@@ -215,6 +215,20 @@ All pushed: neubrain `bdb133e` (main), bayat-et-al `dfa3686` (`astro-atp/i0-0.42
 5. Post-submission: ρ̄ vs dose on Cahill's Dryad traces (10.5061/dryad.83bk3jb0j), incl. Cx43-KO/CBX arm.
 6. alz-olf bib: kiren2026 entry there lacks its DOI (10.1016/j.nbd.2026.107387).
 
+### CURRENT STATE (2026-10-04) — `alz-olf` / Anatomy: submission package built; waiting on author inputs
+
+- Full citation audit of the short version done (anatomy/claimcheck/batch1-5.md). About 35 sentences
+  rewritten to match their sources; uncited claims softened. Primary sources replace the reviews:
+  arnold2010, talamo1989, price1991, kovacs2001. Lab papers cited where they apply: zareh2026
+  (evoked-response layer), kiren2026 (one sentence on VTA dopamine). Every abbreviation is defined.
+- Package: `python3 anatomy/build.py` -> out/{manuscript,title_page,cover_letter,Supplementary_Table_S1}.docx
+  (+ `python3 anatomy/table_s1.py` for the CSV). `--final` -> out/final/, all text black. It refuses
+  while any TO FILL / TO CONFIRM remains (8 left: COI, funding, titles, address, prior presentation,
+  permissions, date). Forms are pre-filled in anatomy/forms/.
+- Still open: the Emel/Şengül page question; signatures; Kareken (APA) and Braak (Springer)
+  permissions; co-author read of the blue text; where to host Table S1 (journal silent on
+  supplements); lotsch2006 PDF not on the server (Huart 2012 covers the sentence).
+
 ### CURRENT STATE (2026-10-01, night) — `alz-olf`: target is ANATOMY (invited); short version built
 
 - **Journal decided: Anatomy** (TSACA, dergipark.org.tr/en/pub/anatomy). Invited by Prof. Gülgün
