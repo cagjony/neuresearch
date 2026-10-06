@@ -188,6 +188,31 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
+### UPDATE (2026-10-06, evening) — `astro_atp`: data-constrained model; target J Comput Neurosci; restructure pending
+**Story now:** reanalysis of public Cahill 2024 data + model constraint experiments. All code/results in bayat-et-al
+(`astro-atp/i0-0.42-audit`, pushed); data in `~/external/public/cahill2024/dryad/` (CC0). Env `/opt/conda/envs/ece/bin/python -s`.
+- **Test 4 (dose, `data_cahill2024_dose.py`, pre-registered 39ec726):** bath t-ACPD 50–100 µM switches 3/8 slices into
+  strong synchrony (ρ̄ fluctuations +0.53–0.65, ΔF/F +38–114%), others ~0 = all-or-none, slice-dependent. Baclofen none.
+  Model (as published) decorrelates with drive → mismatch. NOT yet in the manuscript (v6 has only the uncaging test).
+- **In vivo (`data_cahill2024_invivo.py`, EXPLORATORY):** running synchronizes astrocytes (ρ̄ 0.25 vs 0.08 rest, 26/26
+  sessions); Gi-DREADD CNO no detectable effect (saline also lowers rate). → common time-varying input (NE) matters.
+- **Model constraints (`phase4_constrain.py`, `phase4_ablate.py`):** fixed coupling + excitability drive still decorrelates.
+  Drive × coupling map: synchrony only at 2–4× model coupling, peaking at intermediate drive (ρ̄ 0.37±0.19 at ×4, A≈0.23;
+  large lattice-to-lattice variance ~ slice all-or-none). Ablations: threshold rise θ(A) is the largest single cause of
+  high-drive decorrelation; noise(A), γ spread minor; all three off removes the decline but gives no synchrony at ×1.
+  Ranked constraints: coupling strength (threshold; model sits below) > common fluctuating input > θ(A) > noise/heterogeneity.
+- **Running now:** `phase4_front_coupling.py` (log `logs/front_coupling.log`, ~20 min): front + refractory + decremental at
+  ×1/×2/×4 coupling — does some γ_regen still give 100–250 µm and ~15 s (Bowser)? ×1 reproduces termination_time exactly.
+  Decisive for "one model explains slices + evoked waves".
+- **Literature:** `projects/astro_atp/prior_work_2026-10-06.md` (verified quotes+DOIs). Nobody has modelled Cahill data;
+  no model has one agent raising excitability AND cutting coupling; t-ACPD at this age acts via mGluR3 (Gi) — don't claim
+  "mGluR uncouples". Liao 2026 (NLD review, in archive b5b5fbd8…pdf) read: not citing (user).
+- **Pending from user:** download `FIJIAQuA_CytoGCaMP_BathAppBacLY_ExtFig1k.mat` (8.25 GB; LY + carbenoxolone: does
+  synchrony need gap junctions?) → run test-4 method. Approve a one-page restructure plan (comp-neuro framing, clutter to
+  supplement: noise-scaling, I0 audit, R² criterion, seed CVs, velocity conversions). User asked whether to move the
+  front to supplement: advised NO (front + mechanisms carry the Bowser match); move only technical front details.
+- Target: J Comput Neurosci (Nonlinear Science declined, not SCIE). Cover letter still says Nonlinear Science.
+
 ### UPDATE (2026-10-06) — `astro_atp`: v6 with real-data reanalysis; Nonlinear Science to be DECLINED (not SCIE)
 - Author is declining the Nonlinear Science transfer invitation (journal not SCIE-indexed). New target not chosen;
   shortlist given: J Comput Neurosci (recommended), J Theor Biol, PLOS Comput Biol, Bull Math Biol, Chaos (AIP), PRE.
@@ -452,6 +477,7 @@ the 30 °C plausibility floor discarded every reading below 30.
    `build_bib.py --out …/draft/references.bib`).
 
 ### SESSION LOG
+- 2026-10-06 eve — astro_atp: test 4 (slice all-or-none synchrony), in vivo (running-driven synchrony), constraint map + ablations; front-at-stronger-coupling running. (agent: Claude)
 - 2026-10-06 — astro_atp: Cahill 2024 reanalysis (no front) + Fig. slice; v6; Nonlinear Science to be declined. (agent: Claude)
 - 2026-10-04 — astro_atp: coupling-only ρ̄ control + Fig 2F; kiren2026/zareh2026 in Discussion; v5 docx. (agent: Claude)
 - 2026-10-01 — astro_atp: Wang/Cahill anchors + open-test paragraph, review pass, cover letter, revision language
