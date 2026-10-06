@@ -317,36 +317,38 @@ NEXT ACTION (alz-olf / Anatomy)
 4. Page numbers in Word; COI form; copyright form signed by all six authors; cover letter.
 5. Ingest the 5 new refs (ingest.py); supplementary Table S1 from construct_coding.tsv.
 
-### CURRENT STATE (2026-09-30, night) — `neu2p-pipeline`: BDS two-colour production run in progress
+### CURRENT STATE (2026-10-06) — `neu2p-pipeline`: all BDS sessions processed; two-colour report drafted; re-registration test running
 
-Full state, numbers and paths: **`neubrain/projects/neu2p-pipeline/STATE.md`** (last dated entries). In short:
-- **Neuronal GCaMP6f, 32 sessions: done** (report v2 sent to Asli; FIRE mice 3–5x more active at rest).
-- **Settings chosen by the user (2026-09-30):** AQuA2 thr 3, smoXY 2, no drift removal, min 1 s / 10 µm², binned ~0.33 s /
-  ~1 µm (`neu2p/aqua2/parameters_bds_astro_thr3_smo2.csv`); red neurons (jRGECO1a) sourcery thr 3, 12 µm, tau 0.563, ALL ROIs
-  (suite2p's built-in classifier rejects most red neurons; don't use iscell). Basis: VSC sweeps, recorded in STATE.
-- **Two-colour run, 23 sessions:** stream.nf registration → manGO `2p_processed/<s>/neu2p-1.1.0_882f450_registration/`; per
-  session `neu2p/scripts/twocol_post.sh` (AQuA2 + red neurons, VSC GPU job) submitted by `scripts/pull_to_raid.sh` (POST hook),
-  which pulls a session to raid `…/260827_bds/<s>/neu2p-1.1.0_882f450_registration/` only after `post.done`.
-  **15 done.** The first head (62195332) stalled on the scratch quota (6 staged two-colour sessions ≈ 450 GB) → 8 left
-  (mg4753 fov1_d70/fov2_d90/fov3_d90, mg4754 x5) rerun as **head 62202934 with --max_staged 3**; pull detached on
-  mcnanalysis01 (log raid `…/260827_bds/pull_twocol_rest8.log`). SUITE2P jobs queue behind neumea jobs on the same GPU account.
-- **Face camera, 22 two-colour sessions:** `scripts/bodycam_batches.sh` (batches of 4, SKIP_STIMPY=1) detached, log raid
-  `…/260827_bds/bodycam_twocol.log`, list `…/analysis/face_twocol_sessions.tsv`. Stimpy logs copied from Asli's bkrunch copy
-  (read-only; presentation `mg474` = 2p `mg4754`) into `<s>/stimpy/`. Not in the list: MG4646 fov2 (empty video), no_cam sessions.
-- Not processed (decide with the user): red-only sessions (3), green-only astrocyte sessions (~12, AQuA2 would apply),
-  mg4801 fov4 run01 (5.8 GB second run).
-- Unpushed: neu2p c9e6ec1, 96da076 (I push neu2p); neubrain/neuresearch commits (user pushes).
+Full state, numbers, paths: **`neubrain/projects/neu2p-pipeline/STATE.md`** (last dated entries). In short:
+- **Processed:** neuronal GCaMP6f 32/32 (report v2 sent 2026-09-28); two-colour 26/26 (AQuA2 thr 3 / smoXY 2 + red neurons,
+  sourcery thr 3, all ROIs); green-only astrocytes 16/16 (last 8 on euserver00: VSC BIG GPU nodes reserved; 3 registered on
+  CPU because the neumea density benchmark held the RTX 3060). Face camera 21/22 two-colour aligned to 2p
+  (face_to_2p.py now places frames by pulse count). **All derived results (AQuA2, red, face) uploaded to manGO** 2p_processed.
+- **Report draft (not sent):** `/mnt/sysfs01/users/cagatay/external/destrooper/neu2p/260827_bds/reports/2026-10-04_two-colour_astrocytes/`
+  (md + pdf 7 pp, 9/9 quotes verified; section 5 rewritten step by step at the user's request; face-camera states).
+  Videos (one per genotype + a quiet field): `videos/*.mp4` (green AQuA2 events by state | red with ROIs, 20x).
+- **Findings (preliminary):** astro events ~49x more while moving (Bojarskaite 2020, same promoters: 3x); neurons ~6x. Mice
+  WITHOUT microglia (FIRE) have more astrocyte events at rest: +22.7/min/mm², p = 0.006 (all usable), two-colour only +19.0,
+  p = 0.028 = the floor for 2 vs 7 mice; MG4641 carries most of it; FIRE mice all EXP3 (June). No NLGF effect; neurons no
+  group difference. Red channel dim (soma/neuropil 1.3x; lysosomal puncta; excitation wavelength unknown).
+- **Registration jitter in 9 sessions** (lag-1 autocorr of shifts < 0.35: MG4643 fov1/2/3, MG4642 fov1/3/4, MG4646 fov1/3,
+  mg4801 FOV1) → excluded. Fix under test: `smooth_sigma_time` 2 (settings/bds_registration-only_smooth2_v1.1.0.json);
+  **suite2p 1.1.0 crashes with it on CUDA → DEVICE=cpu**. Test: `neu2p/scripts/rereg_test.sh` on MG4643 fov2, raw from
+  Asli's bkrunch copy (read only) → euserver00 raid `<session>/rereg_smooth2/`; log raid `…/rereg_test_MG4643fov2.log`.
+  For the dark-red two-colour fields (MG4642 fov1/3): settings/bds_2colour_registration-only_smooth2_alignGreen_v1.1.0.json.
+- Unpushed: neu2p up to fce026e + rereg_test.sh fix; neubrain/neuresearch commits (user pushes).
 
 ### NEXT ACTION (neu2p-pipeline)
 
-1. Check both runs finished: `tail` the two logs above; `ssh vsc 'sacct -M wice -X -S 2026-09-30 | grep -v COMPLETED'`. A
-   session left on scratch without `post.done` = its twocol_post job failed (logs `$VSC_SCRATCH/neu2p_logs/twocol_post/`).
-   If ssh/cert expired, re-login (neuvsc guide) and restart pull_to_raid.sh with the same POST (command in STATE / this log).
-2. Face → 2p alignment for the 22 sessions (`scripts/face_to_2p.py`), then events-by-state for astrocytes and red neurons
-   (`aqua2_events_state.py` already per session; red: `state_activity.py`).
-3. Look at MG4645 fov4 red (only 22 ROIs vs 131 in fov1).
-4. Upload analysis results (aqua2_*, red-neurons_*, facemap) to manGO; push neu2p; clean `$VSC_SCRATCH/redtest` (40 GB, ask).
-5. Two-colour report + email for Asli (like the neuronal v2 report).
+1. Read the re-registration test (`cat …/260827_bds/rereg_test_MG4643fov2.log`: "new" lag-1 autocorr should be ≫ 0.35).
+   If good: re-register the 9 sessions (DEVICE=cpu; raw from bkrunch), rerun twocol_post.sh (AQuA2; red for MG4642
+   fov1/3), then `twocol_summary.py` → …/analysis/twocol_summary_face_neu2p-1.1.0_882f450, `twocol_figures.py`, update the
+   report; upload the new registrations/results to manGO (scripts/euserver_upload.sh / derived_upload.sh).
+2. Then draft the email to Asli (questions in report section 7: excitation wavelength, EXP3 vs EXP4 red brightness, jitter
+   fields, behavioural video for green-only mice). User decides when to send.
+3. Later: astrocyte–neuron coupling in two-colour sessions; check movement events for artefact in the QC videos.
+VSC login: `vsc-login` (see memory); bkrunch is read-only; never edit a script while it runs; never `pkill -f` a pattern
+that matches your own shell.
 
 ### CURRENT STATE (2026-10-01) — neumea-pipeline: hybrid test done (TDC2 = KS4 for map building, 5× faster); organoid end-to-end run on VSC
 
