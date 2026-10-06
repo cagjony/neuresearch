@@ -188,6 +188,20 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
+### UPDATE (2026-10-06) — `astro_atp`: v6 with real-data reanalysis; Nonlinear Science to be DECLINED (not SCIE)
+- Author is declining the Nonlinear Science transfer invitation (journal not SCIE-indexed). New target not chosen;
+  shortlist given: J Comput Neurosci (recommended), J Theor Biol, PLOS Comput Biol, Bull Math Biol, Chaos (AIP), PRE.
+  Avoid CSF/CNSNS (both desk-rejected). Cover letter still addressed to Nonlinear Science — retarget once chosen.
+- Reanalysis of Cahill 2024 slice data (Dryad events.zip, CC0; `~/external/public/cahill2024/dryad/`;
+  `bayat-et-al/data_cahill2024_uncaging.py`, predictions committed first ed075ec; fig `fig_slice_data.py`):
+  point stimulus → NO front; response rises ~20 s after uncaging at 25–175 µm together, +2.0/+2.4/+1.8 events/min
+  (matched 60 s windows), laser-only ~0, CBX/Cx43 not distinguishable from 0. Baseline drifts up in every recording;
+  full-baseline comparison overstated it (kept, labelled). In the paper: new paragraph + Fig. slice in the
+  stochastic-ignition section, Methods subsection, abstract sentence, cover-letter line. v6 docx; 26 pp.
+- DZNE preprint and Asli's BDS data: NOT usable (user 2026-10-06; BDS unpublished, De Strooper lab).
+- Test 4 (ρ̄ vs agonist dose) waits for AQuA_CytoGCaMP_ReceptorAgonistBathApp_Fig1.mat (7.65 GB; single-file click).
+- Pushed: neubrain 11553fd, bayat-et-al 5a04a06. Next: author reads v6 (→ `_v6_ca02.docx`), choose journal.
+
 ### CURRENT STATE (2026-10-04) — `astro_atp`: manuscript complete pending author read (v5 docx out)
 Manuscript `neubrain/projects/astro_atp/analysis/manuscript_v2/manuscript.tex` (25 pp, 32 refs, 0 undefined).
 Reading copy `projects/astro_atp/archive/docs/astro_atp_manuscript_v5.docx` (Word loop: `archive/docs/README.md`).
@@ -436,6 +450,7 @@ the 30 °C plausibility floor discarded every reading below 30.
    `build_bib.py --out …/draft/references.bib`).
 
 ### SESSION LOG
+- 2026-10-06 — astro_atp: Cahill 2024 reanalysis (no front) + Fig. slice; v6; Nonlinear Science to be declined. (agent: Claude)
 - 2026-10-04 — astro_atp: coupling-only ρ̄ control + Fig 2F; kiren2026/zareh2026 in Discussion; v5 docx. (agent: Claude)
 - 2026-10-01 — astro_atp: Wang/Cahill anchors + open-test paragraph, review pass, cover letter, revision language
   removed, exact ρ̄ vs ATP computed and reported, v4 docx; both repos pushed. (agent: Claude)
