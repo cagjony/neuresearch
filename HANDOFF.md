@@ -276,7 +276,7 @@ Work is in `neubrain/projects/alz-olf/anatomy/`. Last neubrain commit `b163bdd`.
 - **Package:** `python3 anatomy/build.py` -> `out/{manuscript,title_page,cover_letter,
   Supplementary_Table_S1}.docx`. A4, double-spaced, page numbers (none on the title page), NLM with
   all authors, DOIs not printed. `--final` -> `out/final/`, all text black; it refuses while any
-  TO FILL / TO CONFIRM remains (9 now). `anatomy/table_s1.py` -> the S1 CSV. The forms are
+  TO FILL / TO CONFIRM remains (12 now: 4 manuscript, 5 title page, 3 cover letter). `anatomy/table_s1.py` -> the S1 CSV. The forms are
   pre-filled in `anatomy/forms/`. Declarations + acknowledgements (H. Yüceer Korkmaz, K. Cengiz)
   are in; contributions use the journal's categories (also in `authors.md`).
 - **Code repo:** `ayan-et-al`, branch `paper-anatomy-2026` @ `dca50fd`, NOT pushed. The repo is
