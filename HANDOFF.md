@@ -254,19 +254,45 @@ All pushed: neubrain `bdb133e` (main), bayat-et-al `dfa3686` (`astro-atp/i0-0.42
 5. Post-submission: ρ̄ vs dose on Cahill's Dryad traces (10.5061/dryad.83bk3jb0j), incl. Cx43-KO/CBX arm.
 6. alz-olf bib: kiren2026 entry there lacks its DOI (10.1016/j.nbd.2026.107387).
 
-### CURRENT STATE (2026-10-04) — `alz-olf` / Anatomy: submission package built; waiting on author inputs
+### CURRENT STATE (2026-10-06) — `alz-olf` / Anatomy: submission package built; waiting on author inputs
 
-- Full citation audit of the short version done (anatomy/claimcheck/batch1-5.md). About 35 sentences
-  rewritten to match their sources; uncited claims softened. Primary sources replace the reviews:
-  arnold2010, talamo1989, price1991, kovacs2001. Lab papers cited where they apply: zareh2026
-  (evoked-response layer), kiren2026 (one sentence on VTA dopamine). Every abbreviation is defined.
-- Package: `python3 anatomy/build.py` -> out/{manuscript,title_page,cover_letter,Supplementary_Table_S1}.docx
-  (+ `python3 anatomy/table_s1.py` for the CSV). `--final` -> out/final/, all text black. It refuses
-  while any TO FILL / TO CONFIRM remains (8 left: COI, funding, titles, address, prior presentation,
-  permissions, date). Forms are pre-filled in anatomy/forms/.
-- Still open: the Emel/Şengül page question; signatures; Kareken (APA) and Braak (Springer)
-  permissions; co-author read of the blue text; where to host Table S1 (journal silent on
-  supplements); lotsch2006 PDF not on the server (Huart 2012 covers the sentence).
+Target: *Anatomy* (TSACA), invited by Prof. Gülgün Şengül via Emel Sokullu. Full version frozen at
+neubrain tag `alz-olf-full-2026-10-01` (`manuscript.md` untouched; its corpus numbers are stale).
+Work is in `neubrain/projects/alz-olf/anatomy/`. Last neubrain commit `b163bdd`.
+
+- **Text:** `anatomy/manuscript.md`. Body 2.9k words, abstract 239. Every changed sentence is
+  `[..]{.blue}`. Anatomy comes first ("order of pathology"); the spine is score -> psychometric curve.
+- **Citation audit done** (`anatomy/claimcheck/batch1-5.md`). About 35 sentences rewritten to match
+  their full texts. Two had the direction wrong (lepousez2013, chen2021). wolfensberger2000 scores
+  the subtests separately; TDI is only a summary. Primary sources replace review-only support:
+  arnold2010, talamo1989, price1991, kovacs2001. Uncited claims are softened ("based on the
+  published record", "may"). Lab papers cited where they hold: zareh2026 (evoked-response layer),
+  kiren2026 (one VTA-dopamine sentence; reads as tangential). Every abbreviation defined at first use.
+- **Figures:** Fig 4 (Sankey, `tools/construct_figure.py`) and Fig 5 (staircase + curve,
+  `tools/curve_figure.py`, paper env) follow the lab style (`neu-sniff/scripts/paper/paper_style.py`),
+  with bold capital panel letters to match Fig 3 (BioRender). Fig 3: the 0–1 colour bar is
+  painted out; panels A and C are redrawn from Kareken 2003 Fig 3 and Braak 1991 Fig 4, so
+  permissions are pending; the image is only 940 px wide (accepted).
+- **Package:** `python3 anatomy/build.py` -> `out/{manuscript,title_page,cover_letter,
+  Supplementary_Table_S1}.docx`. A4, double-spaced, page numbers (none on the title page), NLM with
+  all authors, DOIs not printed. `--final` -> `out/final/`, all text black; it refuses while any
+  TO FILL / TO CONFIRM remains (9 now). `anatomy/table_s1.py` -> the S1 CSV. The forms are
+  pre-filled in `anatomy/forms/`. Declarations + acknowledgements (H. Yüceer Korkmaz, K. Cengiz)
+  are in; contributions use the journal's categories (also in `authors.md`).
+- **Code repo:** `ayan-et-al`, branch `paper-anatomy-2026` @ `dca50fd`, NOT pushed. The repo is
+  PRIVATE on GitHub. It holds the coding table (held `neural` column removed), the S1 CSV, Fig 4/5
+  scripts with a trimmed `paper_style.py`, and a README that marks `bibliometrics.py` as retired.
+  The figures reproduce exactly. An uncommitted `bibliometrics.py` change there is someone else's.
+
+NEXT ACTION (alz-olf / Anatomy)
+1. Author: fill the TO FILLs (titles, address/phone/fax, funding, prior presentation, COI, date).
+2. Author: make `ayan-et-al` public, push `paper-anatomy-2026`, archive on Zenodo -> put the DOI
+   in the availability statement (TO CONFIRM) and the cover letter.
+3. Ask Emel/Şengül whether references count toward 15 pp. Now: text ≈ 15 pp, refs 14 pp.
+4. Permissions for Kareken (APA) and Braak (Springer) via RightsLink; signatures on both forms.
+5. Co-author read of the blue text; ask Hande for her typo/reference-error list.
+6. lotsch2006 PDF never reached the server (huart2012 covers the sentence): drop it, or check it.
+7. Then `python3 anatomy/build.py --final` and upload on DergiPark.
 
 ### CURRENT STATE (2026-10-03) — `intellicage`: phenotype re-cut to S1–S4, learning figures, door timing measured
 
