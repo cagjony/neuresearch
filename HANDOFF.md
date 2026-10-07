@@ -256,7 +256,7 @@ All pushed: neubrain `bdb133e` (main), bayat-et-al `dfa3686` (`astro-atp/i0-0.42
 
 ### CURRENT STATE (2026-10-06) — `alz-olf` / Anatomy: submission package built; waiting on author inputs
 
-Target: *Anatomy* (TSACA), invited by Prof. Gülgün Şengül via Emel Sokullu. Full version frozen at
+Target: *Anatomy* (TSACA), invited by Prof. Gülgün Şengül via Emel Sokullu. Title (2026-10-07): "Olfactory testing in Alzheimer's disease as a psychometric curve" (no colon; also the running head). Full version frozen at
 neubrain tag `alz-olf-full-2026-10-01` (`manuscript.md` untouched; its corpus numbers are stale).
 Work is in `neubrain/projects/alz-olf/anatomy/`. Last neubrain commit `b163bdd`.
 
@@ -288,7 +288,7 @@ NEXT ACTION (alz-olf / Anatomy)
 1. Author: fill the TO FILLs (titles, address/phone/fax, funding, prior presentation, COI, date).
 2. Author: make `ayan-et-al` public, push `paper-anatomy-2026`, archive on Zenodo -> put the DOI
    in the availability statement (TO CONFIRM) and the cover letter.
-3. Ask Emel/Şengül whether references count toward 15 pp. Now: text ≈ 15 pp, refs 14 pp.
+3. (Done: the page question to Emel is settled; the author skipped it.)
 4. Permissions for Kareken (APA) and Braak (Springer) via RightsLink; signatures on both forms.
 5. Co-author read of the blue text; ask Hande for her typo/reference-error list.
 6. lotsch2006 PDF never reached the server (huart2012 covers the sentence): drop it, or check it.
