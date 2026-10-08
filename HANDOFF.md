@@ -188,6 +188,21 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
+### CURRENT STATE (2026-10-08) — `astro_atp` (paper A, Bayat, Oktay & Aydın; Aydın corresponding): IOP-ready, author read pending
+**Target Physical Biology (IOP)**; OA via TÜBİTAK–IOP (unlimited; Aydın at Medipol = EKUAL member; ScholarOne profile
+must show Medipol + @medipol.edu.tr). Nonlinear Science invitation to be declined (not SCIE).
+- **Source of truth: `neubrain/projects/astro_atp/analysis/manuscript_v2/manuscript_iop.tex`** (22 pp) +
+  `supplementary.tex` (4 pp) + `cover_letter_physbiol.tex` (to Dr Greg Huber, EiC). `manuscript.tex` (cas-sc) is
+  history — never edit. Word copy `archive/docs/astro_atp_manuscript_v7_iop.docx`. State and open items: `STATE.md`.
+- **Agent:** `code/.claude/agents/astro-atp.md` ("use the astro-atp agent to …"); code `bayat-et-al`
+  (branch astro-atp/i0-0.42-audit). Paper-B material removed from A; never add it back.
+- **New in A:** drive × coupling map (coordination only above ×2 coupling, peak ρ̄ 0.455±0.119 at ×4; drive window
+  whose upper end is set mainly by θ(A)) — answers the old "just weaker coupling" desk rejection; Bowser match survives
+  at ×2 (γ_regen 0.025–0.10); ×4 front self-limits (sink effect, Lallouette 2014). Declutter (−1,326 words, SI S1–S7).
+- **Author to supply before submission:** Oktay ORCID, Funding, CRediT roles, AI-tool version, optional Zenodo DOI,
+  Methods placement, review anonymity, competing-interests confirmation. Then freeze a snapshot per SUBMISSIONS.md.
+- Unstaged in neubrain (author to decide): `_library/manifest.json`, `logs/fetch-log.md`, `_library/lallouette2014.xml`.
+
 ### CURRENT STATE (2026-10-08) — `astro-data` (paper B, single-author): analyses done, journal decided, no draft
 **Paper B = Aydın (single author), target The Journal of Physiology** (Wiley/Physiological Society; no page or
 submission charges; OA via TÜBİTAK–Wiley Read & Publish: Q1/Q2 SCIE, national quota, counted from acceptance date —
@@ -511,6 +526,7 @@ the 30 °C plausibility floor discarded every reading below 30.
    `build_bib.py --out …/draft/references.bib`).
 
 ### SESSION LOG
+- 2026-10-08 — astro_atp: paper A retargeted to Physical Biology (IOP), Aydın corresponding; coupling results, declutter, IOP files, v7 docx. (agent: Claude)
 - 2026-10-08 — astro-data: paper B split out (single-author, J Physiol via TÜBİTAK–Wiley); code in aydin-et-al-2027; test 8 + Duss preprint check. (agent: Claude)
 - 2026-10-06 eve — astro_atp: test 4 (slice all-or-none synchrony), in vivo (running-driven synchrony), constraint map + ablations; front-at-stronger-coupling running. (agent: Claude)
 - 2026-10-06 — astro_atp: Cahill 2024 reanalysis (no front) + Fig. slice; v6; Nonlinear Science to be declined. (agent: Claude)
