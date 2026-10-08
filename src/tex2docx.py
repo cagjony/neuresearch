@@ -34,9 +34,27 @@ from pathlib import Path
 
 
 def unwrap(body: str, env: str, repl) -> str:
-    """Replace \begin{env}...\end{env} using repl(inner) -> str."""
+    r"""Replace \begin{env}...\end{env} using repl(inner) -> str."""
     pat = re.compile(r"\\begin\{" + env + r"\}(.*?)\\end\{" + env + r"\}", re.S)
     return pat.sub(lambda m: repl(m.group(1)), body)
+
+
+def command_arg(tex: str, cmd: str, repl) -> str:
+    """Replace every \\cmd{...} (brace-matched, so nested braces survive) using repl(arg) -> str."""
+    out, i, key = [], 0, "\\" + cmd + "{"
+    while True:
+        j = tex.find(key, i)
+        if j < 0:
+            out.append(tex[i:]); return "".join(out)
+        k, depth = j + len(key), 1
+        while k < len(tex) and depth:
+            depth += {"{": 1, "}": -1}.get(tex[k], 0); k += 1
+        out.append(tex[i:j]); out.append(repl(tex[j + len(key):k - 1])); i = k
+
+
+# IOP (iopjournal.cls) front/back-matter commands -> labelled sections; pandoc drops them otherwise
+IOP_SECTIONS = {"keywords": "Keywords", "ack": "Acknowledgements", "funding": "Funding",
+                "roles": "Author contributions", "data": "Data availability statement"}
 
 
 def preprocess(tex: str) -> str:
@@ -56,6 +74,12 @@ def preprocess(tex: str) -> str:
 
     # the graphical abstract is a figure for the journal, noise in a reading copy
     tex = unwrap(tex, "graphicalabstract", lambda s: "")
+
+    for cmd, title in IOP_SECTIONS.items():
+        tex = command_arg(tex, cmd, lambda a, t=title: "\n\\section*{" + t + "}\n" + a.strip() + "\n")
+    tex = command_arg(tex, "affil", lambda a: "\n\n" + a.strip() + "\n\n")
+    tex = command_arg(tex, "email", lambda a: "\n\nCorresponding author: " + a.strip() + "\n\n")
+    tex = command_arg(tex, "orcid", lambda a: "")
 
     # cas-sc author/affiliation markup carries no meaning in Word
     for cmd in ("cortext", "fnmark", "cormark", "tnotemark", "tnotetext", "fntext",
