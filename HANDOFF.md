@@ -188,6 +188,25 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
+### CURRENT STATE (2026-10-08) — `astro-data` (paper B, single-author): analyses done, journal decided, no draft
+**Paper B = Aydın (single author), target The Journal of Physiology** (Wiley/Physiological Society; no page or
+submission charges; OA via TÜBİTAK–Wiley Read & Publish: Q1/Q2 SCIE, national quota, counted from acceptance date —
+check Wiley's eligibility tool first). Paper A (Bayat, Oktay & Aydın, model) stays in `astro_atp`, target IOP
+(Physical Biology or New J Phys; TÜBİTAK–IOP covers OA without limit; corresponding author must be at an EKUAL member).
+- **Where:** vault `neubrain/projects/astro-data/` (STATE, plan, spine v2, novelty check + 2026-10-08 addendum, papers.txt);
+  code `aydin-et-al-2027` (github neurophysiology-expertise-unit, main, SSH) — tests 1–8 re-run there and verified
+  IDENTICAL to bayat-et-al originals; `core/model.py` = verbatim model primitives (cite paper A). bayat-et-al has a
+  pointer note (63b66c4) and must never receive paper-B work. Data: `~/external/public/{cahill2024,rupprecht2026}`.
+- **Agent:** `code/.claude/agents/astro-data.md` (project-level: visible in sessions started under `/mnt/sysfs01/users/cagatay/code`).
+  Say "use the astro-data agent to …". It reads STATE.md first and updates it at the end.
+- **Claim:** shared fluctuating inputs initiate astrocyte coordination; gap junctions amplify it; a static-messenger
+  model captures neither. Evidence: Cahill slices (t-ACPD all-or-none synchrony; LY+CBX 9/9), Cahill in vivo (running;
+  switching not level, partial r +0.19), Duss et al. 2026 LC stimulation (16/16; pupil fluctuation +0.43, paw +0.17),
+  model (shared OU drive coordinates with and without coupling; coupling amplifies ~2.5×). Scoped per novelty check:
+  never "not gap junctions"; credit Slezak 2019 and Cahill 2024; the Zenodo dataset is cited as **Duss et al. 2026**.
+- **Next (in STATE.md):** pupil eye-movement artefact check (pre-register); Reitman 2023 download (user, browser);
+  author fixes title/contribution; read J Physiol author guidelines; library chain; draft.
+
 ### UPDATE (2026-10-06, evening) — `astro_atp`: data-constrained model; target J Comput Neurosci; restructure pending
 **Story now:** reanalysis of public Cahill 2024 data + model constraint experiments. All code/results in bayat-et-al
 (`astro-atp/i0-0.42-audit`, pushed); data in `~/external/public/cahill2024/dryad/` (CC0). Env `/opt/conda/envs/ece/bin/python -s`.
@@ -492,6 +511,7 @@ the 30 °C plausibility floor discarded every reading below 30.
    `build_bib.py --out …/draft/references.bib`).
 
 ### SESSION LOG
+- 2026-10-08 — astro-data: paper B split out (single-author, J Physiol via TÜBİTAK–Wiley); code in aydin-et-al-2027; test 8 + Duss preprint check. (agent: Claude)
 - 2026-10-06 eve — astro_atp: test 4 (slice all-or-none synchrony), in vivo (running-driven synchrony), constraint map + ablations; front-at-stronger-coupling running. (agent: Claude)
 - 2026-10-06 — astro_atp: Cahill 2024 reanalysis (no front) + Fig. slice; v6; Nonlinear Science to be declined. (agent: Claude)
 - 2026-10-04 — astro_atp: coupling-only ρ̄ control + Fig 2F; kiren2026/zareh2026 in Discussion; v5 docx. (agent: Claude)
