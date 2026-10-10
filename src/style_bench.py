@@ -71,6 +71,7 @@ SELF_PRAISE = {"interesting", "important", "novel", "understudied", "unprecedent
 BE = {"is", "are", "was", "were", "be", "been", "being"}
 WORD = re.compile(r"[A-Za-z][A-Za-z'-]*")
 ABBREV = re.compile(r"\b(?:et al|e\.g|i\.e|Fig|Figs|Eq|Ref|vs|approx|ca|cf|Suppl|Ext|No)\.", re.I)
+LEGEND = re.compile(r"(?:!\[|\**(?:Supplementary\s+)?(?:Fig(?:ure)?|Table)\.?\s*S?\d)", re.I)  # captions, not prose
 SENT_END = re.compile(r"(?<=[.?!])\s+(?=[\"'(\[]?[A-Z0-9])")
 HIGH_ONLY = {"tell_rate", "self_praise_rate", "dash_rate"}  # fewer is never a problem
 METRICS = {  # name -> (label, unit)
@@ -221,7 +222,7 @@ def draft_sections(path: Path) -> dict[str, list[tuple[int, str]]]:
     cur, buf, start = None, [], 0
 
     def flush():
-        if cur and buf:
+        if cur and buf and not LEGEND.match(buf[0]):
             text = clean_markup(" ".join(buf)).strip()
             if len(text.split()) >= 8:
                 out[cur].append((start, text))
@@ -231,7 +232,9 @@ def draft_sections(path: Path) -> dict[str, list[tuple[int, str]]]:
         return (len(m.group(1)), m.group(2)) if m.group(1) else (1 + len(m.group(3)) // 3, m.group(4))
 
     tex = path.suffix == ".tex"
-    lines = path.read_text(encoding="utf-8").splitlines()
+    raw = re.sub(r"<!--.*?-->", lambda m: "\n" * m.group(0).count("\n"), path.read_text(encoding="utf-8"),
+                 flags=re.S)  # comments may span paragraphs; keep line numbers
+    lines = raw.splitlines()
     # The paper's section level is the shallowest heading naming a known section;
     # deeper headings ("\subsection{Background}" inside Methods) never switch section.
     named = [level_title(m)[0] for m in map(head.match, lines) if m and section_of(level_title(m)[1])]

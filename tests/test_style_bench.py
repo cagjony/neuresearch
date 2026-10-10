@@ -58,3 +58,12 @@ def test_markdown_title_then_level2_sections(tmp_path):
                   f"Methods words. {FILLER}\n")
     secs = sb.draft_sections(md)
     assert len(secs["intro"]) == 1 and secs["intro"][0][1].startswith("Intro")
+
+
+def test_legends_and_multiparagraph_comments_skipped(tmp_path):
+    md = tmp_path / "m.md"
+    md.write_text(f"# Results\n\n<!-- NOTE.\n\nstill a note -->\n\nProse here. {FILLER}\n\n"
+                  f"![**Figure 2. Title.** (a) panel text that is a legend, not prose at all](f.png)\n\n"
+                  f"**Figure 3.** Another legend that should be ignored entirely here.\n")
+    paras = sb.draft_sections(md)["results"]
+    assert [ln for ln, _ in paras] == [7]
