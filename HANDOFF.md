@@ -140,7 +140,8 @@ view at once.
   `corpus --email --exclude-project EAAI-26-18624` → `logs/style-corpus.{md,json}` (research articles,
   top journals, ≥15 cites/yr via OpenAlex; 42 exemplars on 2026-10-11); `check <draft.md|.tex>` →
   `style-report.md` beside the draft (per-section metrics vs p10–p90, over-used words, machine-prose
-  tells by line); `passages --section intro --project <p>` prints exemplar paragraphs. Report-only.
+  tells, 7 sentence patterns (uncited 'studies show', 'not merely', ', underscoring …', stacked hedges, chatbot
+  residue …) and same-word opener runs, all calibrated on the exemplars; aside dashes only); `passages --section intro --project <p>` prints exemplar paragraphs. Report-only.
   Driven by the **exemplar-prose-check** skill. [BUILT ✓ — tests/test_style_bench.py]
 - `sync_skills.py` — deploy `neuresearch/skills/` → `~/.claude/skills/`; `--check`
   audits. [BUILT — `--check` reports scientific-writing in-sync]
