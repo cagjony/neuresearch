@@ -52,7 +52,7 @@ machine-prose tell, with its line number.
 |---|---|---|
 | tells high | LLM-register words ("crucial", "furthermore", "novel", "underscores", "shed light") — the strongest humanisation signal | the word is a defined technical term |
 | self-praise high | "important", "novel", "remarkable" — tell the reader what to think [@carandini2022] | — rarely fine |
-| dashes high | em-dash asides, a machine-prose habit | (numeric ranges are already excluded) |
+| dashes high | aside dashes (em dash, spaced " – ", " - ", LaTeX `---`), a machine-prose habit; exemplars median 0 | (unspaced en dashes in ranges and name pairs — 50–100 µM, FitzHugh–Nagumo — are not counted) |
 | connective openers high | "However, … Moreover, … Notably, …" sentence after sentence | — |
 | sentence length high | sentences carrying too many ideas | Methods-like passages |
 | sentence-length CV high / low | low = every sentence the same length (monotone, machine-like); high = choppy fragments next to monsters | — |

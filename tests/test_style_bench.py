@@ -14,7 +14,8 @@ def test_sentences_keep_abbreviations_and_decimals():
 
 
 def test_numeric_ranges_are_not_dashes():
-    assert sb.measure([FILLER + " at 50–100 µM, 0.3–3.8"])["dash_rate"] == 0
+    assert sb.measure([FILLER + " at 50–100 µM, 0.3–3.8, FitzHugh–Nagumo"])["dash_rate"] == 0
+    assert sb.measure([FILLER + " a cell – or two - or three"])["dash_rate"] > 0
     assert sb.measure([FILLER + " a cell — or two"])["dash_rate"] > 0
 
 
@@ -67,3 +68,10 @@ def test_legends_and_multiparagraph_comments_skipped(tmp_path):
                   f"**Figure 3.** Another legend that should be ignored entirely here.\n")
     paras = sb.draft_sections(md)["results"]
     assert [ln for ln, _ in paras] == [7]
+
+
+def test_tex_dashes_counted_but_not_ranges(tmp_path):
+    tex = tmp_path / "m.tex"
+    tex.write_text(f"\\section{{Results}}\n\n{FILLER} The front---unlike the wave---stops at 10--20 cells (FitzHugh--Nagumo).\n")
+    m = sb.measure([t for _, t in sb.draft_sections(tex)["results"]])
+    assert m["dash_rate"] == 1000 * 2 / m["words"]

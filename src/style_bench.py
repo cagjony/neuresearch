@@ -131,7 +131,9 @@ def measure(paragraphs: list[str]) -> dict | None:
         "hedge_rate": 1000 * sum(w in HEDGES for w in ws) / n,
         "nominal_rate": 100 * sum(len(w) > 6 and w.endswith(("tion", "tions", "ment", "ments", "ance", "ence"))
                                   for w in ws) / n,
-        "dash_rate": 1000 * len(re.findall(r"—|(?<!\d)\s?–\s?(?!\d)|\s--?\s", text)) / n,  # not 50–100 µM
+        # an aside dash: em dash, or a spaced en dash/hyphen. Unspaced en dashes join
+        # ranges and name pairs (50–100 µM, FitzHugh–Nagumo) and are correct typography.
+        "dash_rate": 1000 * len(re.findall(r"—|\s(?:–|--?)\s", text)) / n,
         "transition_open_rate": 100 * opener / len(sents),
         "tell_rate": 1000 * len(tell_hits(text)) / n,
         "self_praise_rate": 1000 * sum(w in SELF_PRAISE for w in ws) / n,
@@ -242,6 +244,7 @@ def draft_sections(path: Path) -> dict[str, list[tuple[int, str]]]:
     for i, line in enumerate(lines, 1):
         if tex:
             line = re.sub(r"(?<!\\)%.*", "", line)  # tex comment; in Markdown % is a percent sign
+            line = line.replace("---", "—").replace("--", "–")  # tex em/en dashes, so dash_rate sees them
         m, a = head.match(line), abstract_env.search(line)
         if m or a:
             flush()
