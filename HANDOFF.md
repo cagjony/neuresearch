@@ -136,6 +136,12 @@ view at once.
   untracked edits (`--diff <ref>`, paragraph-level against the generated file). Word and
   LibreOffice both write these. Report-only. [BUILT ✓ — recovered four hand-edited ÖZET
   paragraphs that carried no tracked-change marks]
+- `style_bench.py` — benchmark a draft's prose against highly cited exemplars in `_library/`.
+  `corpus --email --exclude-project EAAI-26-18624` → `logs/style-corpus.{md,json}` (research articles,
+  top journals, ≥15 cites/yr via OpenAlex; 42 exemplars on 2026-10-11); `check <draft.md|.tex>` →
+  `style-report.md` beside the draft (per-section metrics vs p10–p90, over-used words, machine-prose
+  tells by line); `passages --section intro --project <p>` prints exemplar paragraphs. Report-only.
+  Driven by the **exemplar-prose-check** skill. [BUILT ✓ — tests/test_style_bench.py]
 - `sync_skills.py` — deploy `neuresearch/skills/` → `~/.claude/skills/`; `--check`
   audits. [BUILT — `--check` reports scientific-writing in-sync]
 - `verify_refs.py` — check every numbered reference of a submitted manuscript against Crossref

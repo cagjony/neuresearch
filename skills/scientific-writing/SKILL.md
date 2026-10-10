@@ -174,6 +174,9 @@ contribution? Use this fast diagnostic (from [@mensh2017] Table 1):
 | Reader disputes the conclusion | Rule 7 (results don't justify it) |
 | Unanswered objections linger | Rule 8 (discussion) |
 
+For how the prose *reads* against highly cited papers in the library (sentence
+rhythm, hedging, machine-prose tells), run the **exemplar-prose-check** skill.
+
 ## Never
 
 - Invent results, citations, or `[@citekey]`s, or overstate a finding to make the
