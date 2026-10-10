@@ -412,7 +412,8 @@ def cmd_check(a) -> int:
 def cmd_passages(a) -> int:
     vault = Path(a.vault)
     corpus = json.loads((vault / "logs/style-corpus.json").read_text())
-    papers = [p for p in corpus["papers"] if not a.project or a.project in p["projects"]] or corpus["papers"]
+    # the project's own exemplars first, then the most-cited of the rest
+    papers = sorted(corpus["papers"], key=lambda p: a.project not in p["projects"])
     for p in papers[:a.n]:
         paras = jats_sections(ET.parse(vault / "_library" / f"{p['stem']}.xml").getroot())[a.section]
         print(f"=== [[{p['stem']}]] {p['journal']} {p['year']} ({p['cites_per_year']} cites/yr) — {p['title']}\n")
