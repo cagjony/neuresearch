@@ -188,6 +188,13 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
+### UPDATE (2026-10-11) — `astro-data` (paper B, Aydın single author; target Glia): draft v0.1 written
+State, decisions and next actions live in `neubrain/projects/astro-data/STATE.md` (read its "LATEST" paragraph first).
+Title "How much of coordinated astrocyte activity comes from shared inputs?". Distance tests 9a–9f pre-registered and run
+(code aydin-et-al-2027, origin/main 206a984): coordination is mostly shared input; a small real local part (survives
+cross-plane and gain controls); "gap junctions amplify" NOT supported by our data. Draft `draft/manuscript.md` + Word copy;
+citations.md 24/24 quotes verbatim. Next: author downloads 3 PDFs (DOIs in STATE), reads v0.1; figures 1–6.
+
 ### CURRENT STATE (2026-10-08) — `astro_atp` (paper A, Bayat, Oktay & Aydın; Aydın corresponding): IOP-ready, author read pending
 **Target Physical Biology (IOP)**; OA via TÜBİTAK–IOP (unlimited; Aydın at Medipol = EKUAL member; ScholarOne profile
 must show Medipol + @medipol.edu.tr). Nonlinear Science invitation to be declined (not SCIE).
