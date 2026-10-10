@@ -53,6 +53,8 @@ machine-prose tell, with its line number.
 | tells high | LLM-register words ("crucial", "furthermore", "novel", "underscores", "shed light") — the strongest humanisation signal | the word is a defined technical term |
 | self-praise high | "important", "novel", "remarkable" — tell the reader what to think [@carandini2022] | — rarely fine |
 | dashes high | aside dashes (em dash, spaced " – ", " - ", LaTeX `---`), a machine-prose habit; exemplars median 0 | (unspaced en dashes in ranges and name pairs — 50–100 µM, FitzHugh–Nagumo — are not counted) |
+| sentence patterns high | each hit is listed by line and pattern name, with draft vs exemplar rate: trailing ", underscoring/highlighting/reflecting …" riders; "not merely X" / "is not X, but Y"; "stands as" / "serves as" / "represents a significant"; "studies have shown" / "it is well established" with **no citation in the same sentence**; stacked hedges ("could potentially"); recap closers ("Ultimately,", "future studies are needed"); chatbot residue (`oaicite`, `[cite: 1]`) — the last is never legitimate | a real contrast ("changes in kind, not merely in rate") is a scientific move; judge each hit, and act on the rate |
+| same-word opener runs | three sentences in a row starting "The …" / "We …" — monotone | — |
 | connective openers high | "However, … Moreover, … Notably, …" sentence after sentence | — |
 | sentence length high | sentences carrying too many ideas | Methods-like passages |
 | sentence-length CV high / low | low = every sentence the same length (monotone, machine-like); high = choppy fragments next to monsters | — |
@@ -84,12 +86,21 @@ not words:
 - **Rhythm**: a long sentence followed by a short one; lists of three used only
   when there are three things.
 
-Machine-prose patterns no word list catches — look for them by reading:
-"not only X but also Y" constructions; paragraphs that all end in a summary
-sentence ("Together, these results demonstrate…"); triads of adjectives;
-signposting ("In this section, we…"); every paragraph the same length;
+Machine-prose patterns no regex catches — look for them by reading:
+paragraphs that all end in a summary sentence ("Together, these results
+demonstrate…", "X therefore Y"); triads of adjectives and lists of three where
+there are not three things; **synonym cycling** (one entity under rotating names —
+the mirror image of the reuse-the-key-term rule); every paragraph the same length;
 "This suggests that" opening a sentence about nothing in particular; abstract nouns
-as subjects ("The investigation of X revealed…") where a person or a cell could act.
+as subjects ("The investigation of X revealed…") where a person or a cell could act;
+signposting ("In this section, we…").
+
+The sentence patterns are our own regexes, after the catalogues in Wikipedia
+"Signs of AI writing", blader/humanizer and jdkato/voices (checked 2026-10-11).
+Generic humaniser rules that are wrong for science are deliberately absent: no
+penalty on passive voice in Methods, on "associated with", on "robust", or on
+hedges. Never use detector-bypass "humanisers" (they rewrite to evade AI
+detection and send the text to outside services).
 
 ## 4. Report
 

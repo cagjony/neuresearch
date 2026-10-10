@@ -75,3 +75,35 @@ def test_tex_dashes_counted_but_not_ranges(tmp_path):
     tex.write_text(f"\\section{{Results}}\n\n{FILLER} The front---unlike the wave---stops at 10--20 cells (FitzHugh--Nagumo).\n")
     m = sb.measure([t for _, t in sb.draft_sections(tex)["results"]])
     assert m["dash_rate"] == 1000 * 2 / m["words"]
+
+
+PATTERN_CASES = {  # pattern: (must catch, legitimate science it must leave alone)
+    "trailing -ing rider": ("Calcium rose in every cell, underscoring its central role.",
+                            "Calcium rose in every cell, suggesting that the input was shared."),
+    "not X but Y": ("The effect is not merely local.",
+                    "The effect was not significant (p = 0.4)."),
+    "inflated copula": ("This stands as the first measure of coordination.",
+                        "ATP acts as a gliotransmitter at these synapses."),
+    "uncited 'studies show'": ("Studies have shown that astrocytes respond to noradrenaline.",
+                               f"Studies have shown that astrocytes respond to noradrenaline {sb.CITE}."),
+    "stacked hedge": ("This could potentially explain the delay.",
+                      "This may explain the delay."),
+    "chatbot residue": ("Waves stop at the border :contentReference[oaicite:3]{index=3}.",
+                        "Waves stop at the border of the slice."),
+    "recap / stock closer": ("Ultimately, the network decides.",
+                             "The network ultimately decides within two seconds."),
+}
+
+
+def test_each_pattern_catches_its_case_and_spares_science():
+    for name, (bad, good) in PATTERN_CASES.items():
+        assert name in sb.pattern_hits(bad), name
+        assert name not in sb.pattern_hits(good), name
+
+
+def test_opener_runs_and_citation_marker(tmp_path):
+    assert sb.opener_runs(["We a.", "We b.", "We c.", "Cells d.", "We e."]) == [2]
+    md = tmp_path / "m.md"
+    md.write_text(f"# Results\n\nIt rose [@kuga2011]; @duss2026 had shown it. {FILLER}\n")
+    text = sb.draft_sections(md)["results"][0][1]
+    assert "@" not in text and text.count(sb.CITE) == 2

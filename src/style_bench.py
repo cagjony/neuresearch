@@ -64,6 +64,45 @@ TELLS = [
     "it is worth noting", "in conclusion", "taken together", "a wide range of",
     "in the context of", "not only", "serves as", "in summary",
 ]
+CITE = "†"  # stands in for a citation, in drafts and exemplars alike
+# Sentence-shape patterns of machine prose. Our own regexes, after the pattern
+# catalogues in Wikipedia "Signs of AI writing", blader/humanizer and jdkato/voices
+# (MIT); scientific moves (", suggesting that", "acts as a", "may suggest") are left
+# out. Exemplar rates are measured too, so a pattern is judged against the field.
+PATTERNS = {
+    "trailing -ing rider": r",\s+(?:thereby\s+)?(?:underscoring|highlighting|reflecting|emphasi[sz]ing|showcasing|"
+                           r"illustrating|reinforcing|cementing|signal+ing|marking|paving)\b",
+    "not X but Y": r"\bnot\s+(?:just|merely|simply|only)\b|\b(?:is|are|was|were)(?:\s+not|n't)\s+[^.;:]{1,40}?,\s+but\b",
+    "inflated copula": r"\b(?:stands as|serves as|is a testament to|marks a (?:significant|pivotal|key|major)|"
+                       r"represents a (?:significant|major|key|pivotal|novel|crucial))\b",
+    "uncited 'studies show'": r"\b(?:studies|research|work|evidence|reports|literature)\s+(?:has\s+|have\s+)?"
+                              r"(?:shown|suggested|demonstrated|indicated|revealed)\b|\bit is (?:widely|generally|"
+                              r"commonly|well) (?:believed|accepted|thought|known|established)\b|\bmany (?:argue|"
+                              r"believe|researchers|studies)\b",
+    "stacked hedge": r"\b(?:may|might|could|can)\s+(?:potentially|possibly|perhaps|conceivably)\b|"
+                     r"\b(?:potentially|possibly|perhaps)\s+(?:suggest|indicate|imply)",
+    "chatbot residue": r"contentReference|oaicite|turn0\w+|\[cite:\s*\d|as of my (?:last|knowledge)|"
+                       r"I hope this helps|as an AI\b|great question",
+    "recap / stock closer": r"^(?:ultimately|in essence|all in all),|^(?:despite|notwithstanding) these (?:limitations|"
+                            r"challenges)|\bfuture (?:studies|research|work|investigations) (?:are|is|will be) "
+                            r"(?:needed|warranted|required)\b",
+}
+PATTERN_RE = {k: re.compile(v, re.I) for k, v in PATTERNS.items()}
+
+
+def pattern_hits(sentence: str) -> list[str]:
+    hits = [k for k, rx in PATTERN_RE.items() if rx.search(sentence)]
+    if "uncited 'studies show'" in hits and CITE in sentence:
+        hits.remove("uncited 'studies show'")  # cited in the same sentence: the claim is sourced
+    return hits
+
+
+def opener_runs(sents: list[str]) -> list[int]:
+    """Indices of sentences that are the 3rd+ in a row opening on the same word."""
+    first = [(words(s) or [""])[0] for s in sents]
+    return [i for i in range(2, len(first)) if first[i] and first[i] == first[i - 1] == first[i - 2]]
+
+
 HEDGES = {"may", "might", "could", "suggest", "suggests", "suggesting", "possibly",
           "potentially", "likely", "perhaps", "appear", "appears", "seem", "seems"}
 SELF_PRAISE = {"interesting", "important", "novel", "understudied", "unprecedented",
@@ -72,8 +111,8 @@ BE = {"is", "are", "was", "were", "be", "been", "being"}
 WORD = re.compile(r"[A-Za-z][A-Za-z'-]*")
 ABBREV = re.compile(r"\b(?:et al|e\.g|i\.e|Fig|Figs|Eq|Ref|vs|approx|ca|cf|Suppl|Ext|No)\.", re.I)
 LEGEND = re.compile(r"(?:!\[|\**(?:Supplementary\s+)?(?:Fig(?:ure)?|Table)\.?\s*S?\d)", re.I)  # captions, not prose
-SENT_END = re.compile(r"(?<=[.?!])\s+(?=[\"'(\[]?[A-Z0-9])")
-HIGH_ONLY = {"tell_rate", "self_praise_rate", "dash_rate"}  # fewer is never a problem
+SENT_END = re.compile(r"(?<=[.?!])\s+(?=[\"'(\[]?[A-Z0-9†])")
+HIGH_ONLY = {"tell_rate", "self_praise_rate", "dash_rate", "pattern_rate", "opener_run_rate"}  # fewer is never a problem
 METRICS = {  # name -> (label, unit)
     "sent_len_median": ("sentence length, median", "words"),
     "sent_len_cv": ("sentence-length variation (CV)", ""),
@@ -86,6 +125,8 @@ METRICS = {  # name -> (label, unit)
     "transition_open_rate": ("sentences opening on a connective", "%"),
     "tell_rate": ("machine-prose tells", "/1000 words"),
     "self_praise_rate": ("self-praise adjectives", "/1000 words"),
+    "pattern_rate": ("machine-prose sentence patterns", "/1000 words"),
+    "opener_run_rate": ("3rd+ sentence in a row opening on the same word", "%"),
 }
 
 
@@ -137,6 +178,8 @@ def measure(paragraphs: list[str]) -> dict | None:
         "transition_open_rate": 100 * opener / len(sents),
         "tell_rate": 1000 * len(tell_hits(text)) / n,
         "self_praise_rate": 1000 * sum(w in SELF_PRAISE for w in ws) / n,
+        "pattern_rate": 1000 * sum(len(pattern_hits(s)) for s in sents) / n,
+        "opener_run_rate": 100 * len(opener_runs(sents)) / len(sents),
     }
 
 
@@ -154,7 +197,9 @@ def section_of(heading: str) -> str | None:
 def para_text(p: ET.Element) -> str:
     out = [p.text or ""]
     for c in p:
-        if c.tag not in SKIP_TAGS:
+        if c.tag == "xref" and c.get("ref-type") == "bibr":
+            out.append(CITE)
+        elif c.tag not in SKIP_TAGS:
             out.append(para_text(c))
         out.append(c.tail or "")
     t = "".join(out)
@@ -207,7 +252,8 @@ def jats_meta(root: ET.Element) -> dict:
 # --------------------------------------------------------------------------- #
 def clean_markup(t: str) -> str:
     t = re.sub(r"\\begin\{(figure|table|equation|align)\*?\}.*?\\end\{\1\*?\}", " ", t, flags=re.S)
-    t = re.sub(r"\[[^\]]*@[^\]]*\]|\\[a-z]*cite[a-z]*\*?(\[[^\]]*\])*\{[^}]*\}|\\ref\{[^}]*\}", "", t)
+    t = re.sub(r"\[[^\]]*@[^\]]*\]|\\[a-z]*cite[a-z]*\*?(\[[^\]]*\])*\{[^}]*\}|(?<![\w.])@[\w:-]+", CITE, t)
+    t = re.sub(r"\\ref\{[^}]*\}", "", t)
     t = re.sub(r"\\(?:emph|textit|textbf|mathrm|text)\{([^}]*)\}", r"\1", t)
     t = re.sub(r"\$[^$]*\$", "X", t)
     t = re.sub(r"\\[A-Za-z]+\*?(\[[^\]]*\])?", "", t).replace("~", " ").replace("{", "").replace("}", "")
@@ -320,15 +366,20 @@ def cmd_corpus(a) -> int:
     keep = [p for p in papers if (p["cites_per_year"] or 0) >= a.min_cites_per_year]
     keep.sort(key=lambda p: -p["cites_per_year"])
     vocab = {s: Counter() for s in SECTIONS}
+    pats = {s: Counter() for s in SECTIONS}
     for p in keep:
         root = ET.parse(vault / "_library" / f"{p['stem']}.xml").getroot()
         for s, paras in jats_sections(root).items():
             vocab[s].update(words(" ".join(paras)))
+            pats[s].update(h for para in paras for sent in sentences(para) for h in pattern_hits(sent))
     stats = {s: {m: pct([p["sections"][s][m] for p in keep if p["sections"][s]]) for m in METRICS}
              for s in SECTIONS}
     out = {"built": date.today().isoformat(), "min_cites_per_year": a.min_cites_per_year,
            "papers": keep, "stats": stats,
-           "vocab": {s: dict(c.most_common(20000)) for s, c in vocab.items()}}
+           "vocab": {s: dict(c.most_common(20000)) for s, c in vocab.items()},
+           # pooled exemplar rate per 1000 words of each sentence pattern
+           "pattern_rates": {s: {k: 1000 * pats[s][k] / max(1, sum(vocab[s].values())) for k in PATTERNS}
+                             for s in SECTIONS}}
     (vault / "logs/style-corpus.json").write_text(json.dumps(out) + "\n")
     lines = [f"# Style corpus — exemplar papers ({len(keep)})", "",
              f"Generated by `style_bench.py corpus` on {out['built']}. Never hand-edit. "
@@ -401,10 +452,21 @@ def cmd_check(a) -> int:
         if ow:
             lines += ["", "Over-used vs exemplars (count, × exemplar rate): " +
                       ", ".join(f"**{w}** ({k}, ×{math.exp(lo):.0f})" for w, k, lo in ow)]
-        hits = [(ln, sent, tell_hits(sent)) for ln, t in paras for sent in sentences(t) if tell_hits(sent)]
+        sents = [(ln, sent) for ln, t in paras for sent in sentences(t)]
+        found = Counter(h for _, sent in sents for h in pattern_hits(sent))
+        if found:
+            ref = corpus["pattern_rates"][s]
+            lines += ["", "Sentence patterns, per 1000 words (draft vs exemplars): " +
+                      ", ".join(f"**{k}** {fmt(1000 * c / m['words'])} vs {fmt(ref[k])}" for k, c in found.most_common())]
+        hits = [(ln, sent, tell_hits(sent) + pattern_hits(sent)) for ln, sent in sents]
+        hits = [x for x in hits if x[2]]
         if hits:
-            lines += ["", "Sentences with machine-prose tells:", ""]
+            lines += ["", "Sentences with machine-prose tells or patterns:", ""]
             lines += [f"- L{ln} [{', '.join(h)}] {sent}" for ln, sent, h in hits]
+        runs = opener_runs([sent for _, sent in sents])
+        if runs:
+            lines += ["", "Three or more sentences in a row opening on the same word: " +
+                      ", ".join(f"L{sents[i][0]} ({(words(sents[i][1]) or [''])[0]})" for i in runs)]
         lines.append("")
     out = draft.parent / "style-report.md"
     out.write_text("\n".join(lines) + "\n", encoding="utf-8")
