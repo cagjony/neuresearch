@@ -188,6 +188,26 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
+### UPDATE (2026-10-11) — `tubitak-3501` (TÜBİTAK 3501 Kariyer, Aydın PI at Medipol): full draft 1 written
+**Deadline: approve + e-sign in PBS by ≈ 15.12.2026** — PhD 19.10.2019 makes Aydın eligible in 2026 only
+(3501 rule counts calendar years: 2026 applicants need PhD ≥ 01.01.2019; 2027 would need ≥ 01.01.2020). Rolling call.
+- **Where:** `neubrain/projects/tubitak-3501/` (vault fd1c648). Read `plan.md` (status table) → `concept.md` →
+  `INVENTORY.md` (3501 rules, word limits, budget caps) → `pathway_notes.md` (PubMed-checked anchors).
+  Reading copy `tubitak-3501_taslak.docx`; source `sections/*.md` (0 özet … 5 yaygın etki), all within PBS limits.
+  3501 content is typed into PBS text boxes — **no Word form**; `fill_1001_form.py` does not apply.
+- **Science:** where along OB → PCx | cortical amygdala → hypothalamus (PMd vs LH) the odour code turns from chemistry
+  into valence. Known food/danger odours crossed with two chemistry axes (metabolic origin = Osmo POM, Lee 2023 /
+  Qian 2023; structure = RDKit); key "metabolic twins" 2-phenylethylamine vs 2-phenylethanol. Analyses valence →
+  identity (Schiltz 2026 eLife pipeline) → representation. WP weights 20/40/25/15; 91 mice (power analysis + Alp's
+  group sizes). Consultants Özdemir (decoding), Alp (photometry, chemogenetics; Medipol infrastructure).
+- **Kept separate:** 1001 ob-pcx; Alp's and Bayat's 3501s (hunger/metabolism); Osmo × Haesler collaboration
+  (`inbox/` Gemini meeting note is confidential — never cite; confirm separation with Haesler before submitting).
+- **Open (author):** MSc/PhD thesis titles for §4 [placeholders]; Alp to confirm group sizes, sensor/virus, CNO;
+  confirm PID/stereotaxic/microscope at Medipol; buy odours; budget (EK-2), Veri Yönetim Planı, Şekil 1 not started.
+- **neuresearch fixes not merged:** branch `worktree-fetch-index-first` (9424904) — fetch_papers checks the manifest
+  by_id before Europe PMC (zareh2026 was a false [MISS]); ingest suffixes past an unrelated orphan file
+  (price1991.pdf is an unregistered Neurobiol Aging paper used by alz-olf → our Price 1991 is `price1991a`).
+
 ### CURRENT STATE (2026-10-11) — `astro_atp` (paper A): waiting on author read-through and Kemal's reply
 Supersedes the 2026-10-08 paper-A block below. Physical Biology (IOP), Aydın corresponding; details in
 `neubrain/projects/astro_atp/STATE.md` (read that first; agent `astro-atp`).
