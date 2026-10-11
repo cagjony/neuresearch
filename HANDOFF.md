@@ -423,7 +423,7 @@ NEXT ACTION (alz-olf / Anatomy)
 4. Page numbers in Word; COI form; copyright form signed by all six authors; cover letter.
 5. Ingest the 5 new refs (ingest.py); supplementary Table S1 from construct_coding.tsv.
 
-### CURRENT STATE (2026-10-07) — `neu2p-pipeline`: all 42 astrocyte sessions usable; two-colour report updated, not sent
+### CURRENT STATE (2026-10-11) — `neu2p-pipeline`: all 42 astrocyte sessions usable; two-colour report updated, not sent
 
 Full state: **`neubrain/projects/neu2p-pipeline/STATE.md`** (last dated entries). In short:
 - Processed: GCaMP6f 32/32 (report v2 sent 2026-09-28); two-colour 26/26; green-only 16/16; face camera 21 two-colour.
@@ -435,13 +435,16 @@ Full state: **`neubrain/projects/neu2p-pipeline/STATE.md`** (last dated entries)
   more astro events at rest, +16.7/min/mm², p = 0.003 over 13 mice, but **two-colour only +12.6, p = 0.067** and the two
   KI+FIRE two-colour mice disagree; recording type (green-only) and month (EXP3) confounded. No NLGF effect; neurons no
   group difference.
-- Unpushed: neu2p up to 541c081; neubrain/neuresearch commits (user pushes).
+- Artefact check (2026-10-11): moving/rest ratio unchanged with only events <= 1000 µm² (49x both) → not field-wide
+  brightness steps; the gap to Bojarskaite's 3x is most likely our size/duration limits (their events mostly < 10 µm², < 1 s).
+- Unpushed: neu2p ~21 commits (push only after the user says so); neubrain commits (user pushes).
 
 ### NEXT ACTION (neu2p-pipeline)
 
 1. After `vsc-login`: `scripts/derived_upload.sh rereg > raid …/derived_upload_rereg.log` (re-registered folders to manGO).
+   Ask the user before pushing neu2p.
 2. User reviews the report; then draft the email to Asli (questions in report section 7).
-3. Later: look through the example videos for artefact movement events; astrocyte–neuron coupling in two-colour sessions.
+3. Next analysis: astrocyte–neuron coupling in the 26 two-colour sessions (bojarskaite2020 did this for the same design).
 Rules learned: bkrunch read-only; never edit a running script; no `pkill -f` patterns that match your own shell; keep
 backticks out of unquoted heredocs.
 
