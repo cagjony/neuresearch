@@ -188,6 +188,20 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
+### CURRENT STATE (2026-10-11) — `astro_atp` (paper A): waiting on author read-through and Kemal's reply
+Supersedes the 2026-10-08 paper-A block below. Physical Biology (IOP), Aydın corresponding; details in
+`neubrain/projects/astro_atp/STATE.md` (read that first; agent `astro-atp`).
+- Reading copy is **v9** (`archive/docs/astro_atp_manuscript_v9_iop.docx`, after a 2026-10-11 style pass); source of truth
+  `analysis/manuscript_v2/manuscript_iop.tex`. Round v7_ca01 applied (author's Intro edits verbatim; abstract redrafted
+  in plain English, question first — still a draft for the author's redline).
+- Decided: Oktay ORCID; no specific funding; Methods last; double-anonymous (`*_anon.pdf` builds); no competing interests.
+  Open: CRediT roles, AI-tool version, optional Zenodo DOI.
+- **Email to Kemal Bayat** drafted in Turkish (`communication/2026-10-11_email_to_kemal_tr.md`; author sends): what changed
+  since CSF (corrections — not new data; the new public-data work is paper B and is not mentioned to him), and his
+  agreement to Aydın as corresponding author. Do not submit before his reply.
+- Short paper C (strong-coupling propagation failure) parked as an idea in STATE.md IDEAS — IOP later, not Nonlinear Science.
+- Docentship reference note: `neubrain/plans/docentship_publication_note_2026-10-11.md` (agent `docentship` exists).
+
 ### UPDATE (2026-10-11) — `astro-data` (paper B, Aydın single author; target Glia): draft v0.1 written
 State, decisions and next actions live in `neubrain/projects/astro-data/STATE.md` (read its "LATEST" paragraph first).
 Title "How much of coordinated astrocyte activity comes from shared inputs?". Distance tests 9a–9f pre-registered and run
@@ -533,6 +547,7 @@ the 30 °C plausibility floor discarded every reading below 30.
    `build_bib.py --out …/draft/references.bib`).
 
 ### SESSION LOG
+- 2026-10-11 — astro_atp: v7_ca01 applied, Kemal email (TR) drafted, short paper C parked, docentship note. (agent: Claude)
 - 2026-10-08 — astro_atp: paper A retargeted to Physical Biology (IOP), Aydın corresponding; coupling results, declutter, IOP files, v7 docx. (agent: Claude)
 - 2026-10-08 — astro-data: paper B split out (single-author, J Physiol via TÜBİTAK–Wiley); code in aydin-et-al-2027; test 8 + Duss preprint check. (agent: Claude)
 - 2026-10-06 eve — astro_atp: test 4 (slice all-or-none synchrony), in vivo (running-driven synchrony), constraint map + ablations; front-at-stronger-coupling running. (agent: Claude)
