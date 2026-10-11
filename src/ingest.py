@@ -248,9 +248,20 @@ def ingest_one(pdf: Path, explicit_doi: str | None, args, manifest: dict,
     stem = assign_stem(rec, manifest)
     dest = library / f"{stem}.pdf"
     if dest.exists():
-        res["stem"] = stem
-        res["status"] = f"skip (file {dest.name} already exists)"
-        return res
+        held = pdf_first_page_text(dest)
+        # Unreadable text or no title: cannot tell, so keep the safe skip.
+        if not (rec.title and held.strip()) or title_in_text(rec.title, held):
+            res["stem"] = stem
+            res["status"] = f"skip (file {dest.name} already exists)"
+            return res
+        # An unregistered file of a DIFFERENT paper holds the stem (e.g. two
+        # Price 1991 papers): take the next letter suffix, as fetch_papers does.
+        base = stem
+        for suffix in "abcdefghijklmnopqrstuvwxyz":
+            stem = base + suffix
+            dest = library / f"{stem}.pdf"
+            if stem not in manifest["entries"] and not dest.exists():
+                break
 
     # cited_dois via the same order as refs.py (Crossref -> GROBID-if-URL)
     refs, refs_source = recover_refs(rec.doi, dest, args.grobid, session, pdf)
