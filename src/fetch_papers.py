@@ -381,6 +381,15 @@ def main() -> int:
     n_new = n_linked = n_gap = 0
 
     for raw in tokens:
+        # Check the vault's own index first: a paper Europe PMC cannot resolve
+        # (e.g. an Elsevier-only DOI ingested by hand) is still "have it".
+        stem = manifest["by_id"].get(raw) or manifest["by_id"].get(raw.lower())
+        files = manifest["entries"].get(stem, {}).get("files", []) if stem else []
+        if files and all((library / fn).exists() for fn in files):
+            record_project(manifest, stem, args.project)
+            log.relink(stem, args.project); n_linked += 1
+            print(f"[HAVE]  {stem}"); continue
+
         time.sleep(POLITE_DELAY)
         rec = resolve(raw, session)
         if rec is None:
