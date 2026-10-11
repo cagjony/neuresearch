@@ -204,7 +204,7 @@ view at once.
   (`inbox/` Gemini meeting note is confidential — never cite; confirm separation with Haesler before submitting).
 - **Open (author):** MSc/PhD thesis titles for §4 [placeholders]; Alp to confirm group sizes, sensor/virus, CNO;
   confirm PID/stereotaxic/microscope at Medipol; buy odours; budget (EK-2), Veri Yönetim Planı, Şekil 1 not started.
-- **neuresearch fixes not merged:** branch `worktree-fetch-index-first` (9424904) — fetch_papers checks the manifest
+- **neuresearch fixes merged to main (66541c4):** — fetch_papers checks the manifest
   by_id before Europe PMC (zareh2026 was a false [MISS]); ingest suffixes past an unrelated orphan file
   (price1991.pdf is an unregistered Neurobiol Aging paper used by alz-olf → our Price 1991 is `price1991a`).
 
