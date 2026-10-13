@@ -202,8 +202,14 @@ view at once.
   group sizes). Consultants Özdemir (decoding), Alp (photometry, chemogenetics; Medipol infrastructure).
 - **Kept separate:** 1001 ob-pcx; Alp's and Bayat's 3501s (hunger/metabolism); Osmo × Haesler collaboration
   (`inbox/` Gemini meeting note is confidential — never cite; confirm separation with Haesler before submitting).
-- **Open (author):** MSc/PhD thesis titles for §4 [placeholders]; Alp to confirm group sizes, sensor/virus, CNO;
-  confirm PID/stereotaxic/microscope at Medipol; buy odours; budget (EK-2), Veri Yönetim Planı, Şekil 1 not started.
+- **2026-10-13 update (vault ed7ab47):** recording is hybrid — 4 Neuropixels probes (head-fixed, 12 implants) + in-house
+  3D-printed 8-tetrode drives (freely moving, 10 mice); 93 mice. Preliminary OB recording exists under Alp's TÜBİTAK 1001
+  123E520 (cited in §2.9). Related projects to declare (EK-3): 123E520 (running), TÜSEB 44216 (Özdemir, Bayat), the PI's
+  BAP tetrode project (not funded yet) — draft text in `ekip_diger_projeler.md`. **EK-2 draft 3 = 1,494,746 TL** of the
+  1.5 M cap (calibrated on Alp's funded 3501 budget; animals from Medipol colony; travel 85k; MSc 20 months); tetrode
+  cost from `projects/mission-tetrode/bom_per_implant.md` (~9.0k TL/implant).
+- **Open (author):** thesis titles for §4; quotes for EIB/import/wire/odours; PID at Medipol?; Alp's OK to reuse a
+  figure; Veri Yönetim Planı and Şekil 1 not started.
 - **neuresearch fixes merged to main (66541c4):** — fetch_papers checks the manifest
   by_id before Europe PMC (zareh2026 was a false [MISS]); ingest suffixes past an unrelated orphan file
   (price1991.pdf is an unregistered Neurobiol Aging paper used by alz-olf → our Price 1991 is `price1991a`).
