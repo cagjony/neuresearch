@@ -188,31 +188,13 @@ view at once.
 
 ## ════════ DYNAMIC SECTION — UPDATE EACH SESSION ════════
 
-### UPDATE (2026-10-11) — `tubitak-3501` (TÜBİTAK 3501 Kariyer, Aydın PI at Medipol): full draft 1 written
-**Deadline: approve + e-sign in PBS by ≈ 15.12.2026** — PhD 19.10.2019 makes Aydın eligible in 2026 only
-(3501 rule counts calendar years: 2026 applicants need PhD ≥ 01.01.2019; 2027 would need ≥ 01.01.2020). Rolling call.
-- **Where:** `neubrain/projects/tubitak-3501/` (vault fd1c648). Read `plan.md` (status table) → `concept.md` →
-  `INVENTORY.md` (3501 rules, word limits, budget caps) → `pathway_notes.md` (PubMed-checked anchors).
-  Reading copy `tubitak-3501_taslak.docx`; source `sections/*.md` (0 özet … 5 yaygın etki), all within PBS limits.
-  3501 content is typed into PBS text boxes — **no Word form**; `fill_1001_form.py` does not apply.
-- **Science:** where along OB → PCx | cortical amygdala → hypothalamus (PMd vs LH) the odour code turns from chemistry
-  into valence. Known food/danger odours crossed with two chemistry axes (metabolic origin = Osmo POM, Lee 2023 /
-  Qian 2023; structure = RDKit); key "metabolic twins" 2-phenylethylamine vs 2-phenylethanol. Analyses valence →
-  identity (Schiltz 2026 eLife pipeline) → representation. WP weights 20/40/25/15; 91 mice (power analysis + Alp's
-  group sizes). Consultants Özdemir (decoding), Alp (photometry, chemogenetics; Medipol infrastructure).
-- **Kept separate:** 1001 ob-pcx; Alp's and Bayat's 3501s (hunger/metabolism); Osmo × Haesler collaboration
-  (`inbox/` Gemini meeting note is confidential — never cite; confirm separation with Haesler before submitting).
-- **2026-10-13 update (vault ed7ab47):** recording is hybrid — 4 Neuropixels probes (head-fixed, 12 implants) + in-house
-  3D-printed 8-tetrode drives (freely moving, 10 mice); 93 mice. Preliminary OB recording exists under Alp's TÜBİTAK 1001
-  123E520 (cited in §2.9). Related projects to declare (EK-3): 123E520 (running), TÜSEB 44216 (Özdemir, Bayat), the PI's
-  BAP tetrode project (not funded yet) — draft text in `ekip_diger_projeler.md`. **EK-2 draft 3 = 1,494,746 TL** of the
-  1.5 M cap (calibrated on Alp's funded 3501 budget; animals from Medipol colony; travel 85k; MSc 20 months); tetrode
-  cost from `projects/mission-tetrode/bom_per_implant.md` (~9.0k TL/implant).
-- **Open (author):** thesis titles for §4; quotes for EIB/import/wire/odours; PID at Medipol?; Alp's OK to reuse a
-  figure; Veri Yönetim Planı and Şekil 1 not started.
-- **neuresearch fixes merged to main (66541c4):** — fetch_papers checks the manifest
-  by_id before Europe PMC (zareh2026 was a false [MISS]); ingest suffixes past an unrelated orphan file
-  (price1991.pdf is an unregistered Neurobiol Aging paper used by alz-olf → our Price 1991 is `price1991a`).
+### UPDATE (2026-10-16) — `tubitak-3501` (TÜBİTAK 3501 Kariyer, Aydın PI at Medipol): draft reviewed, 3-WP design
+**Deadline: approve + e-sign in PBS by ≈ 15.12.2026** (PhD 19.10.2019 → eligible in 2026 only). Read
+`neubrain/projects/tubitak-3501/STATE.md` first (current state, next actions, session log); vault e40416b.
+Design: WP1 mouse behaviour, WP2 head-fixed Neuropixels + tetrodes, WP3 human EEG (Güntekin); consultants
+Güntekin/Özdemir/Alp (all Medipol). Budget draft 4: 1,295,746 TL fixed of 1.5 M. Review + citation audit done
+(`review/panel_review_2026-10-16.md`); six design findings await the author. Tetrode costs in
+`projects/mission-tetrode/bom_per_implant.md`.
 
 ### CURRENT STATE (2026-10-11) — `astro_atp` (paper A): waiting on author read-through and Kemal's reply
 Supersedes the 2026-10-08 paper-A block below. Physical Biology (IOP), Aydın corresponding; details in
